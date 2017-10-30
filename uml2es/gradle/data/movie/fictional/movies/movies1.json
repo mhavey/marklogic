@@ -1,0 +1,8 @@
+{"movieId":"Gut Fellas", "series":"", "seriestype":"feature", "releaseyear":1987, "countries":["USA","UK","Germany"], 
+"genres":["Drama","Comedy"], "runningtime":120, "rating":1.8,
+"parentalCerts": [
+	{"movieId":"Gut Fellas", "country":"UK", "currentCertificate":"dreck"},
+	{"movieId":"Gut Fellas", "country":"Chile", "currentCertificate":"scandalous"},
+	{"movieId":"Gut Fellas", "country":"USA", "currentCertificate":"R"},
+	{"movieId":"Gut Fellas", "country":"Italy", "currentCertificate":"boring"}
+]}
