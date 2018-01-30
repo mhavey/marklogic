@@ -88,17 +88,17 @@ Here are the steps to setup.
 
 1. Setup new DB. We will begin with basic DB config with no indexes. Will bring in the XMI2ES transform to our modules DB.
 
-gradle -PenvironmentName=local -i clearGenerated includeXMI2ESTransform mlDeploy
+  gradle -PenvironmentName=local -i clearGenerated includeXMI2ESTransform mlDeploy
 
-Confirm:
+  Confirm:
 - Modules DB has /xmi2es/loadXMITransformation.xqy
 - No documents having URI containing GENERATED in modules, FINAL, STAGING, or schemas DB.
 
 2. Move our UML model into ML as an ES model. Then generate ES artifacts. The strange task workaroundDeployESModelToFinal works around the issue where ES model is deployed to STAGING instead of FINAL.
 
-gradle -PenvironmentName=local -i ingestModel mlgen  workaroundDeployESModelToFinal
+  gradle -PenvironmentName=local -i ingestModel mlgen  workaroundDeployESModelToFinal
 
-Confirm:
+  Confirm:
 - Content DB has the following documents
   -/marklogic.com/entity-services/models/DHFEmployeeSample.xml
   - /xmi2es/es/DHFEmployeeSample.xml
@@ -107,7 +107,7 @@ Confirm:
 
 - In Query Console, open a tab of type SPARQL, point to the FINAL DB, run the following query, and verify you get any results. THis means the ES model is in FINAL and its semantic metadata is populated.
 
-select * where {?s ?o ?p}
+  select * where {?s ?o ?p}
 
 - In gradle project, check for these newly generated files:
   - src/main/ml-modules/ext/entity-services/HR-0.0.1.xqy
@@ -116,11 +116,11 @@ select * where {?s ?o ?p}
   - user-config/schemas/HR-0.0.1.xsd
   - user-config/schemas/tde/HR-0.0.1.tdex
 
-We won't use any of these artifacts in this demo. The code already contains a tweaked version of HR-0.0.1.xqy in /plugins/ext/entity-services. Because we won't use these artifacts, we don't need to reload our schemas or modules.
+  We won't use any of these artifacts in this demo. The code already contains a tweaked version of HR-0.0.1.xqy in /plugins/ext/entity-services. Because we won't use these artifacts, we don't need to reload our schemas or modules.
 
 3. Ingest staging data and some triples for FINAL	
 
-gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
+  gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
 
 - In STAGING we now have 2008 documents. Of these:
   - 1002 are in Employees collection
@@ -131,11 +131,11 @@ gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
 
 4. Run harmonization to move employee and department data to FINAL.
 
-gradle -PenvironmentName=local -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
+  gradle -PenvironmentName=local -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
 
-gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployee
+  gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployee
 
-Confirm:
+  Confirm:
 - FINAL now contains 1013 documents including
   - 5 in Department collection
   - 1002 in Employee collection
