@@ -35,6 +35,7 @@ Our project uses gradle. Before running, view the settings in gradle.properties.
 Here are the steps to setup.
 
 1. Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES transform to our modules.
+
 gradle -PenvironmentName=local -i clearGenerated useInitialDBConfig includeXMI2ESTransform mlDeploy
 
 Confirm:
@@ -43,6 +44,7 @@ Confirm:
 - No documents having URI containing GENERATED in modules, content, or schemas DB.
 
 2. Move our UML model into ML as an ES model. Then generate ES artifacts
+
 gradle -PenvironmentName=local -i ingestModel mlgen
 
 Confirm:
@@ -65,6 +67,7 @@ Confirm:
 (Generated TDE template. We need to tweak this a little. The finished product is includes in the same folder: MovieModelPhysical-0.0.1.tdex.)
 
 3. Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
+
 gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDeployDatabases mlReloadModules mlReloadSchemas
 
 Confirm:
@@ -72,6 +75,7 @@ Confirm:
 - Schemas DB has ONLY ONE tdex document: /MovieModelPhysical-0.0.1.tdex
 
 4. Ingest movie data based on the model
+
 gradle -PenvironmentName=local -i ingestMovie
 
 Confirm:
