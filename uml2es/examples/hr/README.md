@@ -22,19 +22,19 @@ A few points about our use of DHF.
 
 First, here is the purpose of the four main databases in DHF:
 - Staging: This holds source data:
-.. Employee data from ACME Tech
-.. Employee data from Global Corp
-.. Employee salary data from Global Corp
-.. Department data from Global Corp
+ - Employee data from ACME Tech
+ - Employee data from Global Corp
+ - Employee salary data from Global Corp
+ - Department data from Global Corp
 - Final
-.. Harmonized employee documents that conform to the model
-.. Harmonized department documents that conform to the model
-.. Semantic triples representing: employee reporting structure; employee department membership; acquisition relationship between Global and ACME.
+ - Harmonized employee documents that conform to the model
+ - Harmonized department documents that conform to the model
+ - Semantic triples representing: employee reporting structure; employee department membership; acquisition relationship between Global and ACME.
 - Modules: This holds server-side modules:
-.. The XMI2ES transform
-.. The DHF harmonization plugins for employee and department
-.. The ES-generated instance converter module
-.. DHF internal modules
+ - The XMI2ES transform
+ - The DHF harmonization plugins for employee and department
+ - The ES-generated instance converter module
+ - DHF internal modules
 - Schemas: This holds TDE template. But in this example we won't show TDE. 
 
 Now, about where the model fits:
@@ -66,10 +66,15 @@ If you were to start from scratch, you would follow this recipe:
 - Using Hub's gradle tasks, setup input and harmonization flows:
 
 gradle hubCreateEntity -PentityName=Department
+
 gradle hubCreateEntity -PentityName=Employee
+
 gradle hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment 
+
 gradle hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee
+
 gradle hubCreateHarmonizeFlow -PentityName=Department -PflowName=HarmonizeDepartment -PdataFormat=xml -PpluginFormat=xqy
+
 gradle hubCreateHarmonizeFlow -PentityName=Employee -PflowName=HarmonizeEmployee -PdataFormat=xml -PpluginFormat=xqy
 
 - In your gradle build file, add MLCP tasks to ingest department and employee data. 
