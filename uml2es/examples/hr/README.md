@@ -65,17 +65,17 @@ If you were to start from scratch, you would follow this recipe:
 - Tweak the instance converter: map source fields to model fields.
 - Using Hub's gradle tasks, setup input and harmonization flows:
 
-gradle hubCreateEntity -PentityName=Department
+  gradle hubCreateEntity -PentityName=Department
 
-gradle hubCreateEntity -PentityName=Employee
+  gradle hubCreateEntity -PentityName=Employee
 
-gradle hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment 
+  gradle hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment 
 
-gradle hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee
+  gradle hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee
 
-gradle hubCreateHarmonizeFlow -PentityName=Department -PflowName=HarmonizeDepartment -PdataFormat=xml -PpluginFormat=xqy
+  gradle hubCreateHarmonizeFlow -PentityName=Department -PflowName=HarmonizeDepartment -PdataFormat=xml -PpluginFormat=xqy
 
-gradle hubCreateHarmonizeFlow -PentityName=Employee -PflowName=HarmonizeEmployee -PdataFormat=xml -PpluginFormat=xqy
+  gradle hubCreateHarmonizeFlow -PentityName=Employee -PflowName=HarmonizeEmployee -PdataFormat=xml -PpluginFormat=xqy
 
 - In your gradle build file, add MLCP tasks to ingest department and employee data. 
 
