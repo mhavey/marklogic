@@ -154,7 +154,7 @@ FINAL now contains 1013 documents including
   - 5 in Department collection
   - 1002 in Employee collection
 
-## Viewing the Data
+## Explore the Data
 In Query Console, import the workspace XMI2ESHR.xml. In each tab, try the query to explore an aspect of the data.
 
 ## Coming Soon
