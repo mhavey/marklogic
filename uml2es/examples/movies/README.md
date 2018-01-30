@@ -36,26 +36,26 @@ Here are the steps to setup.
 
 1. Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES transform to our modules.
 
-... gradle -PenvironmentName=local -i clearGenerated useInitialDBConfig includeXMI2ESTransform mlDeploy
+...gradle -PenvironmentName=local -i clearGenerated useInitialDBConfig includeXMI2ESTransform mlDeploy
 
-... Confirm:
+...Confirm:
 - Content DB has no element range indexes
 - Modules DB has /xmi2es/loadXMITransformation.xqy
 - No documents having URI containing GENERATED in modules, content, or schemas DB.
 
 2. Move our UML model into ML as an ES model. Then generate ES artifacts
 
-... gradle -PenvironmentName=local -i ingestModel mlgen
+...gradle -PenvironmentName=local -i ingestModel mlgen
 
-... Confirm:
+...Confirm:
 
-... Content DB has the following documents
+...Content DB has the following documents
 - /marklogic.com/entity-services/models/IMDBMoviePhysical.xml
 - /xmi2es/es/IMDBMoviePhysical.xml
 - /xmi2es/findings/IMDBMoviePhysical.xml
 - /xmi2es/xmi/IMDBMoviePhysical.xml
 
-... In gradle project we now have these files:
+...In gradle project we now have these files:
 - src/main/ml-config/databases/content-database-GENERATED.json
 (Generated DB config with indexes specified in model. We will use this.)
 - src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
@@ -69,17 +69,17 @@ Here are the steps to setup.
 
 3. Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
 
-... gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDeployDatabases mlReloadModules mlReloadSchemas
+...gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDeployDatabases mlReloadModules mlReloadSchemas
 
-... Confirm:
+...Confirm:
 - Content DB now has element range indexes
 - Schemas DB has ONLY ONE tdex document: /MovieModelPhysical-0.0.1.tdex
 
 4. Ingest movie data based on the model
 
-... gradle -PenvironmentName=local -i ingestMovie
+...gradle -PenvironmentName=local -i ingestMovie
 
-... Confirm:
+...Confirm:
 - Content DB now has the movie documents. Check the totals per collection. 
 - bios:2
 - companies:1
@@ -88,7 +88,7 @@ Here are the steps to setup.
 - persons:3
 - roles:12
 
-... If your count is different, it might be because you have two TDE templates. Go back to step 3 and confirm the results.
+...If your count is different, it might be because you have two TDE templates. Go back to step 3 and confirm the results.
 
 5. In Query Console, import XMI2SMovies.xml workspace. In each tab, try the query to explore an aspect of the data.
 
