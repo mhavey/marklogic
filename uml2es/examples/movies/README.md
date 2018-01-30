@@ -34,7 +34,10 @@ Our project uses gradle. Before running, view the settings in gradle.properties.
 
 Here are the steps to setup.
 
-1. Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES transform to our modules.
+### Setup DB
+Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES transform to our modules.
+
+Run the following:
 
 gradle -PenvironmentName=local -i clearGenerated useInitialDBConfig includeXMI2ESTransform mlDeploy
 
@@ -43,31 +46,36 @@ Confirm:
 - Modules DB has /xmi2es/loadXMITransformation.xqy
 - No documents having URI containing GENERATED in modules, content, or schemas DB.
 
-2. Move our UML model into ML as an ES model. Then generate ES artifacts
+### Transform UML to ES
+Move our UML model into ML as an ES model. Then generate ES artifacts
+
+Run the following:
 
 gradle -PenvironmentName=local -i ingestModel mlgen
 
 Confirm:
+- Content DB has the following documents
+  - /marklogic.com/entity-services/models/IMDBMoviePhysical.xml
+  - /xmi2es/es/IMDBMoviePhysical.xml
+  - /xmi2es/findings/IMDBMoviePhysical.xml
+  - /xmi2es/xmi/IMDBMoviePhysical.xml
 
-Content DB has the following documents
-- /marklogic.com/entity-services/models/IMDBMoviePhysical.xml
-- /xmi2es/es/IMDBMoviePhysical.xml
-- /xmi2es/findings/IMDBMoviePhysical.xml
-- /xmi2es/xmi/IMDBMoviePhysical.xml
-
-In gradle project we now have these files:
-- src/main/ml-config/databases/content-database-GENERATED.json
+- In gradle project we now have these files:
+  - src/main/ml-config/databases/content-database-GENERATED.json
 (Generated DB config with indexes specified in model. We will use this.)
-- src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
+  - src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
 (Generated instance converter. We need to tweak this a little. The finished product is included in the same folder: MovieModelPhysical-0.0.1.xqy)
-- src/main/ml-modules/options/MovieModelPhysical.xml
+  - src/main/ml-modules/options/MovieModelPhysical.xml
 (Generated search options.)
-- src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd
+  - src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd
 (Generated XML schema.)
-- src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex
+  - src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex
 (Generated TDE template. We need to tweak this a little. The finished product is includes in the same folder: MovieModelPhysical-0.0.1.tdex.)
 
-3. Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
+### Deploy
+Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
+
+Run the following:
 
 gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDeployDatabases mlReloadModules mlReloadSchemas
 
@@ -75,20 +83,24 @@ Confirm:
 - Content DB now has element range indexes
 - Schemas DB has ONLY ONE tdex document: /MovieModelPhysical-0.0.1.tdex
 
-4. Ingest movie data based on the model
+### Ingest
+Ingest movie data based on the model
+
+Run the following:
 
 gradle -PenvironmentName=local -i ingestMovie
 
 Confirm:
 - Content DB now has the movie documents. Check the totals per collection. 
-- bios:2
-- companies:1
-- movies:5
-- movieDocs:2
-- persons:3
-- roles:12
+  - bios:2
+  - companies:1
+  - movies:5
+  - movieDocs:2
+  - persons:3
+  - roles:12
 
 If your count is different, it might be because you have two TDE templates. Go back to step 3 and confirm the results.
 
-5. In Query Console, import XMI2SMovies.xml workspace. In each tab, try the query to explore an aspect of the data.
+## Explore Data
+In Query Console, import XMI2SMovies.xml workspace. In each tab, try the query to explore an aspect of the data.
 
