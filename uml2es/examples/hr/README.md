@@ -22,19 +22,19 @@ A few points about our use of DHF.
 
 First, here is the purpose of the four main databases in DHF:
 - Staging: This holds source data:
- - Employee data from ACME Tech
- - Employee data from Global Corp
- - Employee salary data from Global Corp
- - Department data from Global Corp
+  - Employee data from ACME Tech
+  - Employee data from Global Corp
+  - Employee salary data from Global Corp
+  - Department data from Global Corp
 - Final
- - Harmonized employee documents that conform to the model
- - Harmonized department documents that conform to the model
- - Semantic triples representing: employee reporting structure; employee department membership; acquisition relationship between Global and ACME.
+  - Harmonized employee documents that conform to the model
+  - Harmonized department documents that conform to the model
+  - Semantic triples representing: employee reporting structure; employee department membership; acquisition relationship between Global and ACME.
 - Modules: This holds server-side modules:
- - The XMI2ES transform
- - The DHF harmonization plugins for employee and department
- - The ES-generated instance converter module
- - DHF internal modules
+  - The XMI2ES transform
+  - The DHF harmonization plugins for employee and department
+  - The ES-generated instance converter module
+  - DHF internal modules
 - Schemas: This holds TDE template. But in this example we won't show TDE. 
 
 Now, about where the model fits:
@@ -100,21 +100,21 @@ gradle -PenvironmentName=local -i ingestModel mlgen  workaroundDeployESModelToFi
 
 Confirm:
 - Content DB has the following documents
-../marklogic.com/entity-services/models/DHFEmployeeSample.xml
-../xmi2es/es/DHFEmployeeSample.xml
-../xmi2es/findings/DHFEmployeeSample.xml
-../xmi2es/xmi/DHFEmployeeSample.xml
+  -/marklogic.com/entity-services/models/DHFEmployeeSample.xml
+  - /xmi2es/es/DHFEmployeeSample.xml
+  - /xmi2es/findings/DHFEmployeeSample.xml
+  - /xmi2es/xmi/DHFEmployeeSample.xml
 
 - In Query Console, open a tab of type SPARQL, point to the FINAL DB, run the following query, and verify you get any results. THis means the ES model is in FINAL and its semantic metadata is populated.
 
 select * where {?s ?o ?p}
 
 - In gradle project, check for these newly generated files:
-..src/main/ml-modules/ext/entity-services/HR-0.0.1.xqy
-..src/main/ml-modules/options/HR.xml
-..user-config/databases/content-database.json
-..user-config/schemas/HR-0.0.1.xsd
-..user-config/schemas/tde/HR-0.0.1.tdex
+  - src/main/ml-modules/ext/entity-services/HR-0.0.1.xqy
+  - src/main/ml-modules/options/HR.xml
+  - user-config/databases/content-database.json
+  - user-config/schemas/HR-0.0.1.xsd
+  - user-config/schemas/tde/HR-0.0.1.tdex
 
 We won't use any of these artifacts in this demo. The code already contains a tweaked version of HR-0.0.1.xqy in /plugins/ext/entity-services. Because we won't use these artifacts, we don't need to reload our schemas or modules.
 
@@ -123,21 +123,22 @@ We won't use any of these artifacts in this demo. The code already contains a tw
 gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
 
 - In STAGING we now have 2008 documents. Of these:
-..1002 are in Employees collection
-..1000 are in Salary collection
-..5 are in Department collection
+  - 1002 are in Employees collection
+  - 1000 are in Salary collection
+  - 5 are in Department collection
 
 - In FINAL we have the a document containing triples in the collection http://www.w3.org/ns/org.
 
 4. Run harmonization to move employee and department data to FINAL.
 
 gradle -PenvironmentName=local -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
+
 gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployee
 
 Confirm:
 - FINAL now contains 1013 documents including
-..5 in Department collection
-..1002 in Employee collection
+  - 5 in Department collection
+  - 1002 in Employee collection
 
 ## Viewing the Data
 In Query Console, import the workspace XMI2ESHR.xml. In each tab, try the query to explore an aspect of the data.
