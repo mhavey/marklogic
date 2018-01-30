@@ -1,0 +1,66 @@
+<export><workspace name="XMI2ESMovies"><query name="Movie" focus="false" listorder="1" taborder="2" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all movies
+-- Run this against your movie content DB
+
+select * from Movie</query><query name="Parental" focus="false" listorder="2" taborder="3" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all movie parental certs
+-- Run this against your movie content DB
+
+select Movie.movieId, Movie.releaseYear, Movie_parentalCerts.country, Movie_parentalCerts.currentCertificate 
+from Movie_parentalCerts
+inner join Movie
+on Movie_parentalCerts.movieId=Movie.movieId
+order by Movie.movieId</query><query name="Company and Filmography" focus="false" listorder="3" taborder="4" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all company contributors and their roles
+-- Run this against your movie content DB
+
+select * from CompanyContributor
+inner join Role 
+on CompanyContributor.contribId = Role.contribId</query><query name="Person and Filmography" focus="false" listorder="4" taborder="5" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all person contributors and their roles
+-- Run this against your movie content DB
+
+select Role.roleType, Role.movieId, 
+  PersonContributor.contribId, PersonContributor.dateOfBirth, PersonContributor.dateOfDeath, PersonContributor.placeOfBirth
+from Role
+inner join PersonContributor
+on Role.contribId = PersonContributor.contribId
+order by PersonContributor.contribId</query><query name="Person and Bios" focus="false" listorder="5" taborder="6" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all person contributors and their bios
+-- Run this against your movie content DB
+
+select PersonContributor.contribId, PersonContributor.dateOfBirth, PersonContributor.dateOfDeath, PersonContributor.placeOfBirth,
+  UserDocument.authorId, UserDocument.docText
+from PersonContributor
+inner join UserDocument
+on PersonContributor.contribId = UserDocument.contribId</query><query name="Movie and Docs" focus="false" listorder="6" taborder="7" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all movies and their user docs
+-- Run this against your movie content DB
+
+select Movie.movieId, Movie.releaseYear, UserDocument.authorId, UserDocument.docType, UserDocument.docSubType, UserDocument.docText 
+from UserDocument
+inner join Movie
+on UserDocument.movieId = Movie.movieId
+order by Movie.movieId</query><query name="Movie and Cast" focus="false" listorder="7" taborder="8" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="sql">-- SQL/TDE example
+-- Show all movies and cast
+-- Run this against your movie content DB
+
+select Role.contribClass, Role.roleType, Role.contribId, 
+  Movie.movieId, Movie.seriesId, Movie.seriesType, Movie.releaseYear from Movie
+inner join Role
+on Movie.movieId = Role.movieId
+order by Movie.movieId
+
+</query><query name="Movie Parentals and Cast" focus="true" listorder="8" taborder="1" active="true" database="4299235463214367939" server="2168730899507516481" database-name="xmi2es-examples-movies-content" server-name="xmi2es-examples-movies" mode="xquery">xquery version "1.0-ml";
+
+(:
+Shows sample documents. Choose a movie, then find its related parentals (contained) and roles (linked)
+Run this against your movie content database.
+:)
+
+let $movie := fn:doc("/xmi2es/imdb/movie/movies1.xml")
+let $cast := cts:search(fn:doc(), cts:and-query((
+  cts:collection-query("roles"),
+  cts:element-value-query(xs:QName("movieId"), $movie//movieId)
+)))
+return ("Movie", $movie, "Parental", $movie//ParentalCertificate, "Cast", $cast)</query></workspace></export>
