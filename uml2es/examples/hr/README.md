@@ -122,6 +122,7 @@ Here are the steps to setup.
 
   gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
 
+Confirm:
 - In STAGING we now have 2008 documents. Of these:
   - 1002 are in Employees collection
   - 1000 are in Salary collection
@@ -136,7 +137,7 @@ Here are the steps to setup.
   gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployee
 
   Confirm:
-- FINAL now contains 1013 documents including
+FINAL now contains 1013 documents including
   - 5 in Department collection
   - 1002 in Employee collection
 
