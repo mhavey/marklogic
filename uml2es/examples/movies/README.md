@@ -49,21 +49,21 @@ gradle -PenvironmentName=local -i ingestModel mlgen
 
 Confirm:
 - Content DB has the following documents
-../marklogic.com/entity-services/models/IMDBMoviePhysical.xml
-../xmi2es/es/IMDBMoviePhysical.xml
-../xmi2es/findings/IMDBMoviePhysical.xml
-../xmi2es/xmi/IMDBMoviePhysical.xml
+.. /marklogic.com/entity-services/models/IMDBMoviePhysical.xml
+.. /xmi2es/es/IMDBMoviePhysical.xml
+.. /xmi2es/findings/IMDBMoviePhysical.xml
+.. /xmi2es/xmi/IMDBMoviePhysical.xml
 
 - In gradle project we now have these files:
-..src/main/ml-config/databases/content-database-GENERATED.json
+.. src/main/ml-config/databases/content-database-GENERATED.json
 (Generated DB config with indexes specified in model. We will use this.)
-..src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
+.. src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
 (Generated instance converter. We need to tweak this a little. The finished product is included in the same folder: MovieModelPhysical-0.0.1.xqy)
-..src/main/ml-modules/options/MovieModelPhysical.xml
+.. src/main/ml-modules/options/MovieModelPhysical.xml
 (Generated search options.)
-..src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd
+.. src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd
 (Generated XML schema.)
-..src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex
+.. src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex
 (Generated TDE template. We need to tweak this a little. The finished product is includes in the same folder: MovieModelPhysical-0.0.1.tdex.)
 
 3. Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
@@ -80,12 +80,12 @@ gradle -PenvironmentName=local -i ingestMovie
 
 Confirm:
 - Content DB now has the movie documents. Check the totals per collection. 
-..bios:2
-..companies:1
-..movies:5
-..movieDocs:2
-..persons:3
-..roles:12
+.. bios:2
+.. companies:1
+.. movies:5
+.. movieDocs:2
+.. persons:3
+.. roles:12
 
 If your count is different, it might be because you have two TDE templates. Go back to step 3 and confirm the results.
 
