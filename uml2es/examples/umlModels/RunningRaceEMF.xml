@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile="http:///schemas/MarkLogicEntityServicesProfile/_SggTYK1YEeeNzJiF6i6qgw/0" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/2.1.0/UML" xsi:schemaLocation="http:///schemas/MarkLogicEntityServicesProfile/_SggTYK1YEeeNzJiF6i6qgw/0 MLProfile.profile.uml#_SgnB361YEeeNzJiF6i6qgw">
+<xmi:XMI xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore MLProfile.profile.uml#_duYVkCJtEeiC5PW0Q-4VWg">
   <uml:Model xmi:id="_d_YQcK0WEeewJ5KTVWTb5w" name="RunningRaceEMF">
     <elementImport xmi:id="_IzJJIK1LEeewJ5KTVWTb5w" alias="Boolean">
       <importedElement xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
@@ -15,13 +15,7 @@
     </elementImport>
     <packagedElement xmi:type="uml:Package" xmi:id="_QO_0UK0XEeewJ5KTVWTb5w" name="RunningRaceEMF">
       <packagedElement xmi:type="uml:Class" xmi:id="_6-1M4K0XEeewJ5KTVWTb5w" name="Runner">
-        <ownedComment xmi:id="_9hRfMK09EeewJ5KTVWTb5w">
-          <body>a nice comment about the class</body>
-        </ownedComment>
         <ownedAttribute xmi:id="_e1nC8K0YEeewJ5KTVWTb5w" name="name">
-          <ownedComment xmi:id="_BffoQK0-EeewJ5KTVWTb5w">
-            <body>a nice comment about the attribute</body>
-          </ownedComment>
           <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
         </ownedAttribute>
         <ownedAttribute xmi:id="_PdksgK0ZEeewJ5KTVWTb5w" name="age">
@@ -49,12 +43,13 @@
         </ownedAttribute>
         <ownedAttribute xmi:id="_NwQhMK08EeewJ5KTVWTb5w" name="date"/>
         <ownedAttribute xmi:id="_UL_OgK08EeewJ5KTVWTb5w" name="distance">
-          <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+          <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Real"/>
         </ownedAttribute>
         <ownedAttribute xmi:id="_YhjgkK08EeewJ5KTVWTb5w" name="distanceLabel">
           <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
         </ownedAttribute>
         <ownedAttribute xmi:id="_idy0UK1JEeewJ5KTVWTb5w" name="runByRunner" association="_achskK1JEeewJ5KTVWTb5w"/>
+        <ownedAttribute xmi:id="_q-RYQCLUEeiQiuF2YDo00Q" name="duration"/>
       </packagedElement>
       <packagedElement xmi:type="uml:Association" xmi:id="_oPHkoK1HEeewJ5KTVWTb5w" name="A_comprisedOfRuns" memberEnd="_q349sK1HEeewJ5KTVWTb5w _x9OBoK1HEeewJ5KTVWTb5w">
         <ownedEnd xmi:id="_q349sK1HEeewJ5KTVWTb5w" type="_HMA7cK0YEeewJ5KTVWTb5w" association="_oPHkoK1HEeewJ5KTVWTb5w"/>
@@ -68,21 +63,22 @@
     </packagedElement>
     <profileApplication xmi:id="_l0hl8K1REeewJ5KTVWTb5w">
       <eAnnotations xmi:id="_l0iNAK1REeewJ5KTVWTb5w" source="http://www.eclipse.org/uml2/2.0.0/UML">
-        <references xmi:type="ecore:EPackage" href="MLProfile.profile.uml#_SgnB361YEeeNzJiF6i6qgw"/>
+        <references xmi:type="ecore:EPackage" href="MLProfile.profile.uml#_duYVjSJtEeiC5PW0Q-4VWg"/>
       </eAnnotations>
       <appliedProfile href="MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
     </profileApplication>
   </uml:Model>
-  <MarkLogicEntityServicesProfile:PK xmi:id="_0JwmIK1REeewJ5KTVWTb5w" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:PK xmi:id="_LpYSQK1SEeewJ5KTVWTb5w" base_Property="_KNdQMK05EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:mlProperty xmi:id="_PKmWQK1SEeewJ5KTVWTb5w" mlType="float" base_Property="_N9HY0K05EeewJ5KTVWTb5w" externalRef=""/>
-  <MarkLogicEntityServicesProfile:mlModel xmi:id="_y3nMUK1SEeewJ5KTVWTb5w" version="0.0.1" baseUri="" base_Package="_QO_0UK0XEeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:rangeIndex xmi:id="_QpuKMK1TEeewJ5KTVWTb5w" indexType="lexicon" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:rangeIndex xmi:id="_YTBd4K1TEeewJ5KTVWTb5w" base_Property="_idy0UK1JEeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:PK xmi:id="_g04KMK1TEeewJ5KTVWTb5w" base_Property="_HabAgK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:rangeIndex xmi:id="_jOqsEK1TEeewJ5KTVWTb5w" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:mlProperty xmi:id="_jOqsEa1TEeewJ5KTVWTb5w" mlType="date" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:rangeIndex xmi:id="_myD6UK1TEeewJ5KTVWTb5w" base_Property="_UL_OgK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:mlProperty xmi:id="_myEhYK1TEeewJ5KTVWTb5w" mlType="dayTimeDuration" base_Property="_UL_OgK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile:rangeIndex xmi:id="_r7UTIK1TEeewJ5KTVWTb5w" base_Property="_YhjgkK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_G1-UYCLUEeiQiuF2YDo00Q" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_I20KwCLUEeiQiuF2YDo00Q" base_Property="_KNdQMK05EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_LG6lICLUEeiQiuF2YDo00Q" base_Property="_HabAgK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_UeweQCLUEeiQiuF2YDo00Q" indexType="lexicon" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_iNffICLUEeiQiuF2YDo00Q" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_jyZAYCLUEeiQiuF2YDo00Q" base_Property="_UL_OgK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_ljvpQCLUEeiQiuF2YDo00Q" base_Property="_YhjgkK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_xPUfkCLUEeiQiuF2YDo00Q" base_Property="_q-RYQCLUEeiQiuF2YDo00Q"/>
+  <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_6fKTQCLUEeiQiuF2YDo00Q" mlType="date" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_DP4iACLVEeiQiuF2YDo00Q" mlType="dayTimeDuration" base_Property="_q-RYQCLUEeiQiuF2YDo00Q" externalRef=""/>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_WvmDACLVEeiQiuF2YDo00Q" prefix="rn" base_Class="_6-1M4K0XEeewJ5KTVWTb5w" url="http://org.jude.athletes.runners"/>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_g0ZIwCLVEeiQiuF2YDo00Q" version="0.0.1" baseUri="http://com.marklogic.es.umldemo.race" base_Package="_d_YQcK0WEeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_g0ZIwSLVEeiQiuF2YDo00Q" prefix="r" base_Package="_d_YQcK0WEeewJ5KTVWTb5w" url="http://com.marklogic.es.umldemo.race"/>
 </xmi:XMI>
