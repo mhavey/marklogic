@@ -26,7 +26,7 @@ If you were to start from scratch, you would follow this recipe:
 - From the Entity Services model, generate the instance converter and TDE template.
 - Tweak the instance converter to propertly map source fields to model fields. 
 - Tweak the TDE template to adjust the views as needed.
-- In your gradle build file, add MLCP tasks to ingest department and employee data. 
+- In your gradle build file, add MLCP tasks to ingest movie data. 
 
 ## How to run:
 
@@ -55,22 +55,22 @@ gradle -PenvironmentName=local -i ingestModel mlgen
 
 Confirm:
 - Content DB has the following documents
-  - /marklogic.com/entity-services/models/IMDBMoviePhysical.xml
-  - /xmi2es/es/IMDBMoviePhysical.xml
-  - /xmi2es/findings/IMDBMoviePhysical.xml
-  - /xmi2es/xmi/IMDBMoviePhysical.xml
+  - /marklogic.com/entity-services/models/IMDBMovie.xml
+  - /xmi2es/es/IMDBMovie.xml
+  - /xmi2es/findings/IMDBMovie.xml
+  - /xmi2es/xmi/IMDBMovie.xml
 
 - In gradle project we now have these files:
   - src/main/ml-config/databases/content-database-GENERATED.json
 (Generated DB config with indexes specified in model. We will use this.)
-  - src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
-(Generated instance converter. We need to tweak this a little. The finished product is included in the same folder: MovieModelPhysical-0.0.1.xqy)
-  - src/main/ml-modules/options/MovieModelPhysical.xml
+  - src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy
+(Generated instance converter. We need to tweak this a little. The finished product is included in the same folder: MovieModel-0.0.1.xqy)
+  - src/main/ml-modules/options/MovieModel.xml
 (Generated search options.)
-  - src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd
+  - src/main/ml-schemas/MovieModel-0.0.1.xsd
 (Generated XML schema.)
-  - src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex
-(Generated TDE template. We need to tweak this a little. The finished product is includes in the same folder: MovieModelPhysical-0.0.1.tdex.)
+  - src/main/ml-schemas/tde/MovieModel-0.0.1-GENERATED.tdex
+(Generated TDE template. We need to tweak this a little. The finished product is includes in the same folder: MovieModel-0.0.1.tdex.)
 
 ### Deploy
 Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
@@ -81,7 +81,7 @@ gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDepl
 
 Confirm:
 - Content DB now has element range indexes
-- Schemas DB has ONLY ONE tdex document: /MovieModelPhysical-0.0.1.tdex
+- Schemas DB has ONLY ONE tdex document: /MovieModel-0.0.1.tdex
 
 ### Ingest
 Ingest movie data based on the model

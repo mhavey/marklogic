@@ -235,8 +235,8 @@ task useGeneratedDBConfig(type: Copy) {
 }
 
 task deleteGeneratedTDE(type: Delete) {
-    delete "src/main/ml-schemas/tde/MovieModelPhysical-0.0.1.tdex"
-    delete "src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex"
+    delete "src/main/ml-schemas/tde/MovieModel-0.0.1.tdex"
+    delete "src/main/ml-schemas/tde/MovieModel-0.0.1-GENERATED.tdex"
 }
 
 task includeXMI2ESTransform(type: Copy) {
@@ -276,7 +276,7 @@ task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 task copyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/IMDBMoviePhysical.xml"
+    from "data/entity-services-dump/xmi2es/es/IMDBMovie.xml"
     into "data/entity-services" 
 }
 
@@ -289,8 +289,8 @@ task clearGenerated(type: Delete) {
   dependsOn 'deleteGeneratedTDE'
   delete "src/main/ml-config/databases/content-database.json"
   delete "src/main/ml-config/databases/content-database-GENERATED.json"
-  delete "src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy"
-  delete "src/main/ml-modules/options/MovieModelPhysical.xml"
+  delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy"
+  delete "src/main/ml-modules/options/MovieModel.xml"
 }
 
 task ingestModel() {
