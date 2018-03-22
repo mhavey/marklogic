@@ -62,160 +62,39 @@ dependencies {
   mlcp files("lib")
 }
 
-
-task loadMovies(type: com.marklogic.gradle.task.MlcpTask) {
+task loadMaterial(type: com.marklogic.gradle.task.MlcpTask) {
   def dataDir = "${projectDir}";
   def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/movies";
+  def regexDir = unixDir+"/data/blockfactory/" + entityType;
   def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
   database = mlAppConfig.contentDatabaseName
   document_type = "json"
-  input_file_path = "data/movie/fictional/movies"
+  input_file_path = "data/blockfactory/" + entityType
   input_file_type = "documents"
   output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/movie/"
+  output_uri_prefix = "/xmi2es/block/" + entityType + "/"
   output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,movies"
+  output_collections = "xmi2es,block," + entityType
   output_permissions = "rest-reader,read,rest-writer,update"
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "movie"
-
-  logOutputUri = "/mlcp/log/movies.txt"
+  transform_module = "/xmi2es/loadBlockFactoryTransformation.xqy"
+  transform_namespace ="http://marklogic.com/xmi2es/blockfactory"
+  transform_param = entityType
 }
 
-task loadMovieDocs(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/movieDocs";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
 
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/movieDocs"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/movieDoc/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,movieDocs"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "doc"
-}
-
-task loadBios(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/bios";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/bios"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/bio/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,bios"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "doc"
-}
-
-task loadPersonContribs(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/persons";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/persons"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/person/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,persons"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "person"
-}
-
-task loadCompanyContribs(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/companies";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/companies"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/company/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,companies"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "company"
-}
-
-task loadRoles(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/roles";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/roles"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/role/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,roles"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "role"
-}
-
+// TODO - parameterize this...
 task ingestBlockFactory() {
-  dependsOn 'loadMovies'
-  dependsOn 'loadMovieDocs'
-  dependsOn 'loadPersonContribs'
-  dependsOn 'loadCompanyContribs'
-  dependsOn 'loadRoles'
-  dependsOn 'loadBios'
+  dependsOn 'loadMaterial'
+  dependsOn 'loadColor'
+  dependsOn 'loadClient'
+  dependsOn 'loadBlock'
+  dependsOn 'loadModel'
+  dependsOn 'loadCustom'
 }
 
 task useInitialDBConfig(type: Copy) {
