@@ -155,10 +155,6 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 	let $attribsJson := json:object()
 	let $classJson := json:object()
 	let $allAttribs := $class/attributes/Attribute
-
-	(: TODO - what if those ends are FK? What if they have an external or ml-type override? :
-	My hope is that then, when transforming the attrib, we fix that aspect of it :)
-
 	let $assocClassAttribs := 
 		for $end in $class/associationClass/end return 
 			$profileForm/classes/Class[@name eq $end/@class]/attributes/Attribute[@name eq $end/@attribute] 
@@ -171,11 +167,11 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 	let $semIRIs := $class/semIRIs/item/text()
 	let $semLabels := $class/semLabels/item/text()
 	let $semProperties := $allAttribs[string-length(semProperty) gt 0]
-	let $pks := $class/pks/item/text()[. ne $excludes/@name]
+	let $pks := $class/pks/item/text()[. eq $includes/@name]
 	let $requireds := $includes[@required eq true()]/@name
-	let $paths := $includes[string(@rangeIndex) eq "path"]/@name
-	let $elements :=$includes[string(@rangeIndex) eq "element"]/@name
-	let $lexicons := $includes[string(@rangeIndex) eq "lexicon"]/@name
+	let $paths := $includes[string(rangeIndex) eq "path"]/@name
+	let $elements :=$includes[string(rangeIndex) eq "element"]/@name
+	let $lexicons := $includes[string(rangeIndex) eq "lexicon"]/@name
 	let $invalidRangeIndexes := $allAttribs[string-length(rangeIndex/text()) gt 0 
   		and not(rangeIndex/text() eq ("element", "path", "lexicon"))]
 
