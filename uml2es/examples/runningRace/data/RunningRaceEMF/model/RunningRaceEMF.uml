@@ -32,8 +32,10 @@
         </ownedAttribute>
         <ownedAttribute xmi:id="_N9HY0K05EeewJ5KTVWTb5w" name="courseLength">
           <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Real"/>
+          <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_KSb5kDZvEeimX703JIPfkQ"/>
         </ownedAttribute>
         <ownedAttribute xmi:id="_x9OBoK1HEeewJ5KTVWTb5w" name="comprisedOfRuns" aggregation="composite" association="_oPHkoK1HEeewJ5KTVWTb5w">
+          <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_JqskIDZvEeimX703JIPfkQ"/>
           <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_0sPMoK1HEeewJ5KTVWTb5w" value="*"/>
         </ownedAttribute>
         <ownedAttribute xmi:id="_L8ni4K1IEeewJ5KTVWTb5w" name="wonByRunner" association="_CKF44K1IEeewJ5KTVWTb5w"/>

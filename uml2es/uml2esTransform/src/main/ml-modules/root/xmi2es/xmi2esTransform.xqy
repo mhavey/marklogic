@@ -57,16 +57,16 @@ declare function xmi2es:transform(
 
   let $modelDescMap := map:new((
     map:entry("uri", concat("/xmi2es/es/", $docName, ".json")),
-    map:entry("value", $transformResult[1])
+    map:entry("value", xdmp:to-json($transformResult[1]))
   ))
   let $findingsMap := map:new((
     map:entry("uri", concat("/xmi2es/findings/", $docName, ".xml")),
-    map:entry("value", transformResult[3])
+    map:entry("value", $transformResult[3])
   ))
   let $valMap := 
     if (count($transformResult[4]) eq 1) then map:new((
       map:entry("uri", concat("/xmi2es/esval/", $docName, ".xml")),
-      map:entry("value", transformResult[4])
+      map:entry("value", $transformResult[4])
     ))
     else ()
   let $xmodel := $transformResult[2]
@@ -74,19 +74,19 @@ declare function xmi2es:transform(
   let $extensionTurtleMap := 
     if (count($extensions) eq 2) then map:new((
       map:entry("uri", concat("/xmi2es/extension/", $docName, ".ttl")),
-      map:entry("value", $extensions[1])
+      map:entry("value", text { $extensions[1] })
     ))
     else ()
   let $extensionCommentMap := 
     if (count($extensions) eq 2) then map:new((
       map:entry("uri", concat("/xmi2es/extension/", $docName, ".txt")),
-      map:entry("value", $extensions[2])
+      map:entry("value", text{ $extensions[2] })
     ))
     else ()
   let $semCode := xes:generateSEMCode($xmodel)
   let $semGenMap := if (count($semCode) eq 1) then map:new((
       map:entry("uri", concat("/xmi2es/semgen/", $docName, ".txt")),
-      map:entry("value", $semCode)
+      map:entry("value", text { $semCode } )
     ))
     else ()
 

@@ -1,0 +1,94 @@
+<export><workspace name="XMI2ESRunningRace"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3579908077109269246" server="6770558193057240745" database-name="xmi2es-examples-runningRace-content" server-name="xmi2es-examples-runningRace" mode="javascript">'use strict';
+
+//
+// Compare magic and EMF running race models. Handle classes or attribs in any order. Ignore descriptions.
+//
+
+function compare(magic, emf) {
+  var info = compareInfo(magic.info, emf.info);
+  if (info != "") return info;
+  
+  var magicClasses = [];
+  var emfClasses = [];
+  for (var a in magic.definitions) {
+    if (magic.definitions.hasOwnProperty(a)) {
+      magicClasses.push(a);
+    }
+  }
+  for (var a in emf.definitions) {
+    if (emf.definitions.hasOwnProperty(a)) {
+      emfClasses.push(a);
+    }
+  }
+  var classes = magicClasses.sort();
+  if (classes.join() != emfClasses.sort().join()) {
+    return "classes";
+  }
+  for (var i = 0; i &lt; classes.length; i++) {
+    var diff = compareClass(magic.definitions[classes[i]], emf.definitions[classes[i]]);
+    if (diff != "") return classes[i] + " " + diff;
+  }
+  
+  return "";
+}
+function compareInfo(magicInfo, emfInfo) {
+  var fields = ["version", "baseUri"];
+  for (var f = 0; f &lt; fields.length; f++) {
+    if (""+ magicInfo[fields[f]] != "" + emfInfo[fields[f]]) return fields[f];
+  }
+  return "";  
+}
+
+function compareClass(magicClass, emfClass) {
+  var fields = ["primaryKey", "namespace", "namespacePrefix"];
+  var arrays = ["required", "wordLexicon", "elementRangeIndex", "pathRangeIndex"];
+
+  for (var f = 0; f &lt; fields.length; f++) {
+    if (""+ magicClass[fields[f]] != "" + emfClass[fields[f]]) return fields[f];
+  }
+  for (var a = 0; a &lt; arrays.length; a++) {
+    if (!magicClass[arrays[a]] &amp;&amp; emfClass[arrays[a]]) return arrays[i] + " magic nodef"; 
+    if (magicClass[arrays[a]] &amp;&amp; !emfClass[arrays[a]]) return arrays[i] + " emf nodef"; 
+    if (magicClass[arrays[a]] &amp;&amp; emfClass[arrays[a]]) {
+        if (magicClass[arrays[a]].sort().join() != emfClass[arrays[a]].sort().join()) {
+          return arrays[a] + " diff";
+        }
+    }
+  }
+
+  var magicAttribs = [];
+  var emfAttribs = [];
+  for (var a in magicClass.properties) {
+    if (magicClass.properties.hasOwnProperty(a)) {
+      magicAttribs.push(a);
+    }
+  }
+  for (var a in emfClass.properties) {
+    if (emfClass.properties.hasOwnProperty(a)) {
+      emfAttribs.push(a);
+    }
+  }
+  var attribs = magicAttribs.sort();
+  if (attribs.join() != emfAttribs.sort().join()) {
+    return "attribs";
+  }
+  
+  for (var i = 0; i &lt; attribs.length; i++) {
+    var diff = compareAttrib(magicClass.properties[attribs[i]], emfClass.properties[attribs[i]]);
+    if (diff != "") return attribs[i] + " " + diff;
+  }
+  
+  return "";  
+}
+
+function compareAttrib(magicAttrib, emfAttrib) {
+  delete magicAttrib.description;
+  delete emfAttrib.description;
+  if (JSON.stringify(magicAttrib) != JSON.stringify(emfAttrib)) return "diff";
+  return "";
+}
+
+var magic = cts.doc("/xmi2es/es/RunningRace.json").toObject();
+var emf = cts.doc("/xmi2es/es/RunningRaceEMF.json").toObject();
+"Differences: " + compare(magic, emf);
+</query></workspace></export>
