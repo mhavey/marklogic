@@ -311,7 +311,9 @@
       </ownedEnd>
     </packagedElement>
     <packagedElement xmi:type="uml:Stereotype" xmi:id="_18_5_2_8c5028b_1506442601753_594892_4700" name="PK" visibility="public">
-      <ownedComment xmi:id="_18_5_2_8c5028b_1520185094107_904628_5131" annotatedElement="_18_5_2_8c5028b_1506442601753_594892_4700" body="per class 0..1"/>
+      <ownedComment xmi:id="_18_5_2_8c5028b_1520185094107_904628_5131" annotatedElement="_18_5_2_8c5028b_1506442601753_594892_4700">
+        <body>per class 0..1</body>
+      </ownedComment>
       <ownedAttribute xmi:id="_18_5_2_8c5028b_1506530744184_764112_5077" name="base_Property" visibility="private" association="_18_5_2_8c5028b_1506530744184_41890_5076">
         <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Property"/>
       </ownedAttribute>
