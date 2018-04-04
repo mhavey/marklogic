@@ -237,7 +237,7 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 		for $a in $semProperties return (
 			let $isIRI := $a/@typeIsReference eq true()
 			let $fieldSource := 
-				if ($a/excludes/text() eq true()) then concat('map:get($options, "', $a/@name, '")')
+				if ($a/exclude/text() eq true()) then concat('map:get($options, "', $a/@name, '")')
 				else concat('$content/', $a/@name)
 			return (
 				xes:addFact($xes, concat($classIRI, "/", $a/@name), $IRI-SEM-PROPERTY, $a/semProperty/text(), $isIRI),

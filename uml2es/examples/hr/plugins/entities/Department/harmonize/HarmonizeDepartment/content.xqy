@@ -22,5 +22,5 @@ declare function plugin:create-content(
   $options as map:map) as node()?
 {
   let $doc := fn:doc($id)
-  return hR:instance-to-canonical(hR:extract-instance-Department($doc/es:envelope/es:instance), "xml")
+  return hR:instance-to-canonical(hR:extract-instance-Department($doc/es:envelope/es:instance, $options), "xml")
 };

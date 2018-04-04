@@ -67,9 +67,9 @@ task includeXMI2ESTransform(type: Copy) {
 }
 
 task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def xmiDir = "../umlModels"
-  def regexDir = "/Users/mhavey/Documents/mike/dev/mbo_modeling/fy18q1/git/marklogic/uml2es/examples/umlModels/"
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"

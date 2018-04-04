@@ -196,20 +196,19 @@ task runInputMLCP() {
 }
 
 task includeXMI2ESTransform(type: Copy) {
-    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es/loadXMITransformation.xqy"
+    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "plugins/xmi2es"
 }
 
 task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/xmi";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = "data/xmi"
+  input_file_path = xmiDir + "/DHFEmployeeSample.xml"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
@@ -217,16 +216,18 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   output_collections = "xmi2es"
   host = mlHost
   port = mlFinalPort.toInteger()
+
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = "dummy"
 }
 
+
 task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/entity-services-dump"
-  directory_filter = "/xmi2es/es/"
+  collection_filter = "xmi2es"
   host = mlHost
   port = mlFinalPort.toInteger()
 }
@@ -236,8 +237,13 @@ task deleteESDump(type: Delete) {
 }
 
 task copyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/DHFEmployeeSample.xml"
+    from "data/entity-services-dump/xmi2es/es/DHFEmployeeSample.json"
     into "data/entity-services" 
+}
+
+task copyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension/DHFEmployeeSample.ttl"
+    into "data/entity-services-extension" 
 }
 
 task ingestModel() {
@@ -245,14 +251,29 @@ task ingestModel() {
   dependsOn 'loadXMI'
   dependsOn 'fetchDescriptors'
   dependsOn 'copyES'
+  dependsOn 'copyESExt'
   tasks.findByName('loadXMI').mustRunAfter 'deleteESDump'
   tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
   tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
+  tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
 }
 
 task clearGenerated(type: Delete) {
   dependsOn 'deleteESDump'
+  delete 'user-config/schemas'
   delete "src/main"
+}
+
+task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlFinalPort.toInteger()
+  database = mlFinalDbName
+
+  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_type = "rdf" 
+  output_uri_prefix = "/triplestore"
 }
 
 task workaroundDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
@@ -263,7 +284,7 @@ task workaroundDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
 
   classpath = configurations.mlcp
   command = "IMPORT"
-  document_type = "xml"
+  document_type = "json"
   input_file_path = "data/entity-services"
   input_file_type = "documents"
   output_uri_replace = regex
