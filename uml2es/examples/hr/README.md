@@ -102,9 +102,12 @@ gradle -PenvironmentName=local -i clearGenerated includeXMI2ESTransform mlDeploy
 
 Confirm:
 - Modules DB has these modules
-  * /xmi2es/extender.xqy
-  * /xmi2es/problemTracker.xqy
-  * /xmi2es/xmi2esTransform.xqy
+  * /xmi2es/extender.xqy - Common XMI-to-ES transform
+  * /xmi2es/problemTracker.xqy - Common XMI-to-ES transform
+  * /xmi2es/xmi2esTransform.xqy - Common XMI-to-ES transform
+  * /ext/entity-services/HR-0.0.1.xqy - HR conversion modules ("already cooked")
+  * /entities/Employee* - DHF Employee input and harmonization flows
+  * /entities/Department* - DHF Department input and harmonization flows
 - Staging, Final, Schemas databases are empty
 - No documents having URI containing GENERATED in modules, FINAL, STAGING, or schemas DB.
 
@@ -148,20 +151,20 @@ Confirm:
 
 - In Query Console, open a tab of type SPARQL, point to the FINAL DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
 
-select * where {?s ?o ?p} --- TODO and check that our extensions are there also 
+select * where {?s ?o ?p} 
 
 Among the results, you should see the following:
 - <http://com.marklogic.es.uml.hr/HR-0.0.1/Department/departmentId> <http://marklogic.com/entity-services#datatype> <http://www.w3.org/2001/XMLSchema#int> - From basic ES model
 - <http://com.marklogic.es.uml.hr/HR-0.0.1/Department>  <http://marklogic.com/xmi2es/xes/semIRI>  "deptIRI" - From the extended ES model
 
 - In gradle project, check for these newly generated files:
-  * src/main/ml-modules/ext/entity-services/HR-0.0.1.xqy
+  * src/main/ml-modules/ext/entity-services/HR-0.0.1-GENERATED.xqy
   * src/main/ml-modules/options/HR.xml
   * user-config/databases/content-database.json
   * user-config/schemas/HR-0.0.1.xsd
   * user-config/schemas/tde/HR-0.0.1.tdex
 
-  We won't use any of these artifacts in this demo. The code already contains a tweaked version of HR-0.0.1.xqy in /plugins/ext/entity-services. Because we won't use these artifacts, we don't need to reload our schemas or modules.
+We won't use any of these artifacts in this demo. The code already contains a tweaked version of HR-0.0.1.xqy in /plugins/ext/entity-services. Because we won't use these artifacts, we don't need to reload our schemas or modules.
 
 ### Ingest
 Ingest staging data and some triples for FINAL	

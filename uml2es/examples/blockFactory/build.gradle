@@ -62,72 +62,50 @@ dependencies {
   mlcp files("lib")
 }
 
-task loadMaterial(type: com.marklogic.gradle.task.MlcpTask) {
+task ingestBlockData
+["client", "color", "material", "block", "model", "custom"].each { entityType ->
+   task "ingestEntity${entityType}"(type: com.marklogic.gradle.task.MlcpTask) {
+
   def dataDir = "${projectDir}";
   def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/blockfactory/" + entityType;
+  def regexDir = unixDir+"/data/blockfactory/${entityType}"
   def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
   database = mlAppConfig.contentDatabaseName
   document_type = "json"
-  input_file_path = "data/blockfactory/" + entityType
+  input_file_path = "data/blockfactory/${entityType}"
   input_file_type = "documents"
   output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/block/" + entityType + "/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,block," + entityType
+  output_uri_prefix = "/xmi2es/blockFactory/${entityType}/"
+  output_uri_suffix = ".json"
+  output_collections = "xmi2es,blockFactory"
   output_permissions = "rest-reader,read,rest-writer,update"
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
   transform_module = "/xmi2es/loadBlockFactoryTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/blockfactory"
-  transform_param = entityType
-}
+  transform_namespace ="http://marklogic.com/xmi2es/blockFactory"
+  transform_param = "${entityType}"
 
-
-// TODO - parameterize this...
-task ingestBlockFactory() {
-  dependsOn 'loadMaterial'
-  dependsOn 'loadColor'
-  dependsOn 'loadClient'
-  dependsOn 'loadBlock'
-  dependsOn 'loadModel'
-  dependsOn 'loadCustom'
-}
-
-task useInitialDBConfig(type: Copy) {
-    from "src/main/ml-config/databases/initial/content-database-INITIAL.json"
-    into "src/main/ml-config/databases"
-    rename { String fileName ->
-        fileName.replace('-INITIAL', '')
-    }
-}
-
-task useGeneratedDBConfig(type: Copy) {
-    from "src/main/ml-config/databases/content-database-GENERATED.json"
-    into "src/main/ml-config/databases"
-    rename { String fileName ->
-        fileName.replace('-GENERATED', '')
-    }
+   } 
+   ingestBlockData.dependsOn "ingestEntity${entityType}"
 }
 
 task includeXMI2ESTransform(type: Copy) {
-    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es/loadXMITransformation.xqy"
+    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "src/main/ml-modules/root/xmi2es"
 }
 
 task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/xmi";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = "data/xmi"
+  input_file_path = xmiDir + "/BlockFactory.xml"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
@@ -135,36 +113,34 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   output_collections = "xmi2es"
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadXMITransformation.xqy"
+
+  transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = "dummy"
 }
+
 
 task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/entity-services-dump"
-  directory_filter = "/xmi2es/es/"
+  collection_filter = "xmi2es"
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
-}
-
-task copyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/BlockFactory.xml"
-    into "data/entity-services" 
 }
 
 task deleteESDump(type: Delete) {
     delete "data/entity-services-dump"
 }
 
-task clearGenerated(type: Delete) {
-  dependsOn 'deleteESDump'
-  dependsOn 'deleteGeneratedTDE'
-  delete "src/main/ml-config/databases/content-database.json"
-  delete "src/main/ml-config/databases/content-database-GENERATED.json"
-  delete "src/main/ml-modules/ext/entity-services/BlockFactory-0.0.1-GENERATED.xqy"
-  delete "src/main/ml-modules/options/BlockFactory.xml"
+task copyES(type: Copy) {
+    from "data/entity-services-dump/xmi2es/es/BlockFactory.json"
+    into "data/entity-services" 
+}
+
+task copyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension/BlockFactory.ttl"
+    into "data/entity-services-extension" 
 }
 
 task ingestModel() {
@@ -172,18 +148,36 @@ task ingestModel() {
   dependsOn 'loadXMI'
   dependsOn 'fetchDescriptors'
   dependsOn 'copyES'
+  dependsOn 'copyESExt'
   tasks.findByName('loadXMI').mustRunAfter 'deleteESDump'
   tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
   tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
+  tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
 }
 
-task DELETELATER_Dump(type: com.marklogic.gradle.task.MlcpTask) {
+task clearGenerated(type: Delete) {
+  dependsOn 'deleteESDump'
+  delete "src/main/ml-modules/ext/entity-services/BlockFactory-0.0.1-GENERATED.xqy"
+}
+
+task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
-  command = "EXPORT"
-  output_file_path = "data/blockfactory"
-  collection_filter = "block"
-  host = "localhost"
-  port = 8000
-  database = "Documents"
+  command = "IMPORT"
+  host = mlAppServicesHost
+  port = mlAppServicesPort.toInteger()
+
+  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_type = "rdf" 
+  output_uri_prefix = "/triplestore"
+}
+
+ext {   
+  mlAppConfig {
+    generateInstanceConverter=true
+    generateSchema=false
+    generateDatabaseProperties=false
+    generateExtractionTemplate=false
+    generateSearchOptions=false
+  }
 }
 

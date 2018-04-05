@@ -155,10 +155,6 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 	let $attribsJson := json:object()
 	let $classJson := json:object()
 	let $allAttribs := $class/attributes/Attribute
-	let $assocClassAttribs := 
-		for $end in $class/associationClass/end return 
-			$profileForm/classes/Class[@name eq $end/@class]/attributes/Attribute[@name eq $end/@attribute] 
-	let $childAttribs := ($allAttribs, $assocClassAttribs)
 	let $excludes := $allAttribs[exclude/text() eq true()]
 	let $includes := $allAttribs[exclude/text() eq false()]
 	let $xBizKeys := $class/xBizKeys/item/text()
@@ -233,7 +229,6 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 			json:array-push($semLines, ",")
 		),
 
-		(:TODO - if excluded, use option; determine if property is IRI or not :)
 		for $a in $semProperties return (
 			let $isIRI := $a/@typeIsReference eq true()
 			let $fieldSource := 
@@ -274,7 +269,7 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 			if (count($paths) gt 0) then map:put($classJson, "pathRangeIndex", json:to-array($paths)) else (),
 			if (count($elements) gt 0) then map:put($classJson, "elementRangeIndex", json:to-array($elements)) else (),
 			if (count($lexicons) gt 0) then map:put($classJson, "wordLexicon", json:to-array($lexicons)) else (),
-			for $attrib in $childAttribs return 
+			for $attrib in $allAttribs return 
 				xes:transformAttribute($xes, $profileForm, $class, $attrib, $attribsJson)
 		)
 };

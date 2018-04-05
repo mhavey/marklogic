@@ -275,7 +275,10 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
       let $assocClassEnds := 
         if ($associationClass eq true()) then
           let $attribs := $xmi//*:ownedAttribute[@*:association eq $classID]
-          for $a in $attribs return <end attribute="{normalize-space($a/@name)}" class="{normalize-space($a/../@name)}"/>
+          for $a in $attribs return 
+            <end attribute="{normalize-space($a/@name)}" 
+            class="{normalize-space($a/../@name)}" 
+            FK="{exists($xmi/*/*:FK[@base_Property eq $a/@*:id])}"/>
         else ()
 
       let $inheritance := xmi2es:determineInheritance($xmi, $class, $classes, ())
@@ -307,10 +310,16 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
           <semLabels>{$inheritance/semLabels/item}</semLabels>
           <xBizKeys>{$inheritance/xBizKeys/item}</xBizKeys>
           <xURIs>{$inheritance/xURIs/item}</xURIs>
-          <attributes>{
+          <attributes>{(
+            (: Add the attributes. If assoc class, need one attrib for each end. :)
             for $attrib in $inheritance/attributes/* return 
-              xmi2es:buildAttribute($xmi, $class, $attrib, $problems)
-          }</attributes>
+              xmi2es:buildAttribute($xmi, $class, $attrib, $problems),
+            for $end in $assocClassEnds return 
+              <Attribute name="{concat("ref", $end/@class)}" type="{$end/@class}" 
+                array="false" required="true" typeIsReference="true">
+                <FK>{$end/@FK}</FK>
+              </Attribute> 
+          )}</attributes>
         </Class>
 };
 
