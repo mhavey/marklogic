@@ -317,7 +317,7 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
             for $end in $assocClassEnds return 
               <Attribute name="{concat("ref", $end/@class)}" type="{$end/@class}" 
                 array="false" required="true" typeIsReference="true">
-                <FK>{$end/@FK}</FK>
+                <FK>{string($end/@FK)}</FK>
               </Attribute> 
           )}</attributes>
         </Class>
