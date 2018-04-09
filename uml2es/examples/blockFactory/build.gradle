@@ -92,6 +92,13 @@ task ingestBlockData
    ingestBlockData.dependsOn "ingestEntity${entityType}"
 }
 
+tasks.findByName('ingestEntitymodel').mustRunAfter 'ingestEntityblock'
+tasks.findByName('ingestEntitymodel').mustRunAfter 'ingestEntitymaterial'
+tasks.findByName('ingestEntitymodel').mustRunAfter 'ingestEntitycolor'
+tasks.findByName('ingestEntitycustom').mustRunAfter 'ingestEntityblock'
+tasks.findByName('ingestEntitycustom').mustRunAfter 'ingestEntitymaterial'
+tasks.findByName('ingestEntitycustom').mustRunAfter 'ingestEntitycolor'
+
 task includeXMI2ESTransform(type: Copy) {
     from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "src/main/ml-modules/root/xmi2es"

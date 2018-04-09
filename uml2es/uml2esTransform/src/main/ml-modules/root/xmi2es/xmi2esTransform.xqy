@@ -8,7 +8,7 @@ import module namespace xes = "http://marklogic.com/xmi2es/extender" at "/xmi2es
 (: 
 Main xmi to ES descriptor function, Pass in XMI. Return descriptor,findings, ES validation status.
 :)
-declare function xmi2es:xmi2es($xmi as node()) {
+declare function xmi2es:xmi2es($xmi as node()) as map:map {
   let $problems := pt:init()
   let $xmodel := xes:init($problems)
   let $profileForm := xmi2es:buildModel($xmi, $problems)
@@ -32,8 +32,13 @@ declare function xmi2es:xmi2es($xmi as node()) {
         else()
 
       (: return the descriptor,findings, ES validation status :)
-      return 
-        ($descriptor, $xmodel, pt:dumpProblems($problems), $val)
+      return map:new((
+        if(exists($descriptor)) then map:entry("descriptor", $descriptor) else (),
+        if(exists($xmodel)) then map:entry("xmodel", $xmodel) else (),
+        if(exists($profileForm)) then map:entry("profileForm", $profileForm) else (),
+        if(exists($problems)) then map:entry("problems", pt:dumpProblems($problems)) else (),
+        if(exists($val)) then map:entry("esval", $val) else ()
+      ))
 };
 
 
@@ -55,22 +60,36 @@ declare function xmi2es:transform(
   let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".xml")
   let $transformResult := xmi2es:xmi2es($xmi)
 
-  let $modelDescMap := map:new((
-    map:entry("uri", concat("/xmi2es/es/", $docName, ".json")),
-    map:entry("value", xdmp:to-json($transformResult[1]))
-  ))
-  let $findingsMap := map:new((
-    map:entry("uri", concat("/xmi2es/findings/", $docName, ".xml")),
-    map:entry("value", $transformResult[3])
-  ))
-  let $valMap := 
-    if (count($transformResult[4]) eq 1) then map:new((
-      map:entry("uri", concat("/xmi2es/esval/", $docName, ".xml")),
-      map:entry("value", $transformResult[4])
-    ))
+  let $modelDescMap := 
+    if (map:contains($transformResult, "descriptor")) then
+      map:new((
+        map:entry("uri", concat("/xmi2es/es/", $docName, ".json")),
+        map:entry("value", xdmp:to-json(map:get($transformResult, "descriptor")))
+      ))
     else ()
-  let $xmodel := $transformResult[2]
-  let $extensions := xes:generateModelExtension($xmodel)
+  let $intermediateMap := 
+    if (map:contains($transformResult, "profileForm")) then
+      map:new((
+        map:entry("uri", concat("/xmi2es/intermediate/", $docName, ".xml")),
+        map:entry("value", map:get($transformResult, "profileForm"))
+      ))
+    else ()
+  let $findingsMap := 
+    if (map:contains($transformResult, "problems")) then
+      map:new((
+        map:entry("uri", concat("/xmi2es/findings/", $docName, ".xml")),
+        map:entry("value", map:get($transformResult, "problems"))
+      ))
+    else ()
+  let $valMap := 
+    if (map:contains($transformResult, "esval")) then
+      map:new((
+        map:entry("uri", concat("/xmi2es/esval/", $docName, ".xml")),
+        map:entry("value", map:get($transformResult, "esval"))
+      ))
+    else ()
+  let $xmodel := map:get($transformResult, "xmodel")
+  let $extensions := if (exists($xmodel)) then xes:generateModelExtension($xmodel) else ()
   let $extensionTurtleMap := 
     if (count($extensions) eq 2) then map:new((
       map:entry("uri", concat("/xmi2es/extension/", $docName, ".ttl")),
@@ -83,14 +102,14 @@ declare function xmi2es:transform(
       map:entry("value", text{ $extensions[2] })
     ))
     else ()
-  let $semCode := xes:generateSEMCode($xmodel)
+  let $semCode := if (exists($xmodel)) then xes:generateSEMCode($xmodel) else ()
   let $semGenMap := if (count($semCode) eq 1) then map:new((
       map:entry("uri", concat("/xmi2es/semgen/", $docName, ".txt")),
       map:entry("value", text { $semCode } )
     ))
     else ()
 
-  return ($content, $modelDescMap, $findingsMap, $valMap,
+  return ($content, $modelDescMap, $intermediateMap, $findingsMap, $valMap,
     $extensionTurtleMap, $extensionCommentMap, $semGenMap) 
 };
 
@@ -148,12 +167,14 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
   let $isRequired := not(exists($attrib/lowerValue))
   let $relationship := ($attrib/@*:aggregation, if (exists($attrib/@*:association)) then "association" else ())[1]
   let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
+  let $associationClass := $xmi//packagedElement[@*:id eq $attrib/@*:association]/@name  
   let $type := ($attrib/*:type/@href, 
     $xmi//*:packagedElement[@*:id eq $attrib/@type]/@name, 
     $xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name)[1]
   return 
     <Attribute name="{$attribName}" id="{$attribID}" array="{$isArray}" required="{$isRequired}" 
-      type="{$type}" typeIsReference="{$typeIsReference}" relationship="{$relationship}">
+      type="{$type}" typeIsReference="{$typeIsReference}" relationship="{$relationship}"
+      associationClass="{$associationClass}">
       <xImplHints>{xmi2es:xImplHints(concat("*",$attribName,"*",$attribID), $hints, $problems)}</xImplHints>
       <description>{$attribDescription}</description>
       <exclude>{$exclude}</exclude>

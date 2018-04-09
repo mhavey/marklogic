@@ -70,8 +70,8 @@ import module namespace es = 'http://marklogic.com/entity-services'
 import module namespace json = "http://marklogic.com/xdmp/json"
     at "/MarkLogic/json/json.xqy";
 
-
-
+import module namespace sem = "http://marklogic.com/semantics"
+       at "/MarkLogic/semantics.xqy";
 
 
 declare option xdmp:mapping 'false';
@@ -94,6 +94,14 @@ declare function movieModel:extract-instance-CompanyContributor(
     let $contribId  :=             $source-node/name ! xs:string(.)
     let $aliases  :=             es:extract-array($source-node/aliases, xs:string#1)
     let $corporateStuff  :=               $source-node/corporate_stuff ! xs:string(.) 
+
+    let $roleDocs := cts:search(fn:doc(), cts:and-query((
+            cts:collection-query(("role")),
+            cts:element-value-query(xs:QName("refMovieContributor"), $contribId)
+        )))//Role
+    let $roles := es:extract-array($roleDocs, movieModel:extract-instance-Role#1) 
+
+
     let $instance := es:init-instance($source-node, 'CompanyContributor')
     (: Comment or remove the following line to suppress attachments :)
         =>es:add-attachments($source)
@@ -105,6 +113,7 @@ declare function movieModel:extract-instance-CompanyContributor(
         =>   map:with('contribId', $contribId)
         =>es:optional('aliases', $aliases)
         =>   map:with('corporateStuff', $corporateStuff)
+        =>es:optional('filmography', $roles)
 };
 
 (:~
@@ -138,6 +147,8 @@ declare function movieModel:extract-instance-UserDocument(
     if (empty($source-node/*))
     then $instance
     else $instance
+        =>   map:with('docId', sem:uuid-string())
+        =>   map:with('authorId', $authorId)
         =>   map:with('authorId', $authorId)
         =>   map:with('docText', $docText)
         =>   map:with('docType', $docType)
@@ -168,6 +179,13 @@ declare function movieModel:extract-instance-Movie(
     let $genres  :=             es:extract-array($source-node/genres, xs:string#1)
     let $runningTime  :=             $source-node/runningtime ! xs:int(.)
     let $imdbUserRating  :=               $source-node/rating ! xs:float(.)
+
+    let $roleDocs := cts:search(fn:doc(), cts:and-query((
+            cts:collection-query(("role")),
+            cts:element-value-query(xs:QName("refMovie"), $movieId)
+        )))//Role
+    let $roles := es:extract-array($roleDocs, movieModel:extract-instance-Role#1) 
+
     (: The following property is a local reference.  :)
     let $parentalCerts  :=              es:extract-array($source-node/parentalCerts, movieModel:extract-instance-ParentalCertificate#1)
     let $instance := es:init-instance($source-node, 'Movie')
@@ -188,6 +206,7 @@ declare function movieModel:extract-instance-Movie(
         =>   map:with('runningTime', $runningTime)
         =>   map:with('imdbUserRating', $imdbUserRating)
         =>es:optional('parentalCerts', $parentalCerts)
+        =>es:optional('cast', $roles)
 };
 
 (:~
@@ -214,6 +233,13 @@ declare function movieModel:extract-instance-PersonContributor(
     let $causeOfDeath  :=             $source-node/cause_of_death ! xs:string(.)
     let $realName  :=             $source-node/realname ! xs:string(.)
     let $spouses  :=             $source-node/spouses ! xs:string(.) 
+
+    let $roleDocs := cts:search(fn:doc(), cts:and-query((
+            cts:collection-query(("role")),
+            cts:element-value-query(xs:QName("refMovieContributor"), $contribId)
+        )))//Role
+    let $roles := es:extract-array($roleDocs, movieModel:extract-instance-Role#1) 
+
     let $instance := es:init-instance($source-node, 'PersonContributor')
     (: Comment or remove the following line to suppress attachments :)
         =>es:add-attachments($source)
@@ -232,6 +258,7 @@ declare function movieModel:extract-instance-PersonContributor(
         =>es:optional('causeOfDeath', $causeOfDeath)
         =>es:optional('realName', $realName)
         =>es:optional('spouses', $spouses)
+        =>es:optional('filmography', $roles)
 };
 
 (:~
@@ -271,12 +298,16 @@ declare function movieModel:extract-instance-Role(
     $source as item()?
 ) as map:map
 {
+    (: IMPL: source mappings; support two modes: build role from source; include ingested role into movie/contrib :)
+
     let $source-node := es:init-source($source, 'Role')
-    let $roleType  :=             $source-node/roleType ! xs:string(.)
-    let $roleNames  :=             es:extract-array($source-node/roleNames, xs:string#1)
-    let $contribClass  :=             $source-node/contribClass ! xs:string(.)
-    let $refMovieContributor  :=                    $source-node/refMovieContributor ! xs:string(.)
-    let $refMovie  :=             $source-node/refMovie ! xs:string(.) 
+    let $roleType  :=  ($source-node/role,$source-node/roleType)[1] ! xs:string(.)
+    let $roleNames  :=   
+        if (exists($source-node/names)) then es:extract-array($source-node/names, xs:string#1)
+        else es:extract-array($source-node/roleNames, xs:string#1)
+    let $contribClass  :=  ($source-node/class, $source-node/contribClass)[1] ! xs:string(.)
+    let $refMovieContributor  := ($source-node/contrib, $source-node/refMovieContributor)[1] ! xs:string(.)
+    let $refMovie  := ($source-node/movie, $source-node/refMovie)[1] ! xs:string(.) 
     let $instance := es:init-instance($source-node, 'Role')
     (: Comment or remove the following line to suppress attachments :)
         =>es:add-attachments($source)

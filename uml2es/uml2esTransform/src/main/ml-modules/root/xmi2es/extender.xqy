@@ -354,25 +354,23 @@ declare function xes:resolveType($xes as map:map, $profileForm as node(),
 		if (string-length($attrib/esProperty/@mlType) gt 0) then (string($attrib/esProperty/@mlType), "datatype")
 		else if (string-length($attrib/esProperty/@externalRef) gt 0) then (string($attrib/esProperty/@externalRef), "$ref")
 		else if ($attrib/@typeIsReference eq true()) then
-			let $assocClass := $profileForm/classes/Class[associationClass/end/@class eq $class/@name and associationClass/end/@attribute eq $attrib/@name]
-			return 
-				if (exists($assocClass)) then (concat("#/definitions/", $assocClass/@name), "$ref")
-				else if ($attrib/FK/text() eq true()) then
-					let $refClass :=  $profileForm/classes/Class[@name eq $attrib/@type]
-					let $refPKAttrib := $refClass/attributes/Attribute[@name eq $refClass/pks/item[1]]
-					return 
-						if (count($refPKAttrib) ne 1) then 
-							let $_ := pt:addProblem($xes, $attribIRI, (), $pt:ATTRIB-BROKEN-FK, "unable to find PK of ref")
-							return (concat("broken FK: ", $attrib/@type), "datatype")
-						else
-							let $refType := xes:resolveType($xes, $profileForm, $refClass, $refPKAttrib)
-							return
-								if ($refType[2] eq "$ref") then 
-									let $_ := pt:addProblem($xes, $attribIRI, (), $pt:ATTRIB-BROKEN-FK, "PK of ref must be primitive")
-									return (concat("broken FK: ", $attrib/@type), "datatype")
-								else
-									$refType
-				else (concat("#/definitions/", $attrib/@type), "$ref")
+			if (string-length($attrib/@associationClass) gt 0) then (concat("#/definitions/", $attrib/@associationClass), "$ref")
+			else if ($attrib/FK/text() eq true()) then
+				let $refClass :=  $profileForm/classes/Class[@name eq $attrib/@type]
+				let $refPKAttrib := $refClass/attributes/Attribute[@name eq $refClass/pks/item[1]]
+				return 
+					if (count($refPKAttrib) ne 1) then 
+						let $_ := pt:addProblem($xes, $attribIRI, (), $pt:ATTRIB-BROKEN-FK, "unable to find PK of ref")
+						return (concat("broken FK: ", $attrib/@type), "datatype")
+					else
+						let $refType := xes:resolveType($xes, $profileForm, $refClass, $refPKAttrib)
+						return
+							if ($refType[2] eq "$ref") then 
+								let $_ := pt:addProblem($xes, $attribIRI, (), $pt:ATTRIB-BROKEN-FK, "PK of ref must be primitive")
+								return (concat("broken FK: ", $attrib/@type), "datatype")
+							else
+								$refType
+			else (concat("#/definitions/", $attrib/@type), "$ref")
 		else 
 			if (ends-with($attrib/@type, "#String")) then ("string", "datatype")
 			else if (ends-with($attrib/@type, "#Boolean")) then ("boolean", "datatype")

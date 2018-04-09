@@ -30,12 +30,50 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
   <tde:templates>
     <tde:template>
       <tde:context>./UserDocument</tde:context>
+      <tde:vars>
+	<tde:var>
+	  <tde:name>subject-iri</tde:name>
+	  <tde:val>sem:iri(concat("http://com.marklogic.es.uml.movie/MovieModel-0.0.1/UserDocument/", fn:encode-for-uri(./docId)))</tde:val>
+	</tde:var>
+      </tde:vars>
+      <tde:triples>
+	<tde:triple>
+	  <tde:subject>
+	    <tde:val>$subject-iri</tde:val>
+	  </tde:subject>
+	  <tde:predicate>
+	    <tde:val>$RDF_TYPE</tde:val>
+	  </tde:predicate>
+	  <tde:object>
+	    <tde:val>sem:iri("http://com.marklogic.es.uml.movie/MovieModel-0.0.1/UserDocument")</tde:val>
+	  </tde:object>
+	</tde:triple>
+	<tde:triple>
+	  <tde:subject>
+	    <tde:val>$subject-iri</tde:val>
+	  </tde:subject>
+	  <tde:predicate>
+	    <tde:val>sem:iri("http://www.w3.org/2000/01/rdf-schema#isDefinedBy")</tde:val>
+	  </tde:predicate>
+	  <tde:object>
+	    <tde:val>fn:base-uri(.)</tde:val>
+	  </tde:object>
+	</tde:triple>
+      </tde:triples>
+    </tde:template>
+    <tde:template>
+      <tde:context>./UserDocument</tde:context>
       <tde:rows>
 	<tde:row>
 	  <tde:schema-name>MovieModel</tde:schema-name>
 	  <tde:view-name>UserDocument</tde:view-name>
 	  <tde:view-layout>sparse</tde:view-layout>
 	  <tde:columns>
+	    <tde:column>
+	      <tde:name>docId</tde:name>
+	      <tde:scalar-type>string</tde:scalar-type>
+	      <tde:val>docId</tde:val>
+	    </tde:column>
 	    <tde:column>
 	      <tde:name>authorId</tde:name>
 	      <tde:scalar-type>string</tde:scalar-type>
@@ -191,7 +229,8 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 	  </tde:rows>
 	</tde:template>
 	<tde:template>
-	  <tde:context>./filmography</tde:context>
+		<!-- IMPL: added Role, changed contribId path, added rest of role attrib -->
+	  <tde:context>./filmography/Role</tde:context>
 	  <tde:rows>
 	    <tde:row>
 	      <tde:schema-name>MovieModel</tde:schema-name>
@@ -202,13 +241,28 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 		  <!--This column joins to property contribId of PersonContributor-->
 		  <tde:name>contribId</tde:name>
 		  <tde:scalar-type>string</tde:scalar-type>
-		  <tde:val>../contribId</tde:val>
+		  <tde:val>../../contribId</tde:val>
 		</tde:column>
 		<tde:column>
-		  <!--This column holds array values from property contribId of PersonContributor-->
-		  <tde:name>filmography</tde:name>
+		  <tde:name>roleType</tde:name>
 		  <tde:scalar-type>string</tde:scalar-type>
-		  <tde:val>.</tde:val>
+		  <tde:val>roleType</tde:val>
+		</tde:column>
+		<tde:column>
+		  <tde:name>contribClass</tde:name>
+		  <tde:scalar-type>string</tde:scalar-type>
+		  <tde:val>contribClass</tde:val>
+		</tde:column>
+		<tde:column>
+		  <tde:name>refMovieContributor</tde:name>
+		  <tde:scalar-type>string</tde:scalar-type>
+		  <tde:val>refMovieContributor</tde:val>
+		  <tde:nullable>true</tde:nullable>
+		</tde:column>
+		<tde:column>
+		  <tde:name>refMovie</tde:name>
+		  <tde:scalar-type>string</tde:scalar-type>
+		  <tde:val>refMovie</tde:val>
 		  <tde:nullable>true</tde:nullable>
 		</tde:column>
 	      </tde:columns>
@@ -327,7 +381,8 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 	  </tde:rows>
 	</tde:template>
 	<tde:template>
-	  <tde:context>./filmography</tde:context>
+		<!-- IMPL: added Role, changed path from contribId -->
+	  <tde:context>./filmography/Role</tde:context>
 	  <tde:rows>
 	    <tde:row>
 	      <tde:schema-name>MovieModel</tde:schema-name>
@@ -338,13 +393,28 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 		  <!--This column joins to property contribId of CompanyContributor-->
 		  <tde:name>contribId</tde:name>
 		  <tde:scalar-type>string</tde:scalar-type>
-		  <tde:val>../contribId</tde:val>
+		  <tde:val>../../contribId</tde:val>
 		</tde:column>
 		<tde:column>
-		  <!--This column holds array values from property contribId of CompanyContributor-->
-		  <tde:name>filmography</tde:name>
+		  <tde:name>roleType</tde:name>
 		  <tde:scalar-type>string</tde:scalar-type>
-		  <tde:val>.</tde:val>
+		  <tde:val>roleType</tde:val>
+		</tde:column>
+		<tde:column>
+		  <tde:name>contribClass</tde:name>
+		  <tde:scalar-type>string</tde:scalar-type>
+		  <tde:val>contribClass</tde:val>
+		</tde:column>
+		<tde:column>
+		  <tde:name>refMovieContributor</tde:name>
+		  <tde:scalar-type>string</tde:scalar-type>
+		  <tde:val>refMovieContributor</tde:val>
+		  <tde:nullable>true</tde:nullable>
+		</tde:column>
+		<tde:column>
+		  <tde:name>refMovie</tde:name>
+		  <tde:scalar-type>string</tde:scalar-type>
+		  <tde:val>refMovie</tde:val>
 		  <tde:nullable>true</tde:nullable>
 		</tde:column>
 	      </tde:columns>
@@ -511,7 +581,7 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 	    </tde:row>
 	  </tde:rows>
 	</tde:template>
-	<tde:template>
+	<tde:template> <!-- IMPL - added to context ParentalCertificate, thus change path from movieId -->
 	  <tde:context>./parentalCerts/ParentalCertificate</tde:context>
 	  <tde:rows>
 	    <tde:row>
@@ -539,8 +609,8 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 	    </tde:row>
 	  </tde:rows>
 	</tde:template>
-	<tde:template>
-	  <tde:context>./cast</tde:context>
+	<tde:template> <!-- IMPL : added Role to cast, changed path to movieId, added rest of role attrib -->
+	  <tde:context>./cast/Role</tde:context>
 	  <tde:rows>
 	    <tde:row>
 	      <tde:schema-name>MovieModel</tde:schema-name>
@@ -551,7 +621,7 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 		  <!--This column joins to property movieId of Movie-->
 		  <tde:name>movieId</tde:name>
 		  <tde:scalar-type>string</tde:scalar-type>
-		  <tde:val>../movieId</tde:val>
+		  <tde:val>../../movieId</tde:val>
 		</tde:column>
 		<tde:column>
 		  <tde:name>roleType</tde:name>
@@ -575,7 +645,7 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
 		  <tde:val>refMovie</tde:val>
 		  <tde:nullable>true</tde:nullable>
 		</tde:column>
-	      </tde:columns>
+	  </tde:columns>
 	    </tde:row>
 	  </tde:rows>
 	</tde:template>
