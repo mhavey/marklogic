@@ -8,7 +8,7 @@ This is a toolkit to support modeling MarkLogic data in UML and mapping that UML
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services>
 
 The toolkit consists of the following parts:
-- (uml2esTransform)[uml2esTransform]: MarkLogic server-side modules to map UML to Entity Services.
+- uml2esTransform: MarkLogic server-side modules to map UML to Entity Services.
 - umlProfile: A UML profile containing stereotypes for MarkLogic Entity Services. Use this profile to include ES configuration to your UML model.
 - examples/movies: A sample UML model for movies. Includes ml-gradle build file to load this model into MarkLogic. Shows the full UML-to-ES workflow including ingestion of ES envelopes, deploying ES-generated database indexes, and running SQL against TDE views. The movie model demonstrates several types of document relationships. 
 - examples/hr: A sample UML model for human resources. It models Departments and Employees. The sample shows how to load HR data into a MarkLogic data hub. It also demonstrates semantic relationships though the use of an organizational ontology.
@@ -53,5 +53,5 @@ Once you get deeper into the toolkit, you will need to better understand how the
 	* If in the UML model an attribute has a multiplicity of 0..* or 1..*, the transform designates the property as an array in the entity definition.
 - Range indexes and PK: If one attribute in the UML class is stereotyped PK, the transform designates it the primary key of the entity. If an attribute in the UML class is stereotyped rangeIndex, the transform designates it as one of the indexes for the entity. 
 
-Refer to the UML profile reference for more on these stereotypes, including newly developed model extensions and semantic generation capabilities. 
+Refer to the UML profile [umlProfile/README.md] reference for more on these stereotypes, including newly developed model extensions and semantic generation capabilities. 
 
