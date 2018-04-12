@@ -110,6 +110,10 @@ declare function xes:transform($xes as map:map, $profileForm as node()) as empty
 		xes:transformClass($xes, $profileForm, $class)
 };
 
+(:
+Private Interface
+:)
+
 declare function xes:transformModel($xes as map:map, $profileForm as node()) as empty-sequence() {
 	let $problems := map:get($xes, "problems")
 	let $descriptor := map:get($xes, "descriptor")

@@ -167,7 +167,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
   let $isRequired := not(exists($attrib/lowerValue))
   let $relationship := ($attrib/@*:aggregation, if (exists($attrib/@*:association)) then "association" else ())[1]
   let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
-  let $associationClass := $xmi//packagedElement[@*:id eq $attrib/@*:association]/@name  
+  let $associationClass := $xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name  
   let $type := ($attrib/*:type/@href, 
     $xmi//*:packagedElement[@*:id eq $attrib/@type]/@name, 
     $xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name)[1]
