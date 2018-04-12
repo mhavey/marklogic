@@ -48,4 +48,8 @@ The following table describes each stereotype:
 |extended|Attribute|xCalculated|concat|Transform will, in the extended model, associate the property with the specified concatenation of values.|
 |extended|Attribute|xURI||Transform will, in the extended model, identify the property as the one whose value is the entity's URI.|
 |extended|Attribute|xBizKey||Transform will, in the extended model, identify the property as one of the business keys of the entity.|
+|semantic|Class|semType|types|Transform will generate XQuery code that creates a triple specifying that the RDF type of the entity is the type given. Note, this requires that one attribute be designed semIRI. The triple is (semIRI, rdf:type, types).|
+|semantic|Attribute|semIRI||Transform will generate XQuery code that identifies the value of this property as the IRI of the entity.|
+|semantic|Attribute|semLabel||Transform will generate XQuery code that creates a triple specifying that the RDFS label of the entity is the value of this property. The triple is (semIRI, rdfs:label, value of property).
+|semantic|Attribute|semProperty|predicate|Transform will generate XQuery code that creates a triple specifying that this entity has for the specified predicate the value given by this property. The triple is (semIRI, predicate, value of property).|
 
