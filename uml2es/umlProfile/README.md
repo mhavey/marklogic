@@ -15,19 +15,26 @@ Here is a visual representation of the profile:
 Stereotypes are organized into three sections: 
 - **Core model**: These stereotypes (the pale yellow ones above) enhance your UML model with configuration to be included in the Entity Services model descriptor. An example is to designate a **rangeIndex** on a class attribute. If you include that stereotype in your UML model, the transform will include the range index in the Entity Services model descriptor. See [http://docs.marklogic.com/guide/entity-services/models] for a full reference to the descriptor.
 - **Extended model**: These stereotypes (the blue ones above) enhance your UML model with configuration that **extends** the core model with **additional facts**. For example, the core model does not allow you to associate with a class a set of collections and permissions. But using the **xDocument** stereotype, you can make that association in the extended model. If you include that stereotype in your UML model, the transform will add a fact (expressed as a semantic triple) to the extended model indicating your collections and permissions. See [http://docs.marklogic.com/guide/entity-services/models#id_28304] for more on how facts can extend the model.
-- **Semantics** - These stereotypes (the orange ones above) allow you to add semantic information to your model. Use this feature if you plan to use a multi-model database, consisting of not only documents but also semantic triples. The HR example from this toolkit showcases this feature. In that example, we have Employee and Department documents, but we also use semantic triples to express organizational relationships, such as employee reporting structure and employee membership in departments. The toolkit's transform module checks for the existence of semantic stereotypes in your model. If it finds any, it generates XQuery code to create semantic triples based on the information provided in your stereotypes. You can run that code at ingestion time to associate triples with your document (Think envelope pattern TODOO ... )
+- **Semantics** - These stereotypes (the orange ones above) allow you to add semantic information to your model. Use this feature if you plan to use a multi-model database, consisting of not only documents but also semantic triples. The HR example from this toolkit showcases this feature. In that example, we have Employee and Department documents, but we also use semantic triples to express organizational relationships, such as employee reporting structure and employee membership in departments. The toolkit's transform module generates XQuery that you can use at runtime, as you ingest your source date, to express those relationships as triples. 
 
-### Core
-|Stereotype|Level|Tag|Mapping To Entity Services|
-|---|---|---|---|
-|esModel|Package|version|Entity Services model version|
+The following table describes each stereotype:
 
-
-### Extended
-
-### Semantic
-
-
+|Section|Level|Stereotype|Tag|Mapping To Entity Services|
+|---|---|---|---|---|
+|core|Package|esModel|version|Entity Services model version|
+|core|Package|esModel|baseURI|Entity Services model base URI|
+|core|Package|xmlNamespace|prefix|Entity Services XML namespace prefix for all entities|
+|core|Package|xmlNamespace|url|Entity Services XML namespace URL for all entities|
+|core|Class|xmlNamespace|prefix|Entity Services XML namespace prefix for that entity. Overrides package-level.|
+|core|Class|xmlNamespace|url|Entity Services XML namespace URL for that entity. Overrides package-level.|
+|core|Class|exclude||Transform will not include entity corresponding to this class.|
+|core|Attribute|exclude||Transform will not include entity property corresponding to this attribute.|
+|core|Attribute|PK||The property corresponding to this attribute is the one and only primary key of the entity.|
+|core|Attribute|FK||The attribute refers to another class, but the corresponding property's type will be the corresponding entity's primary key type rather than an internal reference.|
+|core|Attribute|rangeIndex|indexType|The property corresponding to this attribute is added to the list of indexes of the specified type for the entity.|
+|core|Attribute|esProperty|mlType|The property corresponding to this attribute will have the specified type.|
+|core|Attribute|esProperty|externalRef|The property corresponding to this attribute will be an external reference.|
+|core|Attribute|esProperty|collation|The string property corresponding to this attribute will have the specified collation.|
 
 Additionally, a stereotype can be applied to a class, an attribute, or the entire model or package. 
 

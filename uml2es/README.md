@@ -53,5 +53,5 @@ Once you get deeper into the toolkit, you will need to better understand how the
 	* If in the UML model an attribute has a multiplicity of 0..* or 1..*, the transform designates the property as an array in the entity definition.
 - Range indexes and PK: If one attribute in the UML class is stereotyped PK, the transform designates it the primary key of the entity. If an attribute in the UML class is stereotyped rangeIndex, the transform designates it as one of the indexes for the entity. 
 
-Refer to the UML profile (umlProfile/README.md)[umlProfile/README.md] reference for more on these stereotypes, including newly developed model extensions and semantic generation capabilities. 
+Refer to the UML profile reference for more on these stereotypes, including newly developed model extensions and semantic generation capabilities. 
 
