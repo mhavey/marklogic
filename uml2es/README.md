@@ -29,3 +29,21 @@ If that's you, we think this toolkit is for you. You will need the following ing
 ## Where To Begin
 Dive into the examples! The movies example is a good place to start. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the hr example. 
 
+## UML-to-Entity Services Mapping
+Once you get deeper in
+
+UML package - name, package documentation comment
+
+|UML Element|Entity Services|
+|---|---|
+|Package||Model|
+|Package name|Model titie|
+|Package documentation comment|Model description|
+|Package stereotype(esModel.baseURI|Model baseURI|
+|Package stereotype(esModel.version)|Model version|
+|Class|Entity|
+|Class name|Entity name|
+|Class documentation comment|Entity description|
+|Class stereotype(xmlNamespace.prefix/url)|Entity namespace. Can also specific xmlNamepace at package level to apply to all classes.|
+|Attribute stereotype(PK)|Entity primary key. The transform validates that at most one attribute in the class has PK.|
+
