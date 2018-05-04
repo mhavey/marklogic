@@ -1,14 +1,12 @@
 # Movie Example
 
-This gradle project shows the transformation of UML models to entity services models. 
-
 ## Intro
+This movie data model examples shows how various types of UML class relationships are modeled in MarkLogic in an Entity Services model. It also explains shows how to use Template-Driven Extraction (TDE) to build SQL views of this data.
 
-This example shows the following:
-- How to model in UML movies and their relationships 
-- How to map the UML model to a MarkLogic Entity Services model.
-- How to ingest source movie data into a MarkLogic database so that it conforms to the model.
-- How to query movie data as documents and via Template-Driven Extraction (TDE)
+## Models
+Here is the MagicDraw model:
+
+![IMDBMovie](../umlModels/IMDBMovie.png)
 
 ## The Cooking Show Approach
 
@@ -42,35 +40,62 @@ Run the following:
 gradle -PenvironmentName=local -i clearGenerated useInitialDBConfig includeXMI2ESTransform mlDeploy
 
 Confirm:
-- Content DB has no element range indexes
-- Modules DB has /xmi2es/loadXMITransformation.xqy
-- No documents having URI containing GENERATED in modules, content, or schemas DB.
+- Content DB is empty and has no element range indexes
+- Schemas DB contains:
+  * /MovieModel-0.0.1.tdex - our "pre-cooked" TDE template
+- Modules DB has these modules
+  * /xmi2es/extender.xqy  - Common XMI-to-ES transform
+  * /xmi2es/problemTracker.xqy - Common XMI-to-ES transform
+  * /xmi2es/xmi2esTransform.xqy - Common XMI-to-ES transform
+  * /ext/entity-services/MovieModel-0.0.1.xqy - ES converter module
+  * /xmi2es/loadMovieTransformation.xqy - MLCP transform: on ingest of movie source data invokes ES converter module
 
 ### Transform UML to ES
-Move our UML model into ML as an ES model. Then generate ES artifacts
+Next, move our UML model into ML as an ES model. Let's divide this into two parts.
 
-Run the following:
+#### Load UML Model and Observe Output of Transform
 
-gradle -PenvironmentName=local -i ingestModel mlgen
+We will load our UML model and transform it to Entity Services format. Run the following:
+
+gradle -PenvironmentName=local -i ingestModel
 
 Confirm:
-- Content DB has the following documents
-  - /marklogic.com/entity-services/models/IMDBMoviePhysical.xml
-  - /xmi2es/es/IMDBMoviePhysical.xml
-  - /xmi2es/findings/IMDBMoviePhysical.xml
-  - /xmi2es/xmi/IMDBMoviePhysical.xml
+- Final DB has the following documents
+  * /xmi2es/es/IMDBMovie.json (The ES model descriptor in JSON form)
+  * /xmi2es/extension/IMDBMovie.ttl (Semantic triples that extend our model)
+  * /xmi2es/extension/IMDBMovie.txt (A text summary of our model extension)
+  * /xmi2es/findings/IMDBMovie.xml (Problems found during transformation)
+  * /xmi2es/xmi/IMDBMovie.xml (The original UML model as an XMI document)
+- Your gradle directory structure under data/entity-services-dump has the same documents as above.
+- File IMDBMovie.json exists in gradle's data/entity-services directory. This is our ES model descriptor to be deployed.
+- File IMDBMovie.ttl exists in gradle's data/entity-services-extension directory. This is our ES model extension to be deployed.
 
-- In gradle project we now have these files:
-  - src/main/ml-config/databases/content-database-GENERATED.json
-(Generated DB config with indexes specified in model. We will use this.)
-  - src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy
-(Generated instance converter. We need to tweak this a little. The finished product is included in the same folder: MovieModelPhysical-0.0.1.xqy)
-  - src/main/ml-modules/options/MovieModelPhysical.xml
-(Generated search options.)
-  - src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd
-(Generated XML schema.)
-  - src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex
-(Generated TDE template. We need to tweak this a little. The finished product is includes in the same folder: MovieModelPhysical-0.0.1.tdex.)
+Notice we made use of the extended model definition. Specifically, we pasted the contents of /xmi2es/extension/IMDBMovie.txt as a block comment into our conversion module plugins/ext/entity-services/IMDBMovie-0.0.1.xqy. We refer back to that comment in several points in the code, showing that our implementation references facts from the extended model.
+
+#### Deploy Entity Services Model and Associated Artifacts
+
+Next, generate ES artifacts. Run the following:
+
+gradle -PenvironmentName=local -i mlgen loadExtendedModel
+
+Confirm:
+- Final DB now has the following document
+  * /marklogic.com/entity-services/models/IMDBMovie.json
+
+- In Query Console, open a tab of type SPARQL, point to the FINAL DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
+
+select * where {?s ?o ?p}
+
+Among the results, you should see the following:
+- <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/cast> <http://marklogic.com/entity-services#datatype> <http://marklogic.com/json#array> - From basic ES model
+- <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/cast> <http://marklogic.com/xmi2es/xes/relationship>  "association" - From the extended ES model
+
+- In gradle project, check for these newly generated files:
+  * src/main/ml-config/databases/content-database-GENERATED.json - Generated DB config with indexes specified in model. We will use this.
+  * src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy - Generated instance converter. We don't need this because we have the pre-cooked one in the same directory. 
+  * src/main/ml-modules/options/MovieModel.xml - Generated search options
+  * src/main/ml-schemas/MovieModelPhysical-0.0.1.xsd - Generated XML schema. We won't use this.
+  * src/main/ml-schemas/tde/MovieModel-0.0.1.tdex - Generated TDE template. We don't need this. The pre-cooked version is src/main/ml-schemas/MovieModel-0.0.1.tdex 
 
 ### Deploy
 Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO DELETE THE GENERATED TDE TEMPLATE!!!
@@ -88,16 +113,15 @@ Ingest movie data based on the model
 
 Run the following:
 
-gradle -PenvironmentName=local -i ingestMovie
+gradle -PenvironmentName=local -i ingestMovieData
 
 Confirm:
 - Content DB now has the movie documents. Check the totals per collection. 
-  - bios:2
-  - companies:1
-  - movies:5
-  - movieDocs:2
-  - persons:3
-  - roles:12
+  - bio:2
+  - company:1
+  - movie:5
+  - movieDoc:2
+  - person:3
 
 If your count is different, it might be because you have two TDE templates. Go back to step 3 and confirm the results.
 

@@ -62,161 +62,39 @@ dependencies {
   mlcp files("lib")
 }
 
+task ingestMovieData
+  ["role", "bio", "movieDoc", "company","person", "movie"].toList().each { entityType ->
+  task "ingestEntity${entityType}"(type: com.marklogic.gradle.task.MlcpTask) {  
+    def dataDir = "${projectDir}";
+    def unixDir = dataDir.replace('\\', '/');
+    def regexDir = unixDir+"/data/movie/${entityType}"
+    def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
 
-task loadMovies(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/movies";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
+    classpath = configurations.mlcp
+    command = "IMPORT"
+    database = mlAppConfig.contentDatabaseName
+    document_type = "xml"
+    input_file_path = "data/movie/${entityType}"
+    input_file_type = "documents"
+    output_uri_replace = regex
+    output_uri_prefix = "/xmi2es/imdb/${entityType}/"
+    output_uri_suffix = ".xml"
+    output_collections = "xmi2es,imdb,${entityType}"
+    output_permissions = "rest-reader,read,rest-writer,update"
+    host = mlAppServicesHost
+    port = mlAppServicesPort.toInteger()
+    transform_module = "/xmi2es/loadMovieTransformation.xqy"
+    transform_namespace ="http://marklogic.com/xmi2es/movie"
+    transform_param = "${entityType}"
+  } 
 
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/movies"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/movie/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,movies"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "movie"
-
-  logOutputUri = "/mlcp/log/movies.txt"
+   ingestMovieData.dependsOn "ingestEntity${entityType}"
 }
 
-task loadMovieDocs(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/movieDocs";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
+tasks.findByName('ingestEntitymovie').mustRunAfter 'ingestEntityrole'
+tasks.findByName('ingestEntityperson').mustRunAfter 'ingestEntityrole'
+tasks.findByName('ingestEntitycompany').mustRunAfter 'ingestEntityrole'
 
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/movieDocs"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/movieDoc/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,movieDocs"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "doc"
-}
-
-task loadBios(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/bios";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/bios"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/bio/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,bios"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "doc"
-}
-
-task loadPersonContribs(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/persons";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/persons"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/person/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,persons"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "person"
-}
-
-task loadCompanyContribs(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/companies";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/companies"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/company/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,companies"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "company"
-}
-
-task loadRoles(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/movie/fictional/roles";
-  def regex = '"' + regexDir + ",'',/,'',.json,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  database = mlAppConfig.contentDatabaseName
-  document_type = "json"
-  input_file_path = "data/movie/fictional/roles"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/imdb/role/"
-  output_uri_suffix = ".xml"
-  output_collections = "xmi2es,imdb,roles"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadMovieTransformation.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es/movie"
-  transform_param = "role"
-}
-
-task ingestMovie() {
-  dependsOn 'loadMovies'
-  dependsOn 'loadMovieDocs'
-  dependsOn 'loadPersonContribs'
-  dependsOn 'loadCompanyContribs'
-  dependsOn 'loadRoles'
-  dependsOn 'loadBios'
-}
 
 task useInitialDBConfig(type: Copy) {
     from "src/main/ml-config/databases/initial/content-database-INITIAL.json"
@@ -235,25 +113,20 @@ task useGeneratedDBConfig(type: Copy) {
 }
 
 task deleteGeneratedTDE(type: Delete) {
-    delete "src/main/ml-schemas/tde/MovieModelPhysical-0.0.1.tdex"
-    delete "src/main/ml-schemas/tde/MovieModelPhysical-0.0.1-GENERATED.tdex"
-}
-
-task includeXMI2ESTransform(type: Copy) {
-    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es/loadXMITransformation.xqy"
-    into "src/main/ml-modules/root/xmi2es"
+    delete "src/main/ml-schemas/tde/MovieModel-0.0.1.tdex"
+    delete "src/main/ml-schemas/tde/MovieModel-0.0.1-GENERATED.tdex"
+    delete "src/main/ml-schemas/MovieModel-0.0.1-GENERATED.tdex"
 }
 
 task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/xmi";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = "data/xmi"
+  input_file_path = xmiDir + "/IMDBMovie.xml"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
@@ -261,23 +134,40 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   output_collections = "xmi2es"
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
-  transform_module = "/xmi2es/loadXMITransformation.xqy"
+
+  transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = "dummy"
+}
+
+task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlAppServicesHost
+  port = mlAppServicesPort.toInteger()
+
+  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_type = "rdf" 
+  output_uri_prefix = "/triplestore"
 }
 
 task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/entity-services-dump"
-  directory_filter = "/xmi2es/es/"
+  collection_filter = "xmi2es"
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
 }
 
 task copyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/IMDBMoviePhysical.xml"
+    from "data/entity-services-dump/xmi2es/es/IMDBMovie.json"
     into "data/entity-services" 
+}
+
+task copyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension/IMDBMovie.ttl"
+    into "data/entity-services-extension" 
 }
 
 task deleteESDump(type: Delete) {
@@ -289,8 +179,13 @@ task clearGenerated(type: Delete) {
   dependsOn 'deleteGeneratedTDE'
   delete "src/main/ml-config/databases/content-database.json"
   delete "src/main/ml-config/databases/content-database-GENERATED.json"
-  delete "src/main/ml-modules/ext/entity-services/MovieModelPhysical-0.0.1-GENERATED.xqy"
-  delete "src/main/ml-modules/options/MovieModelPhysical.xml"
+  delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy"
+  delete "src/main/ml-modules/options/MovieModel.xml"
+}
+
+task includeXMI2ESTransform(type: Copy) {
+    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
+    into "src/main/ml-modules/root/xmi2es"
 }
 
 task ingestModel() {
@@ -298,8 +193,10 @@ task ingestModel() {
   dependsOn 'loadXMI'
   dependsOn 'fetchDescriptors'
   dependsOn 'copyES'
+  dependsOn 'copyESExt'
   tasks.findByName('loadXMI').mustRunAfter 'deleteESDump'
   tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
   tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
+  tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
 }
 

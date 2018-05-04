@@ -1,7 +1,5 @@
-This project contains modules used to support UML to Entity Services conversion.
+This folder contains modules used to support UML to Entity Services conversion.
 
-Currently just loadXMITransformation.xqy. 
-
-The examples included in this distribution use this code.  
+The examples included in this distribution demonstate how to use this transform.
 
 
