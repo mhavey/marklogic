@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.sem="http:///MarkLogicEntityServicesProfile/sem.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_Zti-ZS34Eei_l_f9B_8kLg http:///MarkLogicEntityServicesProfile/sem.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_Zti-vy34Eei_l_f9B_8kLg http:///MarkLogicEntityServicesProfile/xes.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_Zti-ly34Eei_l_f9B_8kLg">
+  <uml:Model xmi:id="_v2A4EG13EeiomuDVf_64Jg" name="TheWorks">
+    <packageImport xmi:type="uml:PackageImport" xmi:id="_v2v34G13EeiomuDVf_64Jg">
+      <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+    </packageImport>
+    <packagedElement xmi:type="uml:Class" xmi:id="_OkBdgG14EeiomuDVf_64Jg" name="Class1">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_WJchUG15EeiomuDVf_64Jg" name="Attribute1">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_WYFaQG15EeiomuDVf_64Jg" name="Attribute2">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_fKK68G15EeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_fKOlUG15EeiomuDVf_64Jg" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_WmS1YG15EeiomuDVf_64Jg" name="Attribute3">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Real"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_hhEg4G15EeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hhG9IG15EeiomuDVf_64Jg" value="*"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_PUYjcG14EeiomuDVf_64Jg" name="Class2">
+      <generalization xmi:type="uml:Generalization" xmi:id="_S0vr0G14EeiomuDVf_64Jg" general="_OkBdgG14EeiomuDVf_64Jg"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_YTRKAm14EeiomuDVf_64Jg" name="class3" type="_UsURcG14EeiomuDVf_64Jg" association="_YTP74G14EeiomuDVf_64Jg"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_jcLisG15EeiomuDVf_64Jg" name="Attribute1"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="__tfcMG15EeiomuDVf_64Jg" name="Attribute2"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_BlsT8G16EeiomuDVf_64Jg" name="Attribute3">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_GgmuwG16EeiomuDVf_64Jg" name="Attribute4">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_UsURcG14EeiomuDVf_64Jg" name="Class3">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_bQBPAG14EeiomuDVf_64Jg" name="class4" type="_aO-owG14EeiomuDVf_64Jg" association="_bP_Z0G14EeiomuDVf_64Jg"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_jS_m8m14EeiomuDVf_64Jg" name="class5" type="_fxTo4G14EeiomuDVf_64Jg" association="_jS-_4G14EeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_YTP74G14EeiomuDVf_64Jg" memberEnd="_YTRKAm14EeiomuDVf_64Jg _YTRKA214EeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_YTRKAG14EeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_YTRKAW14EeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_YTRKA214EeiomuDVf_64Jg" name="class2" type="_PUYjcG14EeiomuDVf_64Jg" association="_YTP74G14EeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_aO-owG14EeiomuDVf_64Jg" name="Class4"/>
+    <packagedElement xmi:type="uml:AssociationClass" xmi:id="_bP_Z0G14EeiomuDVf_64Jg" name="AssociationClass1" memberEnd="_bQBPAG14EeiomuDVf_64Jg _bQBPAW14EeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_bQAn8G14EeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_bQAn8W14EeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_bQBPAW14EeiomuDVf_64Jg" name="class3" type="_UsURcG14EeiomuDVf_64Jg" association="_bP_Z0G14EeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_fxTo4G14EeiomuDVf_64Jg" name="Class5"/>
+    <packagedElement xmi:type="uml:Association" xmi:id="_jS-_4G14EeiomuDVf_64Jg" memberEnd="_jS_m8m14EeiomuDVf_64Jg _jTAOAG14EeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_jS_m8G14EeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_jS_m8W14EeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_jTAOAG14EeiomuDVf_64Jg" name="class3" type="_UsURcG14EeiomuDVf_64Jg" aggregation="shared" association="_jS-_4G14EeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_qLUJoG14EeiomuDVf_64Jg" name="Class6">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_saYCMW14EeiomuDVf_64Jg" name="class3" type="_UsURcG14EeiomuDVf_64Jg" aggregation="composite" association="_saXbIG14EeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_saXbIG14EeiomuDVf_64Jg" memberEnd="_saYCMW14EeiomuDVf_64Jg _saZQUG14EeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_saXbIW14EeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_saYCMG14EeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_saZQUG14EeiomuDVf_64Jg" name="class6" type="_qLUJoG14EeiomuDVf_64Jg" association="_saXbIG14EeiomuDVf_64Jg"/>
+    </packagedElement>
+    <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_v2W2UG13EeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_v2W2UW13EeiomuDVf_64Jg" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <references xmi:type="ecore:EPackage" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_Zti-Yi34Eei_l_f9B_8kLg"/>
+      </eAnnotations>
+      <appliedProfile xmi:type="uml:Profile" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
+    </profileApplication>
+  </uml:Model>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_6ysBAG13EeiomuDVf_64Jg" version="0.0.1" baseUri="http://works.the" base_Package="_v2A4EG13EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_6zNlcG13EeiomuDVf_64Jg" base_Package="_v2A4EG13EeiomuDVf_64Jg">
+    <reminders>model hint 1</reminders>
+    <reminders>model hint 2</reminders>
+    <triplesPO>pred1,obj1</triplesPO>
+    <triplesPO>pred2,obj2</triplesPO>
+  </MarkLogicEntityServicesProfile.xes:xImplHints>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_6zqRYG13EeiomuDVf_64Jg" prefix="w" base_Package="_v2A4EG13EeiomuDVf_64Jg" url="http://works.the"/>
+  <MarkLogicEntityServicesProfile.sem:semType xmi:id="_AxUGIG15EeiomuDVf_64Jg" base_Class="_aO-owG14EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.xes:xDocument xmi:id="_AyGJQG15EeiomuDVf_64Jg" base_Class="_aO-owG14EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_Ay3lUG15EeiomuDVf_64Jg" base_Class="_aO-owG14EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_AzpBYG15EeiomuDVf_64Jg" base_Class="_aO-owG14EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_pNEjQG15EeiomuDVf_64Jg" mlType="dateTime" base_Property="_jcLisG15EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:exclude xmi:id="_A-BP8G16EeiomuDVf_64Jg" base_Property="__tfcMG15EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_Fj2LkG16EeiomuDVf_64Jg" base_Property="_BlsT8G16EeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_Myrw0G16EeiomuDVf_64Jg" base_Property="_GgmuwG16EeiomuDVf_64Jg">
+    <reminders>reminder a</reminders>
+    <reminders>reminder b</reminders>
+    <triplesPO>pp,po</triplesPO>
+    <triplesPO>ppp,poo</triplesPO>
+  </MarkLogicEntityServicesProfile.xes:xImplHints>
+</xmi:XMI>

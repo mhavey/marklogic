@@ -119,7 +119,7 @@ declare function buildModel($xmi as node(), $problems) as node()? {
   let $modelTags := $xmi/*/*:esModel
   let $version := normalize-space(string($modelTags/@version))
   let $baseUri := normalize-space(string($modelTags/@baseUri))
-  let $description := string($model/ownedComment/@body)
+  let $description := string(($model/ownedComment/@body, $model/ownedComment/body)[1])
   let $rootNamespace := $xmi/*/*:xmlNamespace[@base_Package eq $model/@*:id]
   let $hints := $xmi/*/*:xImplHints[@base_Package eq $model/@*:id]
 
@@ -148,7 +148,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
 
   let $attribName := fn:normalize-space($attrib/@name)
   let $attribID := $attrib/@*:id
-  let $attribDescription := string($attrib/ownedComment/@body)
+  let $attribDescription := string(($attrib/ownedComment/@body, $attrib/ownedComment/body)[1])
   let $hints := $xmi/*/*:xImplHints[@base_Property eq $attribID]
   let $exclude := exists($xmi/*/*:exclude[@base_Property eq $attribID])
   let $FK :=  exists($xmi/*/*:FK[@base_Property eq $attribID])
@@ -288,7 +288,7 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
   return 
     if (string-length($className) eq 0) then pt:addProblem($problems, (), $classID, $pt:CLASS-NO-NAME, "")
     else
-      let $classDescription := string($class/ownedComment/@body)
+      let $classDescription := string(($class/ownedComment/@body, $class/ownedComment/body)[1])
       let $xmlNamespace := ($xmi/*/*:xmlNamespace[@base_Class eq $classID], $rootNamespace)[1]
       let $hints := $xmi/*/*:xImplHints[@base_Class eq $classID]
       let $exclude := exists($xmi/*/*:exclude[@base_Class eq $classID])
