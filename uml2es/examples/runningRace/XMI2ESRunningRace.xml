@@ -52,11 +52,9 @@ function makeComparable(source) {
   }
 }
 
-var models = [makeComparable(cts.doc("/xmi2es/es/RunningRace.json").toObject()),
-    makeComparable(cts.doc("/xmi2es/es/RunningRaceEMF.json").toObject()),
-    makeComparable(cts.doc("/xmi2es/es/RunningRacePapyrus.json").toObject()) ];
-var diff01 = (models[0] == models[1]);
-var diff12 = (models[1] == models[2]);
-var diffReport = {"diff01": diff01, "diff12": diff12, "models": models};
-diffReport
+var models = [
+    JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRace.json").toObject())),
+    JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRaceEMF.json").toObject())),
+    JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRacePapyrus.json").toObject())) ];
+"Models are the same? " + (models[0] == models[1] && models[1] == models[2])
 </query></workspace></export>
