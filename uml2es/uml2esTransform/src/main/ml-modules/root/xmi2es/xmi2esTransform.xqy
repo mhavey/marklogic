@@ -384,7 +384,7 @@ declare function xmi2es:xImplHints($scope, $hints, $problems) as node()* {
 
   return (
     <reminders>{
-          for $r in $reminderHints return <item>{normalize-space($r)}></item>
+          for $r in $reminderHints return <item>{normalize-space($r)}</item>
     }
     </reminders>,
     <triplesPO>{
