@@ -213,7 +213,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
         }</quality>,
         <metadataKV>{
           if (count($descXDoc/metadataKV/item) gt 0) then $descXDoc/metadataKV/item
-          else for $c in $currentXDoc/*:metadataKV return <item>normalize-space($c/text())</item>
+          else for $c in $currentXDoc/*:metadataKV return <item>{normalize-space($c/text())}</item>
         }</metadataKV>
       )
 
