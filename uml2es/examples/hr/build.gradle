@@ -208,7 +208,7 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = xmiDir + "/DHFEmployeeSample.xml"
+  input_file_path = xmiDir + "/DHFEmployeeSample*.xml"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
