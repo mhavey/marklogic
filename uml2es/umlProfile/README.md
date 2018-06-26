@@ -20,7 +20,7 @@ Stereotypes are organized into three sections:
 The following table describes each stereotype:
 
 |Section|Level|Stereotype|Tag|Mapping To Entity Services|
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 |core|Package|esModel|version|Entity Services model version|
 |core|Package|esModel|baseURI|Entity Services model base URI|
 |core|Package|xmlNamespace|prefix|Entity Services XML namespace prefix for all entities|
@@ -76,5 +76,5 @@ The following table summarizes how the transform resolves class stereotype inher
 |core|xmlNamespace|Inherited but subclass can override it by defining the same stereotype.|UML-to-ES generator|
 |core|exclude|Not inherited. The superclass is excluded, but subclasses are by default included. The movies example shows the utility of using the superclass merely to define common attributes. In that example the superclass, Contributor, is excluded from the ES model. Its subclasses -- PersonContributor and CompanyContributor -- are included and inherit the attributes of Contributor.|UML-to-ES generator|
 |extended|xImplHints|Not inherited. Hints are part of the extended model and used only in comment blocks and by code generators. Whoever's watching can apply the hints to subclasses if it deems appropriate.|Your code/code generator.|
-|extended|Class|xDocument|Inherited. If subclass also defines this stereotype it is ADDING. To have the subclass REPLACE/OVERRIDE rather than ADD, it should drop a hint.|DHF code generator. Your code generator or code.|
+|extended|xDocument|Inherited. If subclass also defines this stereotype it is ADDING. To have the subclass REPLACE/OVERRIDE rather than ADD, it should drop a hint.|DHF code generator. Your code generator or code.|
 |sem|Class|semTypes|Inherited. If subclass also defines this stereotype it is ADDING. To have the subclass REPLACE/OVERRIDE rather than ADD, it should drop a hint.|DHF code generator. Your code generator or code.|
