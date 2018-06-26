@@ -26,8 +26,10 @@ declare variable $IRI-DOC-METADATA := $IRI-PREFIX || "doc-metadata";
 declare variable $IRI-BIZ-KEY := $IRI-PREFIX || "bizKey";
 declare variable $IRI-URI := $IRI-PREFIX || "URI";
 declare variable $IRI-CALCULATED := $IRI-PREFIX || "calculated";
+declare variable $IRI-HEADER := $IRI-PREFIX || "header";
 declare variable $IRI-FK := $IRI-PREFIX || "FK";
 declare variable $IRI-RELATIONSHIP := $IRI-PREFIX || "relationship";
+declare variable $IRI-BASE_CLASS := $IRI-PREFIX || "baseClass";
 
 declare variable $IRI-SEM := $IRI-PREFIX || "semIRI";
 declare variable $IRI-SEM-LABEL := $IRI-PREFIX || "semLabel";
@@ -191,6 +193,9 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 		if (exists($class/xDocument/quality/text())) then 
 			xes:addFact($xes, $classIRI, $IRI-DOC-QUALITY, $class/xDocument/quality/text(), false()) 
 			else (),
+		if (string-length($class/@baseClass) gt 0) then 
+			xes:addFact($xes, $classIRI, $IRI-BASE_CLASS, concat(map:get($xes, "modelIRI"), "/", $class/@baseClass), true()) 
+			else (),
 		for $t in $class/xDocument/metadataKV/item return xes:addFact($xes, $classIRI, $IRI-DOC-METADATA, $t, false())
 	)
 
@@ -307,6 +312,8 @@ let $_ := xdmp:log(concat("in transformAttribute *", $attrib/@id, "*", $attrib/@
 		for $r in $attrib/xImplHints/reminders/item return xes:addFact($xes, $attribIRI, $IRI-REMINDER, $r, false()),
 		for $t in $attrib/xImplHints/triplesPO/item return xes:addFact($xes, $attribIRI, $t/@predicate, $t/@object, false()),
 		for $t in $attrib/xCalculated/item return xes:addFact($xes, $attribIRI, $IRI-CALCULATED, $t, false()),
+		if (string-length($attrib/xHeader) gt 0) then
+			 xes:addFact($xes, $attribIRI, $IRI-HEADER, $attrib/xHeader/text(), false()) else (),
 		if ($FK eq true()) then xes:addFact($xes, $attribIRI, $IRI-FK, "self", false()) else (),
 		if (string-length($relationship) gt 0) then xes:addFact($xes, $attribIRI, $IRI-RELATIONSHIP, $relationship, false()) else (),
 		if (string-length($collation) gt 0 and $type ne "string") then

@@ -161,6 +161,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
         if (string-length($indexType) eq 0) then "element"
         else $indexType
   let $xCalculated := $xmi/*/*:xCalculated[@base_Property eq $attrib/@*:id]/concat
+  let $xHeader := normalize-space($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field)
   let $semProperty := normalize-space($xmi/*/*:semProperty[@base_Property eq $attribID]/@predicate)
   let $esProperty := $xmi/*/*:esProperty[@base_Property eq $attribID]
   let $isArray := count($attrib/upperValue[@value="*"]) eq 1
@@ -181,6 +182,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
       <FK>{$FK}</FK>
       <rangeIndex>{$rangeIndex}</rangeIndex>
       <xCalculated>{for $c in $xCalculated return <item>{normalize-space($c)}</item>}</xCalculated>
+      <xHeader>{$xHeader}</xHeader>
       <semProperty>{$semProperty}</semProperty>
       <esProperty collation="{normalize-space($esProperty/@collation)}" 
         mlType="{normalize-space($esProperty/@mlType)}" externalRef="{normalize-space($esProperty/@externalRef)}"/> 
@@ -188,10 +190,18 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
 };
 
 (: Determine the inherited aspects of a class. Used if there are generalizations.
-This is recursive and moves UP (recurses TO ancestor)
+This is recursive and moves UP (recurses TO ancestor).
 :)
 declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $classes as node()*, 
   $descDef as node()?) as node()? {
+
+  (: want the immediate base class of the first class passed in :)
+  let $baseClass := 
+    if (empty($descDef)) then ""
+    else if (string-length($descDef/baseClass) eq 0) then normalize-space($class/@name)
+    else $descDef/baseClass
+
+    let $_ := xdmp:log("BASE CLASS "|| $baseClass, "info")
 
   (: xDocument :)
   let $currentXDoc := $xmi/*/*:xDocument[@base_Class eq $class/@*:id]
@@ -199,22 +209,22 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
   let $xDoc := 
     if (count($descXDoc) eq 0 and count($currentXDoc) eq 0) then ()
     else (
-        <collections>{
-          if (count($descXDoc/collections/item) gt 0) then $descXDoc/collections/item 
-          else for $c in $currentXDoc/*:collections return <item>{normalize-space($c/text())}</item>
-        }</collections>,
-        <permsCR>{
-          if (count($descXDoc/permsCR/item) gt 0) then $descXDoc/permsCR/item
-          else for $c in $currentXDoc/*:permsCR return <item>{normalize-space($c/text())}</item>
-        }</permsCR>,
+        <collections>{(
+          $descXDoc/collections/item,
+          for $c in $currentXDoc/*:collections return <item>{normalize-space($c/text())}</item>
+        )}</collections>,
+        <permsCR>{(
+          $descXDoc/permsCR/item,
+          for $c in $currentXDoc/*:permsCR return <item>{normalize-space($c/text())}</item>
+        )}</permsCR>,
         <quality>{
           if (count($descXDoc/quality) gt 0) then $descXDoc/quality
           else normalize-space($currentXDoc/*:quality)
         }</quality>,
-        <metadataKV>{
-          if (count($descXDoc/metadataKV/item) gt 0) then $descXDoc/metadataKV/item
-          else for $c in $currentXDoc/*:metadataKV return <item>{normalize-space($c/text())}</item>
-        }</metadataKV>
+        <metadataKV>{(
+          $descXDoc/metadataKV/item,
+          for $c in $currentXDoc/*:metadataKV return <item>{normalize-space($c/text())}</item>
+        )}</metadataKV>
       )
 
   (:
@@ -225,8 +235,8 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
   let $semTypes := 
     if (count($descSEMTypes) eq 0 and count($currentSEMTypes) eq 0) then ()
     else 
-        if (count($descSEMTypes) gt 0) then $descSEMTypes 
-        else for $c in $currentSEMTypes return <item>{normalize-space($c)}</item>
+        ($descSEMTypes, 
+        for $c in $currentSEMTypes return <item>{normalize-space($c)}</item>)
 
   (:
   Attributes
@@ -235,30 +245,20 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
   let $resolvedAttribs := $descDef/attributes/*:ownedAttribute | 
     ($currentAttribs except $currentAttribs[@name eq $descDef/attributes/*:ownedAttribute/@name])
   let $resolvedPKs := 
-    if (count($descDef/pks/item) eq 0) then 
-      for $id in $xmi/*/*:PK[@base_Property eq $currentAttribs/@*:id] return
+      for $id in $xmi/*/*:PK[@base_Property eq $resolvedAttribs/@*:id] return
         <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-    else $descDef/pks/item
   let $resolvedSEMIRIs := 
-    if (count($descDef/semIRIs/item) eq 0) then 
-      for $id in $xmi/*/*:semIRI[@base_Property eq $currentAttribs/@*:id] return 
+      for $id in $xmi/*/*:semIRI[@base_Property eq $resolvedAttribs/@*:id] return 
         <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-    else $descDef/semIRIs/item
   let $resolvedSEMLabels := 
-    if (count($descDef/semLabels/item) eq 0) then 
-      for $id in $xmi/*/*:semLabel[@base_Property eq $currentAttribs/@*:id] return
+      for $id in $xmi/*/*:semLabel[@base_Property eq $resolvedAttribs/@*:id] return
         <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-    else $descDef/semLabels/item
   let $resolvedXBizKeys := 
-    if (count($descDef/xBizKeys/item) eq 0) then 
-      for $id in $xmi/*/*:zBizKey[@base_Property eq $currentAttribs/@*:id] return
+      for $id in $xmi/*/*:zBizKey[@base_Property eq $resolvedAttribs/@*:id] return
         <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-    else $descDef/xBizKeys/item
   let $resolvedXURIs := 
-    if (count($descDef/xURIs/item) eq 0) then 
-      for $id in $xmi/*/*:xURI[@base_Property eq $currentAttribs/@*:id] return 
+      for $id in $xmi/*/*:xURI[@base_Property eq $resolvedAttribs/@*:id] return 
         <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-    else $descDef/xURIs/item
 
   let $def:= <Definition>
     <xDocument>{$xDoc}</xDocument>
@@ -269,6 +269,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
     <semLabels>{$resolvedSEMLabels}</semLabels>
     <xBizKeys>{$resolvedXBizKeys}</xBizKeys>
     <xURIs>{$resolvedXURIs}</xURIs>
+    <baseClass>{$baseClass}</baseClass>
   </Definition>
 
   let $parentClass := $classes[@*:id eq $class/generalization[1]/@general]
@@ -309,8 +310,13 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
             $pt:CLASS-MULTI-INHERIT, count($class/generalization)) 
         else ()      
 
+      (: Notice pks, semIRIs, etc. These are attribute-level stereotypes, but we are representing them
+         as class-level elements. That's because all of them are really just ways to identify the class - 
+         keys and naming. 
+      :)
       return 
-        <Class name="{$className}" id="{$classID}" isAssociationClass="{$associationClass}">
+        <Class name="{$className}" id="{$classID}" isAssociationClass="{$associationClass}" 
+          baseClass="{string($inheritance/baseClass)}">
           <associationClass>{
             for $a in $assocClassEnds return $a
           }</associationClass>
