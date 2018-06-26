@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_Zti-ZS34Eei_l_f9B_8kLg">
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_n13BxnR0EeilsZ_N7KCVsg">
   <uml:Model xmi:id="_o7LkIGvbEeiomuDVf_64Jg" name="RunningRacePapyrus">
     <ownedComment xmi:type="uml:Comment" xmi:id="_1ymE8GyrEeiomuDVf_64Jg">
       <body>A nice comment for everyone</body>
@@ -75,7 +75,7 @@
     </packagedElement>
     <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_o7a0sGvbEeiomuDVf_64Jg">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_o7a0sWvbEeiomuDVf_64Jg" source="http://www.eclipse.org/uml2/2.0.0/UML">
-        <references xmi:type="ecore:EPackage" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_Zti-Yi34Eei_l_f9B_8kLg"/>
+        <references xmi:type="ecore:EPackage" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_n13Bw3R0EeilsZ_N7KCVsg"/>
       </eAnnotations>
       <appliedProfile xmi:type="uml:Profile" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
     </profileApplication>
