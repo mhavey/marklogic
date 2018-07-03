@@ -1,5 +1,0 @@
-Inputs:
-
-classes
-URI path
-
