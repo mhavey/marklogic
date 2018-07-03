@@ -7,8 +7,9 @@ This example shows the following:
 - How to map the UML model to a MarkLogic Entity Services model.
 - How to setup a MarkLogic Data Hub to house the human resources data. 
 - How to ingest source data into the Data Hub staging database. 
-- How to harmonize this source data into the Data Hub final database. Data in the final database conforms to the UML model. 
+- How to harmonize this source data into the Data Hub final database. Harmonization uses the instance conversion module that Entity Services generates. Data in the final database conforms to the UML model. 
 - How to link departments and employees using semantics. The model specifies the semantic relationships. The code to create triples is GENERATED when we transform the UML model to Entity Services!!
+- How to use code generated from the model to build the harmonization logic. Generated code includes: writer, headers, triples (discussed in previous bullet), and content. Generated content code of two parts: the conversion module to build the document itself (discussed above); and special code to set calculated fields defined in the model.  
 
 For more on MarkLogic's Data Hub Framework (aka DHF), visit its GitHub page: <https://github.com/marklogic-community/marklogic-data-hub>.
 
@@ -127,14 +128,14 @@ Confirm:
   * /xmi2es/extension/DHFEmployeeSample.ttl (Semantic triples that extend our model)
   * /xmi2es/extension/DHFEmployeeSample.txt (A text summary of our model extension)
   * /xmi2es/findings/DHFEmployeeSample.xml (Problems found during transformation)
-  * /xmi2es/semgen/DHFEmployeeSample.txt (Generated XQuery code to add triples expressing semantic relationships between employees and departments)
+  * /xmi2es/gen/DHFEmployeeSample.txt (Generated XQuery code for writer, headers, triples, and content (calculated fields only) creation.
   * /xmi2es/xmi/DHFEmployeeSample.xml (The original UML model as an XMI document)
 - Your gradle directory structure under data/entity-services-dump has the same documents as above.
 - File DHFEmployeeSample.json exists in gradle's data/entity-services directory. This is our ES model descriptor to be deployed.
 - File DHFEmployeeSample.ttl exists in gradle's data/entity-services-extension directory. This is our ES model extension to be deployed.
 
 A few things to notice:
-- We made use of the generated code in the /xmi2es/semgen/DHFEmployeeSample.txt module! Specifically, we pasted it into the harmonization triples modules plugins/entities/Department/harmoize/HarmonizeDepartment/triples.xqy and plugins/entities/Employee/harmoize/HarmonizeEmployee/triples.xqy. No need to write that code from scratch. The model gave enough semantic information to generate the code.
+- We made use of the generated code in the /xmi2es/gen/DHFEmployeeSample.txt module! Specifically, we pasted it into the content, writer, headers, and triples harmonization modules of the Department and Employee entities. (See plugins/entities/Department/harmonize/HarmonizeDepartment and plugins/entities/Employee/harmoize/HarmonizeEmployee.) No need to write that code from scratch. The model gave enough information to generate this code. 
 - We made use of the extended model definition. Specifically, we pasted the contents of /xmi2es/extension/DHFEmployeeSample.txt as a block comment into our conversion module plugins/ext/entity-services/HR-0.0.1.xqy. We refer back to that comment in several points in the code, showing that our implementation references facts from the extended model.
 
 #### Deploy Entity Services Model and Associated Artifacts
@@ -191,7 +192,7 @@ gradle -PenvironmentName=local -i hubRunFlow -PentityName=Department -PflowName=
 gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployee
 
 Confirm:
-FINAL now contains 1013 documents including
+FINAL now contains 1013 documents including.  
   - 5 in Department collection
   - 1002 in Employee collection
 

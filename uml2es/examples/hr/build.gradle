@@ -219,7 +219,7 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
-  transform_param = "dummy"
+  transform_param = "genlang=xqy"
 }
 
 
