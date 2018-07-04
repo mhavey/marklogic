@@ -8,9 +8,9 @@ import module namespace xes = "http://marklogic.com/xmi2es/extender" at "/xmi2es
 (: 
 Main xmi to ES descriptor function, Pass in XMI. Return descriptor,findings, ES validation status.
 :)
-declare function xmi2es:xmi2es($xmi as node()) as map:map {
+declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map {
   let $problems := pt:init()
-  let $xmodel := xes:init($problems)
+  let $xmodel := xes:init($problems, $param)
   let $profileForm := xmi2es:buildModel($xmi, $problems)
 
   (:
@@ -58,7 +58,9 @@ declare function xmi2es:transform(
   let $xmiURI := map:get($content, "uri")
   let $xmi := map:get($content, "value")
   let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".xml")
-  let $transformResult := xmi2es:xmi2es($xmi)
+  let $param := map:get($context, "transform_param")
+  let $transformResult := xmi2es:xmi2es($xmi, $param)
+
 
   let $modelDescMap := 
     if (map:contains($transformResult, "descriptor")) then
@@ -102,15 +104,15 @@ declare function xmi2es:transform(
       map:entry("value", text{ $extensions[2] })
     ))
     else ()
-  let $semCode := if (exists($xmodel)) then xes:generateSEMCode($xmodel) else ()
-  let $semGenMap := if (count($semCode) eq 1) then map:new((
-      map:entry("uri", concat("/xmi2es/semgen/", $docName, ".txt")),
-      map:entry("value", text { $semCode } )
+  let $genCode := if (exists($xmodel)) then xes:generateCode($xmodel) else ()
+  let $genMap := if (count($genCode) eq 1) then map:new((
+      map:entry("uri", concat("/xmi2es/gen/", $docName, ".txt")),
+      map:entry("value", text { $genCode } )
     ))
     else ()
 
   return ($content, $modelDescMap, $intermediateMap, $findingsMap, $valMap,
-    $extensionTurtleMap, $extensionCommentMap, $semGenMap) 
+    $extensionTurtleMap, $extensionCommentMap, $genMap) 
 };
 
 declare function buildModel($xmi as node(), $problems) as node()? {

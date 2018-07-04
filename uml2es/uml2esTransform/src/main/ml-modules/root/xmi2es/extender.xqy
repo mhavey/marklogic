@@ -36,16 +36,24 @@ declare variable $IRI-SEM-LABEL := $IRI-PREFIX || "semLabel";
 declare variable $IRI-SEM-PROPERTY := $IRI-PREFIX || "semProperty";
 declare variable $IRI-SEM-TYPE := $IRI-PREFIX || "semType";
 
+declare variable $NEWLINE := "&#10;";
+
+
 (:
 PUBLIC Interface
 :)
 
-declare function xes:init($problems) as map:map {
+declare function xes:init($problems, $param as xs:string?) as map:map {
+
 	map:new((
+		xes:getParams($param),
 		map:entry("descriptor", json:object()),
 		map:entry("problems", $problems),
 		map:entry("triples", json:array()),
-		map:entry("sems", map:map())
+		map:entry("sems", map:map()),
+		map:entry("writers", map:map()),
+		map:entry("headers", map:map()),
+		map:entry("calcuateds", map:map())
 	))
 };
 
@@ -69,26 +77,26 @@ declare function xes:generateModelExtension($xes as map:map) as xs:string* {
 			return ($turtle, $comment)
 };
 
-(:
-Generate xqy triple creation code. You must have sem stereotypes in your model for this to work.
-Tested with DHF triples module. Meant for that sort of use...
-:)
-declare function xes:generateSEMCode($xes as map:map) as xs:string? {
+(: Generated code to generate writer, headers, triples. Also calculated fields .
+   Meant for DHF harmonization type use :)
+declare function xes:generateCode($xes as map:map) as xs:string? {
 
-	let $sems := map:get($xes, "sems")
-	let $classes := map:keys($sems)
-	let $nl := "&#10;"
-	return 
-		if (count($classes) eq 0) then ()
-		else
-			let $lines := for $class in $classes return 
-				let $classLines := json:array-values(map:get($sems, $class))
-				return (
-					concat("(: SEM Triple Generated Code For Class ", $class, " :)"),
-					for $line in $classLines return string($line),
-					$nl
-				)
-			return string-join($lines, $nl)
+	let $genTypes := ("sems", "writers", "headers", "calculateds")
+	for $genType in $genTypes return
+
+		let $gen := map:get($xes, $genType)
+		let $classes := map:keys($gen)
+		return 
+			if (count($classes) eq 0) then ()
+			else
+				let $lines := for $class in $classes return 
+					let $classLines := json:array-values(map:get($gen, $class))
+					return (
+						concat("(: Generated Code of Type ", $genType, " For Class ", $class, " :)"),
+						for $line in $classLines return string($line),
+						$NEWLINE
+					)
+				return string-join($lines, $NEWLINE)
 };
 
 (:
@@ -115,6 +123,7 @@ declare function xes:transform($xes as map:map, $profileForm as node()) as empty
 (:
 Private Interface
 :)
+
 
 declare function xes:transformModel($xes as map:map, $profileForm as node()) as empty-sequence() {
 	let $problems := map:get($xes, "problems")
@@ -415,4 +424,19 @@ declare function xes:addFact($xes as map:map,
 						if ($objectIsIRI eq true()) then sem:iri($object) else $object)
 					return 
 						json:array-push($triples, $triple)
+};
+
+(:
+Parse and validate extender params. Return map entry for them.
+Currently we ignore them. genland is assumed to be xqy
+:)
+declare function xes:getParams($param as xs:string?) {
+	if (string-length($param) eq 0) then ()
+	else 
+		let $json := xdmp:from-json-string($param)
+		for $key in map:keys($json) return
+			if ($key eq "genlang") then
+				if (map:get($json, $key) eq "xqy") then ()
+				else xdmp:log(concat("EXT illegal genlang, will use xqy *", map:get($json, $key), "*"), "warn")
+	   		else xdmp:log(concat("EXT illegal params *", $key, "*"), "warn") 
 };
