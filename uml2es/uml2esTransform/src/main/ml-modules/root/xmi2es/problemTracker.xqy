@@ -32,7 +32,10 @@ declare variable $ATTRIB-COLLATION-NONSTRING := "Collation provided for non-stri
 declare variable $ATTRIB-CARDINALITY-ONE := "Cardinality of element should be one";
 declare variable $ATTRIB-CARDINALITY-ZERO-ONE := "Cardinality of element should be zero or one";
 declare variable $ATTRIB-BROKEN-FK := "Unable to resolve FK";
+declare variable $ATTRIB-XCALC-CIRCULAR := "Calculated attribute has circular dependency";
 declare variable $ILLEGAL-TRIPLE-PO := "Illegal triple PO in hint";
+declare variable $ILLEGAL-PERM := "Illegal perm kev-value pair";
+declare variable $ILLEGAL-METADATA := "Illegal metadata kev-value pair";
 declare variable $ILLEGAL-XES-TRIPLE := "Illegal XES triple";
 
 (:

@@ -194,7 +194,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
 (: Determine the inherited aspects of a class. Used if there are generalizations.
 This is recursive and moves UP (recurses TO ancestor).
 :)
-declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $classes as node()*, 
+declare function xmi2es:determineInheritance($xmi as node(), $problems, $class as node(), $classes as node()*, 
   $descDef as node()?) as node()? {
 
   (: want the immediate base class of the first class passed in :)
@@ -217,7 +217,11 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
         )}</collections>,
         <permsCR>{(
           $descXDoc/permsCR/item,
-          for $c in $currentXDoc/*:permsCR return <item>{normalize-space($c/text())}</item>
+          for $c in $currentXDoc/*:permsCR return 
+            let $kv := xmi2es:csvParse(normalize-space($c/text()))
+            return 
+              if (count($kv) eq 2) then <item capability="{normalize-space($kv[1])}" role="{normalize-space($kv[2])}"/>
+              else pt:addProblem($problems, (), concat("*",$class/@name,"*",$class/@id), $pt:ILLEGAL-PERM, $kv) 
         )}</permsCR>,
         <quality>{
           if (count($descXDoc/quality) gt 0) then $descXDoc/quality
@@ -225,7 +229,11 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
         }</quality>,
         <metadataKV>{(
           $descXDoc/metadataKV/item,
-          for $c in $currentXDoc/*:metadataKV return <item>{normalize-space($c/text())}</item>
+          for $c in $currentXDoc/*:metadataKV return 
+            let $kv := xmi2es:csvParse(normalize-space($c/text()))
+            return 
+              if (count($kv) eq 2) then <item key="{normalize-space($kv[1])}" value="{normalize-space($kv[2])}"/>
+              else pt:addProblem($problems, (), concat("*",$class/@name,"*",$class/@id), $pt:ILLEGAL-METADATA, $kv) 
         )}</metadataKV>
       )
 
@@ -277,7 +285,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $class as node(), $
   let $parentClass := $classes[@*:id eq $class/generalization[1]/@general]
   return 
     if (count($parentClass) eq 0) then $def
-    else xmi2es:determineInheritance($xmi, $parentClass, $classes, $def)
+    else xmi2es:determineInheritance($xmi, $problems, $parentClass, $classes, $def)
 };  
 
 (: build the ES definition of an entity, mapping it from UML class :)
@@ -305,7 +313,7 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
             FK="{exists($xmi/*/*:FK[@base_Property eq $a/@*:id])}"/>
         else ()
 
-      let $inheritance := xmi2es:determineInheritance($xmi, $class, $classes, ())
+      let $inheritance := xmi2es:determineInheritance($xmi, $problems, $class, $classes, ())
       let $_ := 
         if (count($class/generalization) gt 1) then 
           pt:addProblem($problems, (), concat("*", $className, "*", $classID), 

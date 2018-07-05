@@ -53,7 +53,7 @@ declare function xes:init($problems, $param as xs:string?) as map:map {
 		map:entry("sems", map:map()),
 		map:entry("writers", map:map()),
 		map:entry("headers", map:map()),
-		map:entry("calcuateds", map:map())
+		map:entry("calculateds", map:map())
 	))
 };
 
@@ -78,25 +78,29 @@ declare function xes:generateModelExtension($xes as map:map) as xs:string* {
 };
 
 (: Generated code to generate writer, headers, triples. Also calculated fields .
-   Meant for DHF harmonization type use :)
+   Meant for DHF harmonization type use. 
+
+   DOES NOT CRAWL INTO EMBEDDED SUBCLASSES!!!!
+   IF A CONTAINS B, CODE IS GENERATED FOR EACH SEPARTELY. IF YOU WANT TO MERGE THEM, DO IT MANUALLY.
+ :)
 declare function xes:generateCode($xes as map:map) as xs:string? {
 
 	let $genTypes := ("sems", "writers", "headers", "calculateds")
-	for $genType in $genTypes return
-
+	let $allLines := for $genType in $genTypes return 
 		let $gen := map:get($xes, $genType)
-		let $classes := map:keys($gen)
-		return 
-			if (count($classes) eq 0) then ()
-			else
-				let $lines := for $class in $classes return 
-					let $classLines := json:array-values(map:get($gen, $class))
-					return (
-						concat("(: Generated Code of Type ", $genType, " For Class ", $class, " :)"),
-						for $line in $classLines return string($line),
-						$NEWLINE
-					)
-				return string-join($lines, $NEWLINE)
+		for $class in map:keys($gen) return 
+			let $classLines := json:array-values(map:get($gen, $class))
+			return concat( 
+				"(: Generated Code of Type ", 
+				$genType, 
+				" For Class ", 
+				$class, 
+				" :)",
+				$NEWLINE,
+				string-join($classLines, $NEWLINE),
+				$NEWLINE
+			)
+	return string-join($allLines, $NEWLINE)
 };
 
 (:
@@ -124,93 +128,229 @@ declare function xes:transform($xes as map:map, $profileForm as node()) as empty
 Private Interface
 :)
 
+(:
+Generate header code and, in doing so, validate the header stereotypes and add to the extended model
+facts about headers.
 
-declare function xes:transformModel($xes as map:map, $profileForm as node()) as empty-sequence() {
+THIS CREATES A SUGGESTED HEADER STRUCTURE. IT IS MEANT TO BE TWEAKED.
+:)
+declare function xes:genHeaders($xes as map:map, $class as node(), $classIRI as xs:string) as empty-sequence() {
+
 	let $problems := map:get($xes, "problems")
-	let $descriptor := map:get($xes, "descriptor")
+	let $headers := map:get($xes, "headers")
 
-	let $resolvedVersion := 
-    	if (xes:emptyString($profileForm/esModel/@version)) then 
-    		let $_ := pt:addProblem($problems, (), (), $pt:MODEL-VERSION-NOT-FOUND, ())
-    		return $DEFAULT-VERSION
-    	else $profileForm/esModel/@version
-    let $resolvedURI := 
-    	if (xes:emptyString($profileForm/esModel/@baseUri)) then 
-    		$DEFAULT-NAMESPACE
-    	else $profileForm/esModel/@baseUri
-    let $modelIRI := concat($resolvedURI, "/", $profileForm/@name, "-", $resolvedVersion)
-	let $_ := map:put($xes, "modelIRI", $modelIRI)
+	let $headerAttribs := $class/attributes/Attribute[string-length(xHeader) gt 0]
+	let $excludes := $headerAttribs[exclude/text() eq true()]
 
-    let $modelJson := json:object()
-    let $classesJson := json:object()
-    let $_ := map:put($descriptor, "info", $modelJson)
-	let $_ := (map:put($modelJson, "title", $profileForm/@name),
-    	map:put($modelJson, "version", $resolvedVersion), 
-    	map:put($modelJson, "baseUri", $resolvedURI), 
-    	map:put($modelJson, "description", string($profileForm/description)),
-    	map:put($descriptor, "definitions", $classesJson)
-    )
-	let $_ := (
-		for $r in $profileForm/xImplHints/reminders/item return xes:addFact($xes, $modelIRI, $IRI-REMINDER, $r, false()),
-		for $t in $profileForm/xImplHints/triplesPO/item return xes:addFact($xes, $modelIRI, $t/@predicate, $t/@object, false())
-	)
-	return ()
+	return
+		if (count($headerAttribs) eq 0) then ()
+		else 
+			let $headerLines := json:array()
+			let $_ := json:array-push($headerLines, "<Header>")
+			let $_ := json:array-push($headerLines, "  <lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS>") 
+			let $_ := json:array-push($headerLines, concat("  <entityType>", $class/@name, "</entityType>"))
+			let $_ := json:array-push($headerLines, "  <sourceDocument>{$id}</sourceDocument>")
+
+			let $_ := 
+				for $attrib in $headerAttribs return 
+					let $attribIRI := concat($classIRI, "/", $attrib/@name)
+					let $_ := xes:addFact($xes, $attribIRI, $IRI-HEADER, $attrib/xHeader/text(), false()) 
+					return json:array-push($headerLines, concat(
+						"   <", $attrib/xHeader/text(), ">{",
+						if ($attrib/@name eq $excludes/@name) then concat('map:get($options, "', $attrib/@name, '")')
+						else concat('$content/', $attrib/@name),
+						"}</", $attrib/xHeader/text(), ">"
+					))
+
+			let $_ := json:array-push($headerLines, "</Header>")
+			return map:put($headers, $class/@name, $headerLines)
 };
 
-declare function xes:transformClass($xes as map:map, $profileForm as node(),  
-	$class as node()) as empty-sequence() {
+(:
+Generate writer code and, in doing so, validate the writer stereotypes and add to the extended model
+facts about writer.
+:)
+declare function xes:genWriters($xes as map:map, $class as node(), $classIRI as xs:string) as empty-sequence() {
 
-	let $sems := map:get($xes, "sems")
 	let $problems := map:get($xes, "problems")
-	let $classesJson := map:get(map:get($xes, "descriptor"), "definitions")
-	let $classIRI := concat(map:get($xes, "modelIRI"), "/", $class/@name)
+	let $writers := map:get($xes, "writers")
 
-	(: Gather the info about the class :)
-	let $associationClass := $class/@isAssociationClass eq true()
-	let $attribsJson := json:object()
-	let $classJson := json:object()
 	let $allAttribs := $class/attributes/Attribute
 	let $excludes := $allAttribs[exclude/text() eq true()]
-	let $includes := $allAttribs[exclude/text() eq false()]
-	let $xBizKeys := $class/xBizKeys/item/text()
-	let $xURIs := $class/xBizKeys/item/text()
-	let $semTypes := $class/semTypes/item
+	let $xURIs := $class/xURIs/item/text()
+
+	(: validations on attribs in class that are xURI :)
+	let $_ := 
+		for $attrib in $allAttribs return 
+			let $xURI := $attrib/@name eq $class/xURIs/item
+			let $attribIRI := concat($classIRI, "/", $attrib/@name)
+			let $required := $attrib/@required eq true()
+			let $array := $attrib/@array eq true()
+			return (
+				if ($xURI eq true() and ($required eq false() or $array eq true())) then
+					pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ZERO-ONE, "xURI") 
+				else ()
+			)
+
+	let $writerLines := json:array()
+
+	(: xURI :)
+	let $_ := for $a in $xURIs return xes:addFact($xes, $classIRI, $IRI-URI, concat($classIRI, "/", $a), true())
+	let $xCount := count($xURIs)
+	let $_ := 
+		if (count($xURIs) gt 1) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-URI, string-join($xURIs, ","))
+		else ()
+
+	let $_ := 
+		if ($xCount gt 0) then json:array-push($writerLines, concat("let $uri := ", 
+			if ($xURIs[1] eq $excludes/@name) then concat('map:get($options, "', $xURIs[1], '")')
+			else concat('$envelope//', $xURIs[1])
+		))
+		else ()
+
+	(: init options :)
+	let $_ := json:array-push($writerLines, "let $dioptions := map:map()")
+
+	(: collections :)
+	let $_ := 
+		if (count($class/xDocument/collections/item) gt 0) then 
+			json:array-push($writerLines, concat(
+				'let $_ := map:put($dioptions, "collections", (', 
+				string-join(for $t in $class/xDocument/collections/item return 
+				 	let $_ := xes:addFact($xes, $classIRI, $IRI-DOC-COLLECTION, $t, false())
+				 	return concat('"', $t, '"'), 
+				 	","),
+				'))'
+			))
+		else ()
+
+	(: perms :)
+	let $_ := 
+		if (count($class/xDocument/permsCR/item) gt 0) then  json:array-push($writerLines, concat(
+			'let $_ := map:put($dioptions, "permissions", (', 
+
+			string-join(
+				for $t in $class/xDocument/permsCR/item return 
+				 	let $_ := xes:addFact($xes, $classIRI, $IRI-DOC-PERM, concat($t/@role, " has ", $t/@capability), false())
+				 	return concat('xdmp:permission("', $t/@role, '","', $t/@capability, '")')
+				 , ","),
+				')'))
+
+		else ()
+
+	(: metadata :)
+	let $_ := 
+		if (count($class/xDocument/metadataKV/item) gt 0) then  json:array-push($writerLines, concat(
+			'let $_ := map:put($dioptions, "metadata", map:new((', 
+
+			string-join(
+				for $t in $class/xDocument/metadataKV/item return 
+				 	let $_ := xes:addFact($xes, $classIRI, $IRI-DOC-METADATA, concat($t/@key, "=", $t/@value), false())
+				 	return concat('map:entry("', $t/@key, '","', $t/@value, '")')
+				 , ","),
+				'))'))
+		else ()
+
+	(: quality :)
+	let $_ := 
+		if (exists($class/xDocument/quality/text())) then (
+			json:array-push($writerLines, concat('let $_:= map:put($dioptions, "quality",', $class/xDocument/quality/text(), ')')),
+			xes:addFact($xes, $classIRI, $IRI-DOC-QUALITY, $class/xDocument/quality/text(), false())
+		) 
+		else ()
+
+
+	return (
+		json:array-push($writerLines, "return xdmp:document-insert($uri, $envelope, $dioptions)"),
+		if ($xCount gt 0) then map:put($writers, $class/@name, $writerLines) else ()
+	)
+};
+
+(: 
+This generates code to calculated the xCalulated fields. It puts them into the options map using field name as key.
+In DHF, call you from the content module. It assumes there is already the content built in a variable called $content.
+:)
+declare function xes:genCalculateds($xes as map:map, $class as node(), $classIRI as xs:string) as empty-sequence() {
+
+	let $problems := map:get($xes, "problems")
+	let $calculateds := map:get($xes, "calculateds")
+	
+	let $xCalcAttribs := $class/attributes/Attribute[exclude/text() eq true()][count(xCalculated/item) gt 0]
+	return
+		if (count($xCalcAttribs) eq 0) then ()
+		else 
+			let $xCalcLines := json:array()
+			let $visited := map:map()
+			let $_ := for $attrib in $xCalcAttribs return 
+				xes:genOneCalc($xes, $problems, $classIRI, $xCalcAttribs, $attrib, $xCalcLines, $visited)
+			return map:put($calculateds, $class/@name, $xCalcLines)
+};
+
+(: Generate one calc line. If it depends on another calculation, recursively do that one :)
+declare function xes:genOneCalc($xes as map:map, $problems, $classIRI as xs:string,
+	$xCalcAttribs as node()*, $attrib as node(), 
+	$xCalcLines as json:array, $visited as map:map) as empty-sequence() {
+
+	if (map:contains($visited, $attrib/@name)) then ()
+	else 
+		let $_ := map:put($visited, $attrib/@name, "gray")
+		let $attribIRI := concat($classIRI, "/", $attrib/@name)
+		let $_ := xes:addFact($xes, $attribIRI, $IRI-CALCULATED, string-join($attrib/xCalcuated/item/text(), ","), false()) 
+		let $_ := json:array-push($xCalcLines, concat('let $', $attrib/@name, ':= concat(',  
+			string-join(for $item in $attrib/xCalculated/item/text() return
+				if (starts-with($item, '"')) then $item
+				else if ($item eq $attrib/@name) then 
+					let $_ := pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-XCALC-CIRCULAR, "self-ref")
+					return concat('$', $item)
+				else if ($item eq $xCalcAttribs/@name) then
+					let $successorState := map:get($visited, $item)
+					let $_ := 
+						if (count($successorState) eq 0) then xes:genOneCalc($xes, $problems, $classIRI, $xCalcAttribs, $xCalcAttribs[@name eq $item], $xCalcLines, $visited)
+						else if ($successorState eq "black") then ()
+						else pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-XCALC-CIRCULAR, concat($item, " ", $successorState))
+					return concat('$', $item)
+				else concat('$content/', $item)
+			, ','), ')'))
+		let $_ := map:put($visited, $attrib/@name, "black")
+		return json:array-push($xCalcLines, concat('let $_ := map:put($options "', $attrib/@name, '", $', $attrib/@name, ')' ))
+};
+
+(:
+Generate SEM code and, in doing so, validate the sem stereotypes and add to the extended model
+facts about sem.
+:)
+declare function xes:genSems($xes as map:map, $class as node(), $classIRI as xs:string) as empty-sequence() {
+
+	let $problems := map:get($xes, "problems")
+	let $sems := map:get($xes, "sems")
+
+	let $allAttribs := $class/attributes/Attribute
+	let $excludes := $allAttribs[exclude/text() eq true()]
+
 	let $semIRIs := $class/semIRIs/item/text()
 	let $semLabels := $class/semLabels/item/text()
+	let $semTypes := $class/semTypes/item
 	let $semProperties := $allAttribs[string-length(semProperty) gt 0]
-	let $pks := $class/pks/item/text()[. eq $includes/@name]
-	let $requireds := $includes[@required eq true()]/@name
-	let $paths := $includes[string(rangeIndex) eq "path"]/@name
-	let $elements :=$includes[string(rangeIndex) eq "element"]/@name
-	let $lexicons := $includes[string(rangeIndex) eq "lexicon"]/@name
-	let $invalidRangeIndexes := $allAttribs[string-length(rangeIndex/text()) gt 0 
-  		and not(rangeIndex/text() eq ("element", "path", "lexicon"))]
 
-	(: facts and problems :)
-	let $_ := (
-		for $i in $invalidRangeIndexes return 
-			pt:addProblem($problems, concat($classIRI, "/", $i/@name), (), $pt:ATTRIB-ILLEGAL-INDEX, $i/@rangeIndex),
-		for $a in $xBizKeys return xes:addFact($xes, $classIRI, $IRI-BIZ-KEY, concat($classIRI, "/", $a), true()),
-		for $a in $xURIs return xes:addFact($xes, $classIRI, $IRI-URI, concat($classIRI, "/", $a), true()),
-		if (count($xURIs) gt 1) then 
-			pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-URI, string-join($xURIs, ","))
-		else (),
-		for $r in $class/xImplHints/reminders/item return xes:addFact($xes, $classIRI, $IRI-REMINDER, $r, false()),
-		for $t in $class/xImplHints/triplesPO/item return xes:addFact($xes, $classIRI, $t/@predicate, $t/@object, false()),
-		for $t in $class/xDocument/collections/item return xes:addFact($xes, $classIRI, $IRI-DOC-COLLECTION, $t, false()),
-		for $t in $class/xDocument/permsCR/item return xes:addFact($xes, $classIRI, $IRI-DOC-PERM, $t, false()),
-		if (exists($class/xDocument/quality/text())) then 
-			xes:addFact($xes, $classIRI, $IRI-DOC-QUALITY, $class/xDocument/quality/text(), false()) 
-			else (),
-		if (string-length($class/@baseClass) gt 0) then 
-			xes:addFact($xes, $classIRI, $IRI-BASE_CLASS, concat(map:get($xes, "modelIRI"), "/", $class/@baseClass), true()) 
-			else (),
-		for $t in $class/xDocument/metadataKV/item return xes:addFact($xes, $classIRI, $IRI-DOC-METADATA, $t, false())
-	)
+	(: validations on attribs in class that are semIRI or semLabes :)
+	let $_ := 
+		for $attrib in $allAttribs return 
+			let $semLabel := $attrib/@name eq $class/semLabels/item
+			let $semIRI := $attrib/@name eq $class/semIRIs/item
+			let $required := $attrib/@required eq true()
+			let $array := $attrib/@array eq true()
+			let $attribIRI := concat($classIRI, "/", $attrib/@name)
+			return (
+				if ($semIRI eq true() and ($required eq false() or $array eq true())) then
+					pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ONE, "semIRI") 
+				else (),
+				if ($semLabel eq true() and ($required eq false() or $array eq true())) then
+					pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ZERO-ONE, "semLabel") 
+				else ()
+			)
 
-	(: SEM :)
 	let $semLines := json:array()
-	let $_ := (
+	return  (
 		if (count($semIRIs) eq 0 and count($semLabels) + count($semProperties) + count($semTypes) gt 0) 
 			then pt:addProblem($problems, $classIRI, (), $pt:CLASS-SEM-NO-IRI, "")
 		else (),
@@ -268,6 +408,82 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 		) 
 		else ()
 	)
+};
+
+
+declare function xes:transformModel($xes as map:map, $profileForm as node()) as empty-sequence() {
+	let $problems := map:get($xes, "problems")
+	let $descriptor := map:get($xes, "descriptor")
+
+	let $resolvedVersion := 
+    	if (xes:emptyString($profileForm/esModel/@version)) then 
+    		let $_ := pt:addProblem($problems, (), (), $pt:MODEL-VERSION-NOT-FOUND, ())
+    		return $DEFAULT-VERSION
+    	else $profileForm/esModel/@version
+    let $resolvedURI := 
+    	if (xes:emptyString($profileForm/esModel/@baseUri)) then 
+    		$DEFAULT-NAMESPACE
+    	else $profileForm/esModel/@baseUri
+    let $modelIRI := concat($resolvedURI, "/", $profileForm/@name, "-", $resolvedVersion)
+	let $_ := map:put($xes, "modelIRI", $modelIRI)
+
+    let $modelJson := json:object()
+    let $classesJson := json:object()
+    let $_ := map:put($descriptor, "info", $modelJson)
+	let $_ := (map:put($modelJson, "title", $profileForm/@name),
+    	map:put($modelJson, "version", $resolvedVersion), 
+    	map:put($modelJson, "baseUri", $resolvedURI), 
+    	map:put($modelJson, "description", string($profileForm/description)),
+    	map:put($descriptor, "definitions", $classesJson)
+    )
+	let $_ := (
+		for $r in $profileForm/xImplHints/reminders/item return xes:addFact($xes, $modelIRI, $IRI-REMINDER, $r, false()),
+		for $t in $profileForm/xImplHints/triplesPO/item return xes:addFact($xes, $modelIRI, $t/@predicate, $t/@object, false())
+	)
+	return ()
+};
+
+declare function xes:transformClass($xes as map:map, $profileForm as node(),  
+	$class as node()) as empty-sequence() {
+
+	let $problems := map:get($xes, "problems")
+	let $classesJson := map:get(map:get($xes, "descriptor"), "definitions")
+	let $classIRI := concat(map:get($xes, "modelIRI"), "/", $class/@name)
+
+	(: Gather the info about the class :)
+	let $associationClass := $class/@isAssociationClass eq true()
+	let $attribsJson := json:object()
+	let $classJson := json:object()
+	let $allAttribs := $class/attributes/Attribute
+	let $includes := $allAttribs[exclude/text() eq false()]
+	let $xBizKeys := $class/xBizKeys/item/text()
+	let $pks := $class/pks/item/text()[. eq $includes/@name]
+	let $requireds := $includes[@required eq true()]/@name
+	let $paths := $includes[string(rangeIndex) eq "path"]/@name
+	let $elements :=$includes[string(rangeIndex) eq "element"]/@name
+	let $lexicons := $includes[string(rangeIndex) eq "lexicon"]/@name
+	let $invalidRangeIndexes := $allAttribs[string-length(rangeIndex/text()) gt 0 
+  		and not(rangeIndex/text() eq ("element", "path", "lexicon"))]
+
+	(: facts and problems :)
+	let $_ := (
+		for $i in $invalidRangeIndexes return 
+			pt:addProblem($problems, concat($classIRI, "/", $i/@name), (), $pt:ATTRIB-ILLEGAL-INDEX, $i/@rangeIndex),
+		for $a in $xBizKeys return xes:addFact($xes, $classIRI, $IRI-BIZ-KEY, concat($classIRI, "/", $a), true()),
+		for $r in $class/xImplHints/reminders/item return xes:addFact($xes, $classIRI, $IRI-REMINDER, $r, false()),
+		for $t in $class/xImplHints/triplesPO/item return xes:addFact($xes, $classIRI, $t/@predicate, $t/@object, false()),
+		if (string-length($class/@baseClass) gt 0) then 
+			xes:addFact($xes, $classIRI, $IRI-BASE_CLASS, concat(map:get($xes, "modelIRI"), "/", $class/@baseClass), true()) 
+			else ()
+	)
+
+	(: build gen :)
+	let $_ := (
+		xes:genSems($xes, $class, $classIRI),
+		xes:genHeaders($xes, $class, $classIRI),
+		xes:genWriters($xes, $class, $classIRI), 
+		xes:genCalculateds($xes, $class, $classIRI)	
+	)
 
 	(: Build the ES descriptor for the class :)
 	return
@@ -292,10 +508,9 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 		)
 };
 
+
 declare function xes:transformAttribute($xes as map:map, $profileForm as node(), 
 	$class as node(), $attrib as node(), $attribsJson as json:object) as empty-sequence() {
-let $_ := xdmp:log(concat("in transformAttribute *", $attrib/@id, "*", $attrib/@name, "*"), "info") 
-
 	let $problems := map:get($xes, "problems")
 	let $classIRI := concat(map:get($xes, "modelIRI"), "/", $class/@name)
 	let $attribIRI := concat($classIRI, "/", $attrib/@name)
@@ -306,9 +521,6 @@ let $_ := xdmp:log(concat("in transformAttribute *", $attrib/@id, "*", $attrib/@
 	let $array := $attrib/@array eq true()
 	let $required := $attrib/@required eq true()
 	let $PK := $attrib/@name eq $class/pks/item
-	let $semLabel := $attrib/@name eq $class/semLabels/item
-	let $semIRI := $attrib/@name eq $class/semIRIs/item
-	let $xURI := $attrib/@name eq $class/xURIs/item
 	let $collation := $attrib/esProperty/@collation
 
 	(: OK, let's figure out the type... :)
@@ -320,9 +532,6 @@ let $_ := xdmp:log(concat("in transformAttribute *", $attrib/@id, "*", $attrib/@
 	let $_ := (
 		for $r in $attrib/xImplHints/reminders/item return xes:addFact($xes, $attribIRI, $IRI-REMINDER, $r, false()),
 		for $t in $attrib/xImplHints/triplesPO/item return xes:addFact($xes, $attribIRI, $t/@predicate, $t/@object, false()),
-		for $t in $attrib/xCalculated/item return xes:addFact($xes, $attribIRI, $IRI-CALCULATED, $t, false()),
-		if (string-length($attrib/xHeader) gt 0) then
-			 xes:addFact($xes, $attribIRI, $IRI-HEADER, $attrib/xHeader/text(), false()) else (),
 		if ($FK eq true()) then xes:addFact($xes, $attribIRI, $IRI-FK, "self", false()) else (),
 		if (string-length($relationship) gt 0) then xes:addFact($xes, $attribIRI, $IRI-RELATIONSHIP, $relationship, false()) else (),
 		if (string-length($collation) gt 0 and $type ne "string") then
@@ -330,15 +539,6 @@ let $_ := xdmp:log(concat("in transformAttribute *", $attrib/@id, "*", $attrib/@
 		else (),
 		if ($PK eq true() and ($required eq false() or $array eq true())) then
 			pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ONE, "PK") 
-		else (),
-		if ($semIRI eq true() and ($required eq false() or $array eq true())) then
-			pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ONE, "semIRI") 
-		else (),
-		if ($semLabel eq true() and ($required eq false() or $array eq true())) then
-			pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ZERO-ONE, "semIRI") 
-		else (),
-		if ($xURI eq true() and ($required eq false() or $array eq true())) then
-			pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-CARDINALITY-ZERO-ONE, "xURI") 
 		else ()
 	)
 
