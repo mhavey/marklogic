@@ -20,6 +20,7 @@ declare function plugin:create-headers(
   $content as item()?,
   $options as map:map) as node()*
 {
+(: Generated Code of Type headers For Class Department :)
 	<HRHeader>
      <lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS> 
      <entityType>employee</entityType>

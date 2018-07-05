@@ -26,44 +26,65 @@ import module namespace json = "http://marklogic.com/xdmp/json"
 
 
 (:
-Your model has the following extended facts. These facts are also saved as triples in your content DB:
-@prefix p3: <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/> .
+Your model has the following extended facts. These facts are also saved as triples in your content DB:@prefix p3: <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/> .
 @prefix p2: <http://com.marklogic.es.uml.hr/HR-0.0.1/Department/> .
 @prefix p4: <http://www.w3.org/ns/org#> .
 @prefix p1: <http://marklogic.com/xmi2es/xes/> .
 @prefix p0: <http://com.marklogic.es.uml.hr/HR-0.0.1/> .
 
-p0:Employee     p1:semIRI       "empIRI" ;
-                p1:semLabel     "empLabel" ;
-                p1:semType      "http://xmlns.com/foaf/0.1/Agent" .
-
-p0:Department   p1:semIRI       "deptIRI" ;
+p0:Department   p1:doc-collection
+                                "Department" ;
+                p1:semIRI       "deptIRI" ;
+                p1:URI          p2:uri ;
                 p1:semLabel     "departmentName" ;
                 p1:semType      "http://www.w3.org/ns/org#OrganizationalUnit" .
+
+p2:departmentName
+                p1:header       "entityName" .
 
 p3:empIRI       p1:exclude      "self" ;
                 p1:calculated   "\"http://www.w3.org/ns/org#e\"" ,
                                 "employeeId" .
 
-p2:deptIRI      p1:exclude      "self" ;
-                p1:calculated   "\"http://www.w3.org/ns/org#d\"" ,
-                                "departmentId" .
-
 p3:memberOf     p1:exclude      "self" ;
                 p1:semProperty  p4:memberOf ;
                 p1:relationship "association" .
+
+p3:uri          p1:exclude      "self" ;
+                p1:calculated   "\"/employee/\", employeeId, \".xml\"" .
+
+p2:uri          p1:exclude      "self" ;
+                p1:calculated   "\"/department/\", departmentId, \".xml\"" .
 
 p3:reportsTo    p1:exclude      "self" ;
                 p1:semProperty  p4:reportsTo ;
                 p1:relationship "association" .
 
-p3:empLabel     p1:exclude      "self" ;
-                p1:semProperty  "http://xmlns.com/foaf/0.1/name" ;
+p0:Employee     p1:doc-collection
+                                "Employee" ;
+                p1:semIRI       "empIRI" ;
+                p1:URI          p3:uri ;
+                p1:semLabel     "empLabel" ;
+                p1:semType      "http://xmlns.com/foaf/0.1/Agent" .
+
+p3:employeeId   p1:header       "entityId" .
+
+p2:deptIRI      p1:exclude      "self" ;
+                p1:calculated   "\"http://www.w3.org/ns/org#d\"" ,
+                                "departmentId" .
+
+p3:employeeName p1:exclude      "self" ;
                 p1:calculated   "firstName" ,
                                 "\" \"" ,
-                                "lastName" .
-:)
+                                "lastName" ;
+                p1:header       "entityName" .
 
+p2:departmentId p1:header       "entityId" .
+
+p3:empLabel     p1:exclude      "self" ;
+                p1:semProperty  "http://xmlns.com/foaf/0.1/name" ;
+                p1:calculated   "employeeName" .
+:)
 
 declare option xdmp:mapping 'false';
 
@@ -87,14 +108,6 @@ declare function hR:extract-instance-Department(
     let $instance := es:init-instance($source-node, 'Department')
     (: Comment or remove the following line to suppress attachments :)
         =>es:add-attachments($source)
-
-    (: 
-    Construct deptIRI as the block comment above instructs. 
-    The comment indicates it is excluded, so set in $options rather than add to the $instance 
-    :)
-    let $_ := (
-        map:put($options, "deptIRI", concat("http://www.w3.org/ns/org#d", $departmentId))
-    )
 
     return
     if (empty($source-node/*))
@@ -190,13 +203,7 @@ declare function hR:extract-instance-Employee(
     (: Comment or remove the following line to suppress attachments :)
         =>es:add-attachments($source)
 
-    (: 
-    Construct empIRI and empLabel as the block comment above instructs. 
-    The comment indicates each is excluded, so set in $options rather than add to the $instance 
-    :)
-    let $_ := (
-        map:put($options, "empIRI", concat("http://www.w3.org/ns/org#e", $employeeId)), 
-        map:put($options, "empLabel", concat($firstName, " ", $lastName)),
+    (: Semantic links based on source data :)
         if (exists($source-node/dept_num)) then
             map:put($options, "memberOf", concat("http://www.w3.org/ns/org#d", $source-node/dept_num))
         else 

@@ -295,7 +295,7 @@ declare function xes:genOneCalc($xes as map:map, $problems, $classIRI as xs:stri
 	else 
 		let $_ := map:put($visited, $attrib/@name, "gray")
 		let $attribIRI := concat($classIRI, "/", $attrib/@name)
-		let $_ := xes:addFact($xes, $attribIRI, $IRI-CALCULATED, string-join($attrib/xCalcuated/item/text(), ","), false()) 
+		let $_ := xes:addFact($xes, $attribIRI, $IRI-CALCULATED, $attrib/xCalculated/item/text(), false()) 
 		let $_ := json:array-push($xCalcLines, concat('let $', $attrib/@name, ':= concat(',  
 			string-join(for $item in $attrib/xCalculated/item/text() return
 				if (starts-with($item, '"')) then $item
@@ -312,7 +312,7 @@ declare function xes:genOneCalc($xes as map:map, $problems, $classIRI as xs:stri
 				else concat('$content/', $item)
 			, ','), ')'))
 		let $_ := map:put($visited, $attrib/@name, "black")
-		return json:array-push($xCalcLines, concat('let $_ := map:put($options "', $attrib/@name, '", $', $attrib/@name, ')' ))
+		return json:array-push($xCalcLines, concat('let $_ := map:put($options, "', $attrib/@name, '", $', $attrib/@name, ')' ))
 };
 
 (:

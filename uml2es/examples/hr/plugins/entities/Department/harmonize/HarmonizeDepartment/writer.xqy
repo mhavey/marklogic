@@ -18,6 +18,9 @@ declare function plugin:write(
   $envelope as node(),
   $options as map:map) as empty-sequence()
 {
-	let $huri := fn:concat("/hr/department/", fn:tokenize($id, "/")[last()])
- 	return xdmp:document-insert($huri, $envelope, xdmp:default-permissions(), map:get($options, "entity"))
+(: Generated Code of Type writers For Class Department :)
+let $uri := map:get($options, "uri")
+let $dioptions := map:map()
+let $_ := map:put($dioptions, "collections", ("Department"))
+return xdmp:document-insert($uri, $envelope, $dioptions)
 };
