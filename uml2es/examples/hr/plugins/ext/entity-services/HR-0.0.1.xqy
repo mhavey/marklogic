@@ -204,6 +204,7 @@ declare function hR:extract-instance-Employee(
         =>es:add-attachments($source)
 
     (: Semantic links based on source data :)
+    let $_ := (
         if (exists($source-node/dept_num)) then
             map:put($options, "memberOf", concat("http://www.w3.org/ns/org#d", $source-node/dept_num))
         else 

@@ -26,16 +26,14 @@ declare function plugin:create-content(
    let $content := hR:instance-to-canonical(hR:extract-instance-Employee($doc/es:envelope/es:instance, $options), "xml")
 
 (: Generated Code of Type calculateds For Class Employee :)
-let $empIRI:= concat("http://www.w3.org/ns/org#e",$content/employeeId)
+let $empIRI:= concat("http://www.w3.org/ns/org#e",string($content//employeeId))
 let $_ := map:put($options, "empIRI", $empIRI)
-let $employeeName:= concat($content/firstName," ",$content/lastName)
+let $employeeName:= concat(string($content//firstName)," ",string($content//lastName))
 let $_ := map:put($options, "employeeName", $employeeName)
 let $empLabel:= concat($employeeName)
 let $_ := map:put($options, "empLabel", $empLabel)
-let $uri:= concat("/employee/", employeeId, ".xml")
+let $uri:= concat("/employee/",string($content//employeeId),".xml")
 let $_ := map:put($options, "uri", $uri)
-
-	(: this code is not generated; i need to build the IRI links based on my source data :)
 
 return $content   
 };

@@ -158,7 +158,7 @@ declare function xes:genHeaders($xes as map:map, $class as node(), $classIRI as 
 					return json:array-push($headerLines, concat(
 						"   <", $attrib/xHeader/text(), ">{",
 						if ($attrib/@name eq $excludes/@name) then concat('map:get($options, "', $attrib/@name, '")')
-						else concat('$content/', $attrib/@name),
+						else concat('string($content/', $attrib/@name, ")"),
 						"}</", $attrib/xHeader/text(), ">"
 					))
 
@@ -309,7 +309,7 @@ declare function xes:genOneCalc($xes as map:map, $problems, $classIRI as xs:stri
 						else if ($successorState eq "black") then ()
 						else pt:addProblem($problems, $attribIRI, (), $pt:ATTRIB-XCALC-CIRCULAR, concat($item, " ", $successorState))
 					return concat('$', $item)
-				else concat('$content/', $item)
+				else concat('string($content//', $item, ")")
 			, ','), ')'))
 		let $_ := map:put($visited, $attrib/@name, "black")
 		return json:array-push($xCalcLines, concat('let $_ := map:put($options, "', $attrib/@name, '", $', $attrib/@name, ')' ))

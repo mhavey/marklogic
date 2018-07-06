@@ -192,9 +192,9 @@ gradle -PenvironmentName=local -i hubRunFlow -PentityName=Department -PflowName=
 gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployee
 
 Confirm:
-FINAL now contains 1013 documents including.  
-  - 5 in Department collection
-  - 1002 in Employee collection
+FINAL now contains:  
+  - 5 documents in Department collection
+  - 1002 documents in Employee collection
 
 ## Explore the Data
 In Query Console, import the workspace XMI2ESHR.xml. In each tab, try the query to explore an aspect of the data.

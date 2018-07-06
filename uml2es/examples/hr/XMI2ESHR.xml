@@ -6,11 +6,11 @@
 
 (
 "global employee",
-fn:doc("/hr/employee/1000.xml"),
+fn:doc("/employee/1000.xml"),
 "acme employee",
-fn:doc("/hr/employee/32920.xml"),
+fn:doc("/employee/32920.xml"),
 "department",
-fn:doc("/hr/department/2.xml")
+fn:doc("/department/2.xml")
 )
 
 </query>

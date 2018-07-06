@@ -23,11 +23,11 @@ declare function plugin:create-content(
 {
   let $doc := fn:doc($id)
   let $content := hR:instance-to-canonical(hR:extract-instance-Department($doc/es:envelope/es:instance, $options), "xml")
-
+ 
 (: Generated Code of Type calculateds For Class Department :)
-let $deptIRI:= concat("http://www.w3.org/ns/org#d",$content/departmentId)
+let $deptIRI:= concat("http://www.w3.org/ns/org#d",string($content//departmentId))
 let $_ := map:put($options, "deptIRI", $deptIRI)
-let $uri:= concat("/department/", departmentId, ".xml")
+let $uri:= concat("/department/",string($content//departmentId),".xml")
 let $_ := map:put($options, "uri", $uri)
 
 return $content
