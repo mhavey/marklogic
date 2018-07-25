@@ -1,7 +1,7 @@
 # MovieTalk Example
 
 ## Intro
-MovieTalk is an application that allows users to submit posts about movies and actors. Our UML model is a logical data model that describes the main entities -- movies, contributors, users, posts -- and their relationships. The model is merely logical. When the application team implemented MovieTalk, they referred to the logical model but arranged the data in MarkLogic somewhat differently. There is therefore a gap between the logical model and its physical implementation. Suppose, for fun, that the application team has departed but the stakeholders wish to know what the physical model looks like and how it maps back to the logical model. We would prefer not to read their code. In this example we use a data discovery approach to determine the mapping.
+MovieTalk is an application that allows users to submit posts about movies and actors. Our UML model is a logical data model that describes the main entities -- movies, contributors, users, posts, alerts -- and their relationships. The model is merely logical. When the application team implemented MovieTalk, they referred to the logical model but arranged the data in MarkLogic somewhat differently. There is therefore a gap between the logical model and its physical implementation. Suppose, for fun, that the application team has departed but the stakeholders wish to know what the physical model looks like and how it maps back to the logical model. We would prefer not to read the application code. In this example we use a data discovery approach to determine the mapping.
 
 ## Models
 Here is the model, designed in Papyrus:

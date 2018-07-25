@@ -1,4 +1,4 @@
-<export><workspace name="XMI2ESRunningRace"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3579908077109269246" server="6770558193057240745" database-name="xmi2es-examples-runningRace-content" server-name="xmi2es-examples-runningRace" mode="javascript">'use strict';
+<export><workspace name="XMI2ESRunningRace"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3232391659292767420" server="13660598595511018955" database-name="xmi2es-examples-runningRace-content" server-name="xmi2es-examples-runningRace" mode="javascript">'use strict';
 
 const SKIPS = ["title", "description"];
 
@@ -14,20 +14,20 @@ function makeComparable(source) {
 
     // step 1 - alphabetize the elements
     var elems = [];
-    for (var i = 0; i < source.length; i++) {
+    for (var i = 0; i &lt; source.length; i++) {
       elems.push({
         "index" : i,
         "contents" : JSON.stringify(source[i])
       });
     }
     elems.sort(function(a,b) { 
-      if (a.contents < b.contents) return -1; 
-      else if (b.contents < a.contents) return 1; 
+      if (a.contents &lt; b.contents) return -1; 
+      else if (b.contents &lt; a.contents) return 1; 
       else return 0;});
 
     // step 2 - recurse on each element in alphabetical order
     var comparable = [];
-    for (var i = 0; i < elems.length; i++) {
+    for (var i = 0; i &lt; elems.length; i++) {
       comparable[i] = makeComparable(source[[ elems[i].index ]]);
     }
     return comparable;
@@ -37,7 +37,7 @@ function makeComparable(source) {
     // step 1 - get the props in alphabetical order
     var props = [];
     for (var prop in source) {
-      if (source.hasOwnProperty(prop) && SKIPS.indexOf(""+prop) < 0) {
+      if (source.hasOwnProperty(prop) &amp;&amp; SKIPS.indexOf(""+prop) &lt; 0) {
         props.push(prop);
       }
     }
@@ -45,7 +45,7 @@ function makeComparable(source) {
 
     // step 2 - recurse on each
     var comparable = {};
-    for (var i = 0; i < props.length; i++) {
+    for (var i = 0; i &lt; props.length; i++) {
       comparable[props[i]] = makeComparable(source[props[i]]);
     }
     return comparable;
@@ -56,5 +56,5 @@ var models = [
     JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRace.json").toObject())),
     JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRaceEMF.json").toObject())),
     JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRacePapyrus.json").toObject())) ];
-"Models are the same? " + (models[0] == models[1] && models[1] == models[2])
+"Models are the same? " + (models[0] == models[1] &amp;&amp; models[1] == models[2])
 </query></workspace></export>
