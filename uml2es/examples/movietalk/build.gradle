@@ -96,13 +96,3 @@ task loadPhysical(type: com.marklogic.gradle.task.MlcpTask) {
   host = mlAppServicesHost
   port = mlAppServicesPort.toInteger()
 }
-
-
-task _no(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "EXPORT"
-  output_type = "archive"
-  output_file_path = "data/physical.zip"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-}

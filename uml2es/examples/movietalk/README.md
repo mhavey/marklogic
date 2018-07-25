@@ -23,6 +23,9 @@ Run the following:
 
 gradle -PenvironmentName=local -i includeXMI2ESTransform mlDeploy
 
+Confirm:
+- New DB and app server created with name xmi2es-examples-movieTalk.
+
 ### Load the Logical Model
 
 We want the logical model in MarkLogic as an Entity Services model. That might sound strange. It's a logical model; why deploy it? We will use it later for a novel purpose: to help build our physical-logical mapping. The logical model we designed in Papyrus lacks enough detail to be used physically anyway. Most of its attributes do not even have a data type. When we deploy the model to MarkLogic as an Entity Services, we will specify the "lax" option to our UML/ES transformation tool. The "lax" option instructs the transformation tool to tolerate the logical model's lack of detail and make a best effort to produce an Entity Services model.  
@@ -30,11 +33,23 @@ To deploy the logical model, run the following:
 
 gradle -PenvironmentName=local -i loadXMI
 
+Confirm:
+- Content DB has the following documents
+	* /xmi2es/es/MovieTalk.json
+	* /xmi2es/extension/MovieTalk.ttl
+	* /xmi2es/extension/MovieTalk.txt
+	* /xmi2es/findings/MovieTalk.xml
+	* /xmi2es/xmi/MovieTalk.xml
+
 ### Load Physical
 
 Now let's setup our MovieTalk database with physical data: 
 
 gradle -PenvironmentName=local -i loadPhysical
+
+Confirm:
+- Content DB now has 513 documents. 505 were added in this step.
+
 
 ## Check Model Differences
 In Query Console, import XMI2ESMovieTalk.xml workspace. The tab "Discover" is where we map physical back to logical. 
