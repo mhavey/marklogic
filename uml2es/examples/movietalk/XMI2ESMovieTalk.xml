@@ -1,0 +1,842 @@
+<export><workspace name="XMI2ESMovieTalk"><query name="Initial Data" focus="false" listorder="1" taborder="1" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+ * Run the following against the xmi2es-examples-movieTalk-content database to
+ * load initial data.
+ */
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+declareUpdate();
+
+function URI(type, id) {
+	return "/" + type + "/" + id + ".json";
+}
+
+function getInsertOptions(typePlural) {
+	return {"collections": ["talkdata", typePlural]};	
+}
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function predicateIRI(type) {
+	return sem.iri("http://org.jude/movie-talk/" + type);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickSome(me, universe, lowerSize, upperSize) {
+  var size = getRandomInt(lowerSize, upperSize);
+  if (size == 0) return [];
+  
+  var deck = [];
+  var matches = [];
+  for (var item of universe) {
+    deck.push({item: item, mhavey: getRandomInt(0, 10000)});
+  }
+  deck.sort(function(a,b) {
+    if (a.mhavey &lt; b.mhavey) return -1;
+    else if (a.mhavey &gt; b.mhavey) return 1;
+    return 0;
+  });
+  var counter = 0;
+  while(matches.length &lt; size) {
+    var item = deck[counter].item;
+    counter++;
+    if (item == me) continue;
+    matches.push(deck[counter].item);
+  }
+  return matches;
+}
+
+// random titles courtesy of
+// http://www.starmanseries.com/toolkit/titles_mystery.html
+var movieTitles = [
+  "The Clue Of The Sparkling Ghost",
+  "The Quest Of The Exotic Pony",
+  "The Humming Botanist",
+  "The Silk Basilisk",
+  "The Clue Of The Metallic Circuitry",
+  "The Clue Of The Lavender Giraffe",
+  "The Clue Of The Creaking Spearman",
+  "The Mysterious Barley",
+  "The Towering Portrait",
+  "The Case Of The Black Jalopy",
+  "The Secret Of The Jade Courtyard",
+  "The Mystery Of The Alabaster Milkman",
+  "The Mysterious Race",
+  "The Leaping Coin",
+  "The Clue In The Nuisance"
+];
+
+// random names courtesy of http://listofrandomnames.com
+var personNames = [
+    "Karon Dossett",
+    "Rachel Pagel",
+    "Jessenia Wilbert",
+    "Kip Trott",
+    "Steve Threatt",
+    "Charmain Mclelland",
+    "Brice Coleman",
+    "Daniell League",
+    "Macy Whittenberg",
+    "Kassandra Bladen",
+    "Franklyn Donlon",
+    "Patrica Uriarte",
+    "Shirl Leonetti",
+    "Debora Guizar",
+    "Milagro Gibby",
+    "Jasmin Wilkey",
+    "Pablo Fallin",
+    "Basilia Brar",
+    "Hassie Endres",
+    "Myesha Wittenberg",
+    "Shenita Betz",
+    "Lemuel Macbeth",
+    "Torrie Gust",
+    "Mandi Slattery",
+    "Talia Placek",
+    "Lauretta Brousseau",
+    "Craig Via",
+    "Chan Banerjee",
+    "Sixta Poirrier",
+    "Damon Noonan"
+];
+
+var contribNames = personNames.splice(0,10);
+var userNames = personNames;
+
+// insert movies
+for (var movieTitle of movieTitles) {
+  var movieID = techName(movieTitle);
+  var doc = {
+    movieTitle: movieTitle, 
+    movieDetail: "details about " + movieTitle
+  };
+  xdmp.documentInsert(URI("movie", movieID), doc, getInsertOptions("movies"));
+  
+  var cast = [["hasActor", 1, 5], ["hasProducer", 1, 2], ["hasDirector", 1, 1], ["hasWriter", 1, 2]];
+  for (var c of cast) {
+    var pick = pickSome("", contribNames, c[1], c[2]);
+    for (var p of pick) {
+      sem.rdfInsert(sem.triple(entityIRI("movie", movieID), predicateIRI(c[0]), entityIRI("contributor", techName(p)), predicateIRI("cast")));
+    }  
+  }
+}
+
+// insert contributors
+for (var contribName of contribNames) {
+  var doc = {
+    contributorId: contribName, 
+    contribDetail: "details about " + contribName
+  };
+  xdmp.documentInsert(URI("contributor", techName(contribName)), doc, getInsertOptions("contributors"));
+}
+
+// insert users
+for (var userName of userNames) {
+	var userID = techName(userName);
+  var doc = {
+    userId: userID,
+    firstName: userName.split(" ")[0],
+    lastName: userName.split(" ")[1],
+    emailAddress: techName(userName) + "@gmail.earth",
+    blurb: "a blurb about " + userName
+  };
+  xdmp.documentInsert(URI("user", userID), doc, getInsertOptions("users"));
+  
+  // followers
+  var following = pickSome(userName, userNames, 0, 6);
+  for (var f of following) {
+    sem.rdfInsert(sem.triple(entityIRI("user", userID), predicateIRI("hasFollower"), entityIRI("user", techName(f)), predicateIRI("follower")));
+  }
+  
+  // posts
+  var posts = [
+    [contribNames, "contributor/hasBio", 0, 1], 
+    [contribNames, "contributor/hasGossip", 0, 3],
+    [movieTitles, "movie/hasReview", 0, 1],
+    [movieTitles, "movie/hasTrivia", 0, 1],
+    [movieTitles, "movie/hasGoof", 0, 1],
+    [movieTitles, "movie/hasGossip", 0, 2]
+  ];
+  for (var c of posts) {
+    var pick = pickSome("", c[0], c[2], c[3]);
+    for (var p of pick) {
+      var postDoc = {
+        postId: sem.uuidString(),
+        postType: c[1],
+        title: "Another post of type " + c[1] + " about " + p + " from " + userName,
+        creationDate: new Date(),
+        lastUpdateDate: new Date(),
+        text: "I, " + userName + " am a really gut riter. Thusforth i rit like this stile " + c[1] + " aboote " + p    
+      }
+      xdmp.documentInsert(URI("post", postDoc.postId), postDoc, getInsertOptions("posts"));
+      sem.rdfInsert(sem.triple(entityIRI(c[1].split("/")[0], techName(p)), predicateIRI(c[1]), entityIRI("post", postDoc.postID), predicateIRI("post")));
+      sem.rdfInsert(sem.triple(entityIRI("user", userID), predicateIRI("hasPost"), entityIRI("post", postDoc.postID), predicateIRI("post")));
+    }      
+  }
+}
+</query><query name="View Movie" focus="false" listorder="2" taborder="2" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show movie and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var movieTitle = "The Silk Basilisk";
+var movieDoc = cts.search(cts.andQuery([ 
+  cts.collectionQuery("movies"), 
+  cts.jsonPropertyValueQuery("movieTitle", movieTitle)
+]));
+
+var movieIRI = entityIRI("movie", techName(movieTitle));
+var srels = cts.triples(movieIRI, null, null);
+var orels = cts.triples(null, null, movieIRI);
+
+[
+  movieDoc,
+  srels,
+  orels
+]
+
+
+</query><query name="View User" focus="false" listorder="3" taborder="4" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show user and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var userName = techName("Lauretta Brousseau");
+var userDoc = cts.search(cts.andQuery([ 
+  cts.collectionQuery("users"), 
+  cts.jsonPropertyValueQuery("userId", userName)
+]));
+
+var userIRI = entityIRI("user", userName);
+var srels = cts.triples(userIRI, null, null);
+var orels = cts.triples(null, null, userIRI);
+
+[
+  userDoc,
+  srels,
+  orels
+]
+
+
+</query><query name="Triples" focus="false" listorder="4" taborder="10" active="true" database="15166240686423288811" server="9576529564396604243" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">select *  where {?s ?p ?o}
+
+</query><query name="Create Alert Subscription" focus="false" listorder="5" taborder="7" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+declareUpdate();
+
+function URI(type, id) {
+	return "/" + type + "/" + id + ".json";  
+}
+
+function getInsertOptions(typePlural) {
+	return {"collections": ["talkdata", typePlural]};	
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var userName = "Michael Havey";
+var userID = techName(userName);
+var subscriptionName = techName("TenerifeInTheMovies");
+
+var doc = {
+  userId: userID,
+  createDate: new Date(),
+  subscriptionId: sem.uuidString(),
+  subscriptionName: subscriptionName,
+  criteria: cts.andQuery([
+    cts.collectionQuery("posts"),
+    cts.wordQuery("tenerife")
+  ]).toObject()
+};
+xdmp.documentInsert(URI("subscription", doc.subscriptionId), doc, getInsertOptions("subscriptions"));
+"ID is " + doc.subscriptionId
+</query><query name="View Contributor" focus="false" listorder="6" taborder="3" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show contrib and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var contribName = "Kip Trott";
+var contribDoc = cts.search(cts.andQuery([ 
+  cts.collectionQuery("contributors"), 
+  cts.jsonPropertyValueQuery("contributorId", contribName)
+]));
+
+var contribIRI = entityIRI("contributor", techName(contribName));
+var srels = cts.triples(contribIRI, null, null);
+var orels = cts.triples(null, null, contribIRI);
+
+[
+  contribDoc,
+  srels,
+  orels
+]
+
+
+</query><query name="View Posts Per Subject" focus="false" listorder="7" taborder="" active="false" database="14197986698516302311" server="8295211045135297586" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';&#13;&#13;</query><query name="View Post" focus="false" listorder="8" taborder="5" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show post and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var anyPost = fn.head(cts.search(cts.collectionQuery("posts")));
+
+var postIRI = entityIRI("post", anyPost.toObject().postID);
+var srels = cts.triples(postIRI, null, null);
+var orels = cts.triples(null, null, postIRI);
+
+[
+  anyPost,
+  srels,
+  orels
+]
+</query><query name="Create User" focus="false" listorder="9" taborder="6" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+ * create a new user and follow someone
+ */
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+declareUpdate();
+
+function URI(type, id) {
+	return "/" + type + "/" + id + ".json";
+}
+
+function getInsertOptions(typePlural) {
+	return {"collections": ["talkdata", typePlural]};	
+}
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function predicateIRI(type) {
+	return sem.iri("http://org.jude/movie-talk/" + type);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var userName = "Michael Havey";
+var userID = techName(userName);
+
+var doc = {
+  userId: userID,
+  firstName: userName.split(" ")[0],
+  lastName: userName.split(" ")[1],
+  emailAddress: techName(userName) + "@gmail.earth",
+  blurb: "a blurb about " + userName
+};
+xdmp.documentInsert(URI("user", userID), doc, getInsertOptions("users"));
+  sem.rdfInsert(sem.triple(entityIRI("user", techName("Lauretta Brousseau")), predicateIRI("hasFollower"),
+                         entityIRI("user", userID), predicateIRI("follower")));
+</query><query name="Create Post" focus="false" listorder="10" taborder="8" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+declareUpdate();
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function URI(type, id) {
+	return "/" + type + "/" + id + ".json";
+}
+
+function getInsertOptions(typePlural) {
+	return {"collections": ["talkdata", typePlural]};	
+}
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function predicateIRI(type) {
+	return sem.iri("http://org.jude/movie-talk/" + type);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var userID = techName("Michael Havey");
+var postType = "movie/hasGoof";
+var movieID = techName("The Towering Portrait");
+var postDoc = {
+  postId: sem.uuidString(),
+  postType: postType,
+  title: "Crash scene full of goofs",
+  creationDate: new Date(),
+  lastUpdateDate: new Date(),
+  text: "They messed up the Tenerife scene. First, both planes were 747s, but the KLM plane shown is a 757. Second, the airlines were KLM and PanAM. They show KLM and Eastern."
+};
+xdmp.documentInsert(URI("post", postDoc.postID), postDoc, getInsertOptions("posts"));
+sem.rdfInsert(sem.triple(entityIRI(postType.split("/")[0], movieID), predicateIRI(postType), entityIRI("post", postDoc.postId), predicateIRI("post")));
+sem.rdfInsert(sem.triple(entityIRI("user", userID), predicateIRI("hasPost"), entityIRI("post", postDoc.postId), predicateIRI("post")));
+"The ID is " + postDoc.postId
+</query><query name="View Alerts" focus="false" listorder="11" taborder="9" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+cts.search(cts.directoryQuery("/alert/"))</query><query name="Compare Logical/Physical" focus="false" listorder="12" taborder="11" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+function normalName(name) {
+  return name.toLowerCase().split("_").join("");
+}
+
+function walk(comparison, source, parent, path, level) {
+  if (source !== Object(source)) {
+    xdmp.log("It is a primitive *" + parent + "*" + path + "*" + JSON.stringify(source), "info");
+  }  
+  else if (Array.isArray(source)) {
+    xdmp.log("It is an array *" + JSON.stringify(source), "info");
+  }
+  else {
+    xdmp.log("It is an object *" + JSON.stringify(source), "info");    
+    for (var attrib in source) {
+      walk(comparison, source[attrib], attrib, path + "," + parent, level + 1);      
+    }
+  }
+}
+
+var comparison = [];
+
+// logical model - parse entity services model
+var logicalDoc = cts.doc("/marklogic.com/entity-services/models/MovieTalk.json").toObject();
+if (!logicalDoc) throw "Unable to find logical data model";
+var defs = logicalDoc.definitions;
+for (var clazz in defs) {
+  var className = ""+clazz;
+  var props = defs[clazz].properties;
+  for (var attrib in props) {
+    var oattrib = defs[clazz].properties[attrib];
+    var datatype = oattrib.datatype;
+    var ref = oattrib["$ref"];
+    var attribRecord = {"logical" : {
+      "className": className, 
+      "normalClassName": normalName(className), 
+      "attribName": ""+attrib, 
+      "normalAttribName": normalName(""+attrib), 
+      "type": null, 
+      "primitive": "false", 
+      "array": false}
+    };
+    comparison.push(attribRecord);
+    if (datatype &amp;&amp; datatype == "array") {
+      attribRecord.logical.array = true;
+      oattrib = oattrib.items;
+      datatype = oattrib.datatype;
+      ref = oattrib["$ref"];
+    }
+    if (datatype) {
+      attribRecord.logical.primitive = true;
+      attribRecord.logical.type = datatype;
+    }
+    else if (ref) {
+      attribRecord.logical.primitive = false;
+      var splits = ref.split("/");
+      attribRecord.logical.type = splits[splits.length - 1];
+    }
+    else {
+      xdmp.log("SKIPPING * because it makes no sense " + JSON.stringify(attribRecord.logical), "error");
+    }
+  }
+}
+
+comparison
+
+/* 
+Physical model - We want to know how the physical layout compares to the logical model.  
+All we know is movietalk physically is JSONs with some managed triples.
+We know it's in the talkdata collection. 
+In terms of sample data, we know that all the movies and contributors considered during the logical design phases are in the physical DB too,
+possibly in a different form.
+We will explore the data using some basic SJS code in QC. 
+*/
+/*
+var query = cts.collectionQuery("talkdata");
+var uris = cts.uris(null,null,query);
+for (var uri of uris) {  
+  var doc = cts.doc(uri);
+  if (doc.documentFormat == "XML") {
+    xdmp.log("ignore for now xml *" + uri + "*", "info");
+  }
+  else if (doc.documentFormat == "JSON") {
+    walk(comparison, doc.toObject(), "", "document", 1);
+  }
+  else {
+    xdmp.log("Ignoring non-doc with URI *" + uri + "* of type *" + doc.documentFormat + "*", "warning");
+  }
+}
+*/</query><query name="Query 1" focus="false" listorder="13" taborder="12" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+//cts.search(cts.wordQuery("tenerife"))
+cts.search(cts.jsonPropertyWordQuery("subscriptionName", "tenerife"))
+
+
+</query><query name="Query 2" focus="false" listorder="14" taborder="13" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+function printDoc(doc) {
+  var attrib = [];
+  for (var a in doc) {
+    attrib.push(a);
+  }
+  return attrib.join(",");
+}
+
+/*
+function walk(node, level) {
+  xdmp.log("walk level " + level + " type *" + node.nodeType + "* local *" + node.localname + "* name *" + node.nodeName + "* value " + node.valueOf(), "info");
+  if (nod) {
+    for (var kid in node.childNodes) {
+      walk(kid, level+1);
+    }    
+  }
+}
+*/
+
+function walk(node, parent, level) {
+  for (var attrib in node) {
+    xdmp.log(parent + " " + attrib);
+  }
+}
+
+//var doc = cts.doc("/triplestore/11d5dbc2062f39e4.xml");
+var doc = cts.doc("/post/9523f931-f787-4122-aa47-067ec67bbdda.json");
+doc.documentFormat
+walk(doc.toObject(), "document", 1)
+</query><query name="Query 3" focus="false" listorder="15" taborder="" active="false" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+xdmp.httpGet("https://npiregistry.cms.hhs.gov/api?number=1164442620")</query><query name="Query 4" focus="false" listorder="16" taborder="14" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+var options = {
+    "maxClusters":12,
+    "minClusters":2,
+    "hierarchicalLevels":3
+  }
+
+var searchResults = cts.search(cts.collectionQuery("talkdata")).toArray();
+var clustering = cts.cluster(searchResults, options);
+var clusterReport = {};
+for (var i = 0; i &lt; clustering.clusters.length; i++) {
+  var label = clustering.clusters[i].label;
+  clusterReport[label] = [];
+  for (var j = 0; j &lt; clustering.clusters[i].nodes.length; j++) {
+    var id = clustering.clusters[i].nodes[j];
+    try {
+      clusterReport[label].push({"id": id, "uri": xdmp.nodeUri(searchResults[id]), "doc": searchResults[id]});   
+    }
+    catch(e) {
+      clusterReport[label].push({"id": id, "exception": e});            
+    }
+  }
+}
+clusterReport
+</query><query name="ClusterTest" focus="false" listorder="17" taborder="15" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+function normalName(name) {
+  return name.toLowerCase().split("_").join("");
+}
+
+function walk(docStructure, source, parent, path, level) {
+  if (source !== Object(source)) {
+    xdmp.log("It is a primitive *" + parent + "*" + path + "*" + JSON.stringify(source), "info");
+    docStructure.attributes.push({attribName: parent, normalAttribName: normalName(parent), primitive: true});
+  }  
+  else if (Array.isArray(source)) {
+    xdmp.log("It is an array *" + JSON.stringify(source), "info");
+  }
+  else {
+    xdmp.log("It is an object *" + JSON.stringify(source), "info");    
+    for (var attrib in source) {
+      walk(docStructure, source[attrib], attrib, path + "," + parent, level + 1);      
+    }
+  }
+}
+
+var docStructures = [];
+
+// logical model - parse entity services model
+var logicalDoc = cts.doc("/marklogic.com/entity-services/models/MovieTalk.json").toObject();
+if (!logicalDoc) throw "Unable to find logical data model";
+var defs = logicalDoc.definitions;
+for (var clazz in defs) {
+  var className = ""+clazz;
+  
+  var logicalClass = {
+    classification: [className, normalName(className)],
+    attributes: []
+  }  
+  docStructures.push(logicalClass);
+  var props = defs[clazz].properties;
+  for (var attrib in props) {
+    var oattrib = defs[clazz].properties[attrib];
+    var datatype = oattrib.datatype;
+    var ref = oattrib["$ref"];
+    var array = false;
+    var primitive = true;
+
+    if (datatype &amp;&amp; datatype == "array") {
+      array = true;
+      oattrib = oattrib.items;
+      datatype = oattrib.datatype;
+      ref = oattrib["$ref"];
+    }
+    if (datatype) {
+      primitive = true;
+      type = datatype;
+    }
+    else if (ref) {
+      primitive = false;
+      var splits = ref.split("/");
+      type = splits[splits.length - 1];
+    }
+    else {
+      xdmp.log("SKIPPING * because it makes no sense " + JSON.stringify(attrib), "error");
+    }
+
+    logicalClass.attributes.push({
+      "attribName": ""+attrib, 
+      "normalAttribName": normalName(""+attrib), 
+      "type": type, 
+      "primitive": primitive, 
+      "array": array
+    });
+  }
+}
+
+
+/* 
+Physical model - We want to know how the physical layout compares to the logical model.  
+All we know is movietalk physically is JSONs with some managed triples.
+We know it's in the talkdata collection. 
+We have lots of sample data that exist in the physical DB. We know what that data ties to in logical. We can see where it is in physical.
+*/
+var query = cts.collectionQuery("talkdata");
+var uris = cts.uris(null,null,query);
+for (var uri of uris) {  
+  var doc = cts.doc(uri);
+  if (doc.documentFormat == "XML") {
+    xdmp.log("ignore for now xml *" + uri + "*", "info");
+  }
+  else if (doc.documentFormat == "JSON") {
+    var uriParts = (""+uri).split("/");
+    var collections = xdmp.documentGetCollections(uri);
+    var docStructure = {
+      classification : uriParts.concat(collections),
+      attributes: []
+    };
+//    docStructure.classification.concat(uriParts).concat(collections);
+    docStructures.push(docStructure);
+    walk(docStructure, doc.toObject(), "", "", 1);
+  }
+  else {
+    xdmp.log("Ignoring non-doc with URI *" + uri + "* of type *" + doc.documentFormat + "*", "warning");
+  }
+}
+
+docStructures
+
+
+var clustering = cts.cluster(docStructures);
+clustering
+</query><query name="SVM" focus="false" listorder="18" taborder="16" active="true" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+declareUpdate();
+
+var labels = [];
+var classStructures = [];
+
+// logical model - parse entity services model
+var logicalDoc = cts.doc("/marklogic.com/entity-services/models/MovieTalk.json").toObject();
+if (!logicalDoc) throw "Unable to find logical data model";
+var defs = logicalDoc.definitions;
+for (var clazz in defs) {
+  var props = defs[clazz].properties;
+  var sattribs = [];
+  for (var attrib in props) {
+    sattribs.push(""+attrib);
+  }
+  var attribs = sattribs.join(" ");
+  if (attribs != "") {
+    //xdmp.documentInsert("/x/" + clazz +".xml", xdmp.unquote("&lt;value&gt;" + attribs + "&lt;/value&gt;"), xdmp.defaultPermissions(), "xxx");
+    //labels.push({"name": ""+clazz});
+    classStructures.push(xdmp.toJSON({"value": attribs}));
+    var singleClass = [{"name": ""+clazz}];
+    labels.push({"classes": singleClass});
+  }                       
+}
+
+//var classStructures = fn.subsequence(cts.search(cts.collectionQuery("xxx")), 1, 100);
+
+var train = cts.train(classStructures, labels, {"classifierType": "supports", "epsilon": 0.00001});
+var classification = cts.classify([xdmp.toJSON({"value": "username firstName lastname emailAddress blurb following"})], train, {classifierType: "supports"}, classStructures);
+//var threshold = cts.thresholds(computedLabels, knownLabels);
+classification
+                                 
+
+
+
+</query><query name="Query 5" focus="false" listorder="19" taborder="" active="false" database="1612666315903425388" server="3745767085219470914" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="xquery">'use strict';
+
+
+</query><query name="shakespeare" focus="true" listorder="20" taborder="17" active="true" database="12046564650948236618" server="10645988367293491959" database-name="Documents" server-name="5432-tde-odbc" mode="xquery">xquery version "1.0-ml";
+
+(:
+for $file in xdmp:filesystem-directory("/Users/mhavey/Downloads/shaks200")//*:entry return 
+  xdmp:load($file/*:pathname, concat("/shakespeare/", $file/*:filename/text()), (), ("shakespeare"))
+:)
+
+let $history := ("john.xml","hen_iv_1.xml","hen_iv_2.xml","hen_v.xml","hen_vi_1.xml","hen_vi_2.xml",
+    "hen_vi_3.xml","hen_viii.xml","pericles.xml","rich_ii.xml","rich_iii.xml")
+let $comedy := ("all_well.xml","as_you.xml","com_err.xml","dream.xml","lll.xml","m_for_m.xml",
+    "m_wives.xml","merchant.xml","much_ado.xml","t_night.xml","taming.xml","tempest.xml","two_gent.xml","win_tale.xml")
+let $tragedy := ("a_and_c.xml","coriolan.xml","cymbelin.xml","hamlet.xml","j_caesar.xml","lear.xml","macbeth.xml",
+    "othello.xml","r_and_j.xml","timon.xml","titus.xml","troilus.xml")
+
+let $set1 := json:array()
+let $set2 := json:array()
+
+let $_ := for $i in $history return 
+  if (xdmp:random(1) eq 1) then json:array-push($set1, $i)
+  else json:array-push($set2, $i)
+let $_ := for $i in $comedy return 
+  if (xdmp:random(1) eq 1) then json:array-push($set1, $i)
+  else json:array-push($set2, $i)
+let $_ := for $i in $tragedy return 
+  if (xdmp:random(1) eq 1) then json:array-push($set1, $i)
+  else json:array-push($set2, $i)
+
+let $firsthalfURI := json:array-values($set1)
+let $secondhalfURI := json:array-values($set2)
+
+(:
+let $allURI := cts:uris((), (), cts:directory-query("/shakespeare/"))[ends-with(., "xml")]
+let $firsthalfURI := for $u in $allURI return
+  if (xdmp:random(1) eq 0) then $u else ()
+let $secondhalfURI := fn:distinct-values($allURI[fn:not(.=$firsthalfURI)])
+let $firsthalfURI := cts:uris((), (), cts:directory-query("/shakespeare/"))[ends-with(., "xml")][1 to 12]
+let $secondhalfURI := cts:uris((), (), cts:directory-query("/shakespeare/"))[ends-with(., "xml")][13 to 37]
+:)
+
+
+let $firstlabels := for $x in $firsthalfURI 
+  return &lt;cts:label&gt;&lt;cts:class name="{
+    if ($history eq $x) then "history"
+    else if ($comedy eq $x) then "comedy"
+    else if ($tragedy eq $x) then "tragedy"
+    else "nonsense"
+  }"/&gt;&lt;/cts:label&gt;
+
+let $secondlabels := for $x in $secondhalfURI 
+  return &lt;cts:label&gt;&lt;cts:class name="{
+    if ($history eq $x) then "history"
+    else if ($comedy eq $x) then "comedy"
+    else if ($tragedy eq $x) then "tragedy"
+    else "nonsense"
+  }"/&gt;&lt;/cts:label&gt;
+
+let $firsthalf := cts:search(fn:doc(), cts:document-query(for $h in $firsthalfURI return "/shakespeare/" || $h))
+let $secondhalf := cts:search(fn:doc(), cts:document-query(for $h in $secondhalfURI return "/shakespeare/" || $h))
+
+let $classifier :=  
+    cts:train($firsthalf, $firstlabels, 
+      &lt;options xmlns="cts:train"&gt;
+        &lt;classifier-type&gt;supports&lt;/classifier-type&gt;
+      &lt;/options&gt;)
+let $classifysecond :=
+  cts:classify($secondhalf, $classifier, 
+        &lt;options xmlns="cts:classify"/&gt;,
+        $firsthalf)
+let $threshold := cts:thresholds($classifysecond, $secondlabels)
+
+return ($classifier, $threshold,
+for $s at $pos in $classifysecond return (
+  $secondhalfURI[$pos],
+  $secondlabels[$pos],
+  $s)
+)
+
+</query><query name="Query 6" focus="false" listorder="21" taborder="" active="false" database="12046564650948236618" server="10645988367293491959" database-name="Documents" server-name="5432-tde-odbc" mode="xquery">xquery version "1.0-ml";
+
+for $u in 1 to 10 return
+  if (xdmp:random(1) eq 0) then "hi"
+  else ()
+</query><query name="Query 7" focus="false" listorder="22" taborder="" active="false" database="12046564650948236618" server="10645988367293491959" database-name="Documents" server-name="5432-tde-odbc" mode="javascript">'use strict';
+
+var providerURI = "abc";
+var finalDBName = "Documents";
+	var harmonizedDoc = fn.head((xdmp.eval('cts.doc(providerURI)', 
+		{"providerURI": providerURI},
+		{
+			"database" : xdmp.database(finalDBName),
+			"update" : "false"
+		})));
+
+harmonizedDoc
+</query><query name="Query 8" focus="false" listorder="23" taborder="" active="false" database="12046564650948236618" server="10645988367293491959" database-name="Documents" server-name="5432-tde-odbc" mode="javascript">'use strict';
+
+var uris = cts.uris(null,null,cts.trueQuery())
+
+Sequence.from(uris, function(a, b) {
+  return "hi"+ a;
+})</query><query name="Query 9" focus="false" listorder="24" taborder="" active="false" database="17401027231485912834" server="795694587676774811" database-name="lacare-FINAL" server-name="lacare-FINAL" mode="javascript">'use strict';
+
+new Date(2018, 1, 4)
+
+xdmp.
+xdmp.yearFromDate(periodDate)
+//xdmp.monthNameFromDate(arg)</query></workspace></export>

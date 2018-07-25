@@ -22,7 +22,9 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
 
   (: if there is no model, we're in a bad way :)
   return
-    if (not(exists($profileForm))) then ()
+    if (not(exists($profileForm))) then map:new((
+      if(exists($problems)) then map:entry("problems", pt:dumpProblems($problems)) else ()
+    ))
     else
       let $_ := xes:transform($xmodel, $profileForm)
       let $descriptor := xes:getDescriptor($xmodel)
@@ -116,6 +118,7 @@ declare function xmi2es:transform(
 };
 
 declare function buildModel($xmi as node(), $problems) as node()? {
+  let $_ := xdmp:log("BUILDMODEL", "info")
   let $model := $xmi/*/*:Model
   let $modelName := normalize-space(string($model/@name))
   let $modelTags := $xmi/*/*:esModel
@@ -291,6 +294,9 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
 (: build the ES definition of an entity, mapping it from UML class :)
 declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as node()*, 
   $rootNamespace as node()?, $problems) as node() {
+
+  let $_ := xdmp:log(concat("BUILDCLASS *", $class/@name, "*"), "info")
+
 
   (: start building the class. NOTE: hints and namespace are NOT inherited. :)
   let $className := fn:normalize-space($class/@name)

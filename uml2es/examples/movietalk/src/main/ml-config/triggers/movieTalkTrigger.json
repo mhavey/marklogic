@@ -1,0 +1,21 @@
+{
+  "name": "movieTalkTrigger",
+  "description": "movieTalkTrigger",
+  "event": {
+    "data-event": {
+      "collection-scope": {
+        "uri": "posts"
+      },
+      "document-content": {
+        "update-kind": "create"
+      },
+      "when": "post-commit"
+    }
+  },
+  "module": "ext/movieTalkTrigger.sjs",
+  "module-db": "%%MODULES_DATABASE%%",
+  "module-root": "/",
+  "enabled": true,
+  "recursive": true,
+  "task-priority": "normal"
+}

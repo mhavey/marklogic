@@ -46,7 +46,7 @@ PUBLIC Interface
 declare function xes:init($problems, $param as xs:string?) as map:map {
 
 	map:new((
-		xes:getParams($param),
+		map:entry("params", xes:getParams($param)),
 		map:entry("descriptor", json:object()),
 		map:entry("problems", $problems),
 		map:entry("triples", json:array()),
@@ -591,6 +591,7 @@ declare function xes:resolveType($xes as map:map, $profileForm as node(),
 							else
 								$refType
 			else (concat("#/definitions/", $attrib/@type), "$ref")
+		else if (xes:emptyString($attrib/@type) and map:get(map:get($xes, "params"), "lax") eq true()) then ("string", "datatype")
 		else 
 			if (ends-with($attrib/@type, "#String")) then ("string", "datatype")
 			else if (ends-with($attrib/@type, "#Boolean")) then ("boolean", "datatype")
@@ -630,13 +631,25 @@ declare function xes:addFact($xes as map:map,
 Parse and validate extender params. Return map entry for them.
 Currently we ignore them. genland is assumed to be xqy
 :)
-declare function xes:getParams($param as xs:string?) {
-	if (string-length($param) eq 0) then ()
-	else 
-		let $json := xdmp:from-json-string($param)
-		for $key in map:keys($json) return
-			if ($key eq "genlang") then
-				if (map:get($json, $key) eq "xqy") then ()
-				else xdmp:log(concat("EXT illegal genlang, will use xqy *", map:get($json, $key), "*"), "warn")
-	   		else xdmp:log(concat("EXT illegal params *", $key, "*"), "warn") 
+declare function xes:getParams($param as xs:string?) as map:map {
+	let $nparam := fn:normalize-space($param)
+	let $map := map:new((
+		map:entry("genlang", "xqy"),
+		map:entry("lax", false())
+	))
+
+	return
+		if (string-length($nparam) eq 0 or $nparam eq "dummy") then $map
+		else 
+			let $json := xdmp:from-json-string($param)
+			let $_ := for $key in map:keys($json) return
+				if ($key eq "genlang") then
+					if (map:get($json, $key) eq "xqy") then ()
+					else xdmp:log(concat("EXT illegal genlang, will use xqy *", map:get($json, $key), "*"), "warn")
+				else if ($key eq "lax") then
+					if (map:get($json, $key) eq "true" or map:get($json, $key) eq true()) then map:put($map, "lax", true())
+					else if (map:get($json, $key) eq "false" or map:get($json, $key) eq false()) then ()
+					else xdmp:log(concat("EXT illegal genlang, will use xqy *", map:get($json, $key), "*"), "warn")
+		   		else xdmp:log(concat("EXT illegal params *", $key, "*"), "warn") 
+		   	return $map
 };

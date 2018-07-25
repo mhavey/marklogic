@@ -12,9 +12,13 @@ Here is the EMF model:
 
 ![RunningRaceEMF](../umlModels/RunningRaceEMF.png)
 
+The Eclipse project is in data/RunningRaceEMF.
+
 Here is the Papyrus model:
 
 ![RunningRacePapyrus](../umlModels/RunningRacePapyrus.png)
+
+The Eclipse project is in data/RunningRacePapyrus.
 
 ## How to run:
 
