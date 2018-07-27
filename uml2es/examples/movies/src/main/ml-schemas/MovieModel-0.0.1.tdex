@@ -297,10 +297,6 @@ graph uri: http://com.marklogic.es.uml.movie#MovieModel-0.0.1</tde:description>
       </tde:templates>
     </tde:template>
     <tde:template>
-      <tde:context>./ParentalCertificate</tde:context>
-      <!--No extraction template emitted forParentalCertificateas it was incorporated into another view. -->
-    </tde:template>
-    <tde:template>
       <tde:context>./CompanyContributor</tde:context>
       <tde:vars>
 	<tde:var>

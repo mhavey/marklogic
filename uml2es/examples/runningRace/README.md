@@ -1,7 +1,7 @@
 # Running Race Example
 
 ## Intro
-This sample demonstrates interop. We model a running race in two UML editors: MagicDraw and Eclipse Modeling Framework (EMF). We show that both UML models transform to the same ES model descriptor. Our model is based on one of the examples from MarkLogic's Entity Services github: <https://github.com/marklogic/entity-services/tree/master/entity-services-examples/example-races/>. 
+This sample demonstrates interop. We model a running race in three UML editors: MagicDraw, Eclipse Modeling Framework (EMF), and Papyrus. We show that all UML models transform to the same ES model descriptor. Our model is based on one of the examples from MarkLogic's Entity Services github: <https://github.com/marklogic/entity-services/tree/master/entity-services-examples/example-races/>. 
 
 ## Models
 Here is the MagicDraw model:
@@ -11,6 +11,14 @@ Here is the MagicDraw model:
 Here is the EMF model:
 
 ![RunningRaceEMF](../umlModels/RunningRaceEMF.png)
+
+The Eclipse project is in data/RunningRaceEMF.
+
+Here is the Papyrus model:
+
+![RunningRacePapyrus](../umlModels/RunningRacePapyrus.png)
+
+The Eclipse project is in data/RunningRacePapyrus.
 
 ## How to run:
 
@@ -38,15 +46,20 @@ Confirm:
 - Content DB has the following documents
 	* /xmi2es/es/RunningRace.json
 	* /xmi2es/es/RunningRaceEMF.json
+	* /xmi2es/es/RunningRacePapyrus.json
 	* /xmi2es/extension/RunningRace.ttl
 	* /xmi2es/extension/RunningRace.txt
 	* /xmi2es/extension/RunningRaceEMF.ttl
 	* /xmi2es/extension/RunningRaceEMF.txt
+	* /xmi2es/extension/RunningRacePapyrus.ttl
+	* /xmi2es/extension/RunningRacePapyrus.txt
 	* /xmi2es/findings/RunningRace.xml
 	* /xmi2es/findings/RunningRaceEMF.xml
+	* /xmi2es/findings/RunningRacePapyrus.xml
 	* /xmi2es/xmi/RunningRace.xml
 	* /xmi2es/xmi/RunningRaceEMF.xml
+	* /xmi2es/xmi/RunningRacePapyrus.xml
 
 ## Check Model Differences
-In Query Console, import XMI2ESRunningRace.xml workspace. In the tab entitled Check Diff, run to confirm the MagicDraw and EMF models are the same.
+In Query Console, import XMI2ESRunningRace.xml workspace. In the tab entitled Check Diff, run to confirm the models are the same.
 

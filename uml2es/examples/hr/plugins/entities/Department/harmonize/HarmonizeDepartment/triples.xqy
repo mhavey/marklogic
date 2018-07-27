@@ -22,7 +22,7 @@ declare function plugin:create-triples(
   $headers as item()*,
   $options as map:map) as sem:triple*
 {
-(: SEM Triple Generated Code For Class Department :)
+(: Generated Code of Type sems For Class Department :)
 let $semIRI := map:get($options, "deptIRI")
 return (
 sem:triple(sem:iri($semIRI), sem:iri("http://www.w3.org/2000/01/rdf-schema#label"), $content/departmentName)

@@ -20,11 +20,12 @@ declare function plugin:create-headers(
   $content as item()?,
   $options as map:map) as node()*
 {
-	<HRHeader>
-     <lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS> 
-     <entityType>department</entityType>
-     <entitySource>global</entitySource>
-     <entityId>{string($content//departmentId)}</entityId>
-     <entityName>{string($content//departmentName)}</entityName>
-  </HRHeader>
+(: Generated Code of Type headers For Class Department :)
+<Header>
+  <lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS>
+  <entityType>Department</entityType>
+  <sourceDocument>{$id}</sourceDocument>
+   <entityId>{string($content/departmentId)}</entityId>
+   <entityName>{string($content/departmentName)}</entityName>
+</Header>
 };

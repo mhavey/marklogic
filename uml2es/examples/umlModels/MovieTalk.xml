@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_n13BxnR0EeilsZ_N7KCVsg">
+  <uml:Model xmi:id="_2QHaYIREEeiUhpoajai1uw" name="MovieTalkModel">
+    <ownedComment xmi:type="uml:Comment" xmi:id="_PBgQYIRFEeiUhpoajai1uw">
+      <body>Functions:
+
+Create Post
+Create Alert
+Create/Modify User
+Receive Alert
+View Posts Per Subject
+View Posts Per Author
+View User
+View User Followers
+View User Following
+View User Subscriptions
+</body>
+    </ownedComment>
+    <packageImport xmi:type="uml:PackageImport" xmi:id="_2S1XMIREEeiUhpoajai1uw">
+      <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+    </packageImport>
+    <packagedElement xmi:type="uml:Class" xmi:id="_72J10IREEeiUhpoajai1uw" name="Alert">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_Hc8dgIRrEeiUhpoajai1uw" name="alertID"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_sgQIMIRXEeiUhpoajai1uw" name="alertTime"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_110wcoRXEeiUhpoajai1uw" name="subscription" type="_9iXgAIREEeiUhpoajai1uw" association="_110JYIRXEeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_4IOQ4IRXEeiUhpoajai1uw" name="post" type="_RNbCcIRSEeiUhpoajai1uw" association="_4INp0IRXEeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_KAWeUIR_EeiUhpoajai1uw" name="details"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_9BjR8IREEeiUhpoajai1uw" name="User">
+      <generalization xmi:type="uml:Generalization" xmi:id="_f4XL4IRdEeiUhpoajai1uw" general="_-Z21wIRREeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_i8rScIRSEeiUhpoajai1uw" name="username"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_pzsNkIRSEeiUhpoajai1uw" name="firstName"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_rn9nkIRSEeiUhpoajai1uw" name="lastName"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_saaYMIRSEeiUhpoajai1uw" name="emailAddress"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_x0TOAIRSEeiUhpoajai1uw" name="blurb"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_-hSdA4RdEeiUhpoajai1uw" name="followers" type="_9BjR8IREEeiUhpoajai1uw" association="_-hSdAIRdEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_BA9kcIReEeiUhpoajai1uw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_BA-ykIReEeiUhpoajai1uw" value="*"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_Dcxfk4ReEeiUhpoajai1uw" name="following" type="_9BjR8IREEeiUhpoajai1uw" association="_DcxfkIReEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_HczmgIReEeiUhpoajai1uw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Hc2p0IReEeiUhpoajai1uw" value="*"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_9iXgAIREEeiUhpoajai1uw" name="AlertSubscription">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_YHzL44RYEeiUhpoajai1uw" name="user" type="_9BjR8IREEeiUhpoajai1uw" association="_YHzL4IRYEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Zro9MIRYEeiUhpoajai1uw" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ZrqLUIRYEeiUhpoajai1uw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_BhD4cIRsEeiUhpoajai1uw" name="subscriptionID"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_D1ARAIRsEeiUhpoajai1uw" name="creationDate"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_J7BNAIRsEeiUhpoajai1uw" name="subscriptionName"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_O04e8IRsEeiUhpoajai1uw" name="subscriptionCriteria"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_-Z21wIRREeiUhpoajai1uw" name="TalkSubject"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_HXHrsIRSEeiUhpoajai1uw" name="Movie">
+      <generalization xmi:type="uml:Generalization" xmi:id="_euh2AIRdEeiUhpoajai1uw" general="_-Z21wIRREeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_XUMuQIRkEeiUhpoajai1uw" name="movieName"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_mtP74oRkEeiUhpoajai1uw" name="cast" type="_GdMJUIRuEeiUhpoajai1uw" association="_mtPU0IRkEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_AXqVgIRuEeiUhpoajai1uw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_AXv1EIRuEeiUhpoajai1uw" value="*"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_6YMGYIRtEeiUhpoajai1uw" name="details"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_Ib7XoIRSEeiUhpoajai1uw" name="MovieContributor">
+      <generalization xmi:type="uml:Generalization" xmi:id="_fN3dYIRdEeiUhpoajai1uw" general="_-Z21wIRREeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_lFWxAIRkEeiUhpoajai1uw" name="contributorName"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_7Y58gIRtEeiUhpoajai1uw" name="details"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_I7Mc0IRuEeiUhpoajai1uw" name="filmography" type="_GdMJUIRuEeiUhpoajai1uw" association="_I7L1wIRuEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_wQ8UIIRuEeiUhpoajai1uw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_wRGsMIRuEeiUhpoajai1uw" value="*"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_RNbCcIRSEeiUhpoajai1uw" name="Post">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_LfxCoIR_EeiUhpoajai1uw" name="postID"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_quCzoIRrEeiUhpoajai1uw" name="postType"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_wSQWAIReEeiUhpoajai1uw" name="title"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_KBiCgoRdEeiUhpoajai1uw" name="primarySubjectOfPost" type="_-Z21wIRREeiUhpoajai1uw" association="_KBhbcIRdEeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_0z-Ns4ReEeiUhpoajai1uw" name="author" type="_9BjR8IREEeiUhpoajai1uw" association="_0z-NsIReEeiUhpoajai1uw"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_6Dj4AIReEeiUhpoajai1uw" name="creationDate"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_7vkt4IReEeiUhpoajai1uw" name="lastUpdateDate"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_-pEqkIReEeiUhpoajai1uw" name="text"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_110JYIRXEeiUhpoajai1uw" memberEnd="_110wcoRXEeiUhpoajai1uw _111XgIRXEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_110wcIRXEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_110wcYRXEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_111XgIRXEeiUhpoajai1uw" type="_72J10IREEeiUhpoajai1uw" association="_110JYIRXEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_4INp0IRXEeiUhpoajai1uw" memberEnd="_4IOQ4IRXEeiUhpoajai1uw _4IOQ4YRXEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_4INp0YRXEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_4INp0oRXEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_4IOQ4YRXEeiUhpoajai1uw" type="_72J10IREEeiUhpoajai1uw" association="_4INp0IRXEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_YHzL4IRYEeiUhpoajai1uw" memberEnd="_YHzL44RYEeiUhpoajai1uw _YHzy8IRYEeiUhpoajai1uw" navigableOwnedEnd="_YHzy8IRYEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_YHzL4YRYEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_YHzL4oRYEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_YHzy8IRYEeiUhpoajai1uw" name="subscriptions" type="_9iXgAIREEeiUhpoajai1uw" association="_YHzL4IRYEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_aKKsQIRYEeiUhpoajai1uw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_aKL6YIRYEeiUhpoajai1uw" value="*"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_KBhbcIRdEeiUhpoajai1uw" memberEnd="_KBiCgoRdEeiUhpoajai1uw _KBiCg4RdEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_KBiCgIRdEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_KBiCgYRdEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_KBiCg4RdEeiUhpoajai1uw" type="_RNbCcIRSEeiUhpoajai1uw" association="_KBhbcIRdEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_-hSdAIRdEeiUhpoajai1uw" memberEnd="_-hSdA4RdEeiUhpoajai1uw _-hTEEIRdEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_-hSdAYRdEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_-hSdAoRdEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_-hTEEIRdEeiUhpoajai1uw" type="_9BjR8IREEeiUhpoajai1uw" association="_-hSdAIRdEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_DcxfkIReEeiUhpoajai1uw" memberEnd="_Dcxfk4ReEeiUhpoajai1uw _DcyGoIReEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_DcxfkYReEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_DcxfkoReEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_DcyGoIReEeiUhpoajai1uw" type="_9BjR8IREEeiUhpoajai1uw" association="_DcxfkIReEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_0z-NsIReEeiUhpoajai1uw" memberEnd="_0z-Ns4ReEeiUhpoajai1uw _0z-0wIReEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_0z-NsYReEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_0z-NsoReEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_0z-0wIReEeiUhpoajai1uw" type="_RNbCcIRSEeiUhpoajai1uw" association="_0z-NsIReEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_mtPU0IRkEeiUhpoajai1uw" memberEnd="_mtP74oRkEeiUhpoajai1uw _mtP744RkEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_mtP74IRkEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_mtP74YRkEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_GdMJUIRuEeiUhpoajai1uw" name="Role">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_OmVasIRuEeiUhpoajai1uw" name="roleType"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_mtP744RkEeiUhpoajai1uw" name="movie" type="_HXHrsIRSEeiUhpoajai1uw" association="_mtPU0IRkEeiUhpoajai1uw">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_AyX7kIRuEeiUhpoajai1uw" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_AycNAIRuEeiUhpoajai1uw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_I7ND4IRuEeiUhpoajai1uw" name="contributor" type="_Ib7XoIRSEeiUhpoajai1uw" association="_I7L1wIRuEeiUhpoajai1uw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_I7L1wIRuEeiUhpoajai1uw" memberEnd="_I7Mc0IRuEeiUhpoajai1uw _I7ND4IRuEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_I7L1wYRuEeiUhpoajai1uw" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_I7L1woRuEeiUhpoajai1uw" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+    </packagedElement>
+    <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_2SL28IREEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_2SNsIIREEeiUhpoajai1uw" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <references xmi:type="ecore:EPackage" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_n13Bw3R0EeilsZ_N7KCVsg"/>
+      </eAnnotations>
+      <appliedProfile xmi:type="uml:Profile" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
+    </profileApplication>
+    <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_bJ830IRkEeiUhpoajai1uw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_bJ9e4IRkEeiUhpoajai1uw" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <references xmi:type="ecore:EPackage" href="pathmap://PAPYRUS_ACTIONLANGUAGE_PROFILE/ActionLanguage-Profile.profile.uml#_Kv8EIKFXEeS_KNX0nfvIVQ"/>
+      </eAnnotations>
+      <appliedProfile xmi:type="uml:Profile" href="pathmap://PAPYRUS_ACTIONLANGUAGE_PROFILE/ActionLanguage-Profile.profile.uml#ActionLanguage"/>
+    </profileApplication>
+  </uml:Model>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_KwO9gIULEeiUhpoajai1uw" version="0.0.1" baseUri="http://org.jude/movie.talk" base_Package="_2QHaYIREEeiUhpoajai1uw"/>
+</xmi:XMI>

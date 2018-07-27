@@ -1,94 +1,60 @@
-<export><workspace name="XMI2ESRunningRace"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3579908077109269246" server="6770558193057240745" database-name="xmi2es-examples-runningRace-content" server-name="xmi2es-examples-runningRace" mode="javascript">'use strict';
+<export><workspace name="XMI2ESRunningRace"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3232391659292767420" server="13660598595511018955" database-name="xmi2es-examples-runningRace-content" server-name="xmi2es-examples-runningRace" mode="javascript">'use strict';
 
-//
-// Compare magic and EMF running race models. Handle classes or attribs in any order. Ignore descriptions.
-//
+const SKIPS = ["title", "description"];
 
-function compare(magic, emf) {
-  var info = compareInfo(magic.info, emf.info);
-  if (info != "") return info;
+// Make the JSON source in an alphabetized form for easy comparison
+function makeComparable(source) {
+  if (source !== Object(source)) {
+    // it's a scalar
+    return source;
+  }  
   
-  var magicClasses = [];
-  var emfClasses = [];
-  for (var a in magic.definitions) {
-    if (magic.definitions.hasOwnProperty(a)) {
-      magicClasses.push(a);
-    }
-  }
-  for (var a in emf.definitions) {
-    if (emf.definitions.hasOwnProperty(a)) {
-      emfClasses.push(a);
-    }
-  }
-  var classes = magicClasses.sort();
-  if (classes.join() != emfClasses.sort().join()) {
-    return "classes";
-  }
-  for (var i = 0; i &lt; classes.length; i++) {
-    var diff = compareClass(magic.definitions[classes[i]], emf.definitions[classes[i]]);
-    if (diff != "") return classes[i] + " " + diff;
-  }
-  
-  return "";
-}
-function compareInfo(magicInfo, emfInfo) {
-  var fields = ["version", "baseUri"];
-  for (var f = 0; f &lt; fields.length; f++) {
-    if (""+ magicInfo[fields[f]] != "" + emfInfo[fields[f]]) return fields[f];
-  }
-  return "";  
-}
+  if (Array.isArray(source)) {
+    // it's an array
 
-function compareClass(magicClass, emfClass) {
-  var fields = ["primaryKey", "namespace", "namespacePrefix"];
-  var arrays = ["required", "wordLexicon", "elementRangeIndex", "pathRangeIndex"];
+    // step 1 - alphabetize the elements
+    var elems = [];
+    for (var i = 0; i &lt; source.length; i++) {
+      elems.push({
+        "index" : i,
+        "contents" : JSON.stringify(source[i])
+      });
+    }
+    elems.sort(function(a,b) { 
+      if (a.contents &lt; b.contents) return -1; 
+      else if (b.contents &lt; a.contents) return 1; 
+      else return 0;});
 
-  for (var f = 0; f &lt; fields.length; f++) {
-    if (""+ magicClass[fields[f]] != "" + emfClass[fields[f]]) return fields[f];
-  }
-  for (var a = 0; a &lt; arrays.length; a++) {
-    if (!magicClass[arrays[a]] &amp;&amp; emfClass[arrays[a]]) return arrays[i] + " magic nodef"; 
-    if (magicClass[arrays[a]] &amp;&amp; !emfClass[arrays[a]]) return arrays[i] + " emf nodef"; 
-    if (magicClass[arrays[a]] &amp;&amp; emfClass[arrays[a]]) {
-        if (magicClass[arrays[a]].sort().join() != emfClass[arrays[a]].sort().join()) {
-          return arrays[a] + " diff";
-        }
+    // step 2 - recurse on each element in alphabetical order
+    var comparable = [];
+    for (var i = 0; i &lt; elems.length; i++) {
+      comparable[i] = makeComparable(source[[ elems[i].index ]]);
     }
-  }
+    return comparable;
+  } else  {
+    // it's an object
 
-  var magicAttribs = [];
-  var emfAttribs = [];
-  for (var a in magicClass.properties) {
-    if (magicClass.properties.hasOwnProperty(a)) {
-      magicAttribs.push(a);
+    // step 1 - get the props in alphabetical order
+    var props = [];
+    for (var prop in source) {
+      if (source.hasOwnProperty(prop) &amp;&amp; SKIPS.indexOf(""+prop) &lt; 0) {
+        props.push(prop);
+      }
     }
-  }
-  for (var a in emfClass.properties) {
-    if (emfClass.properties.hasOwnProperty(a)) {
-      emfAttribs.push(a);
+    props.sort();
+
+    // step 2 - recurse on each
+    var comparable = {};
+    for (var i = 0; i &lt; props.length; i++) {
+      comparable[props[i]] = makeComparable(source[props[i]]);
     }
+    return comparable;
   }
-  var attribs = magicAttribs.sort();
-  if (attribs.join() != emfAttribs.sort().join()) {
-    return "attribs";
-  }
-  
-  for (var i = 0; i &lt; attribs.length; i++) {
-    var diff = compareAttrib(magicClass.properties[attribs[i]], emfClass.properties[attribs[i]]);
-    if (diff != "") return attribs[i] + " " + diff;
-  }
-  
-  return "";  
 }
 
-function compareAttrib(magicAttrib, emfAttrib) {
-  delete magicAttrib.description;
-  delete emfAttrib.description;
-  if (JSON.stringify(magicAttrib) != JSON.stringify(emfAttrib)) return "diff";
-  return "";
-}
-
-var magic = cts.doc("/xmi2es/es/RunningRace.json").toObject();
-var emf = cts.doc("/xmi2es/es/RunningRaceEMF.json").toObject();
-"Differences: " + compare(magic, emf);
+var models = [
+    JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRace.json").toObject())),
+    JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRaceEMF.json").toObject())),
+    JSON.stringify(makeComparable(cts.doc("/xmi2es/es/RunningRacePapyrus.json").toObject())) ];
+"Models are the same? " + (models[0] == models[1] &amp;&amp; models[1] == models[2])
 </query></workspace></export>

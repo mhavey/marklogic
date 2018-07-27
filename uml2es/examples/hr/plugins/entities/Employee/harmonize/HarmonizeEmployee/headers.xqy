@@ -20,11 +20,12 @@ declare function plugin:create-headers(
   $content as item()?,
   $options as map:map) as node()*
 {
-	<HRHeader>
-     <lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS> 
-     <entityType>employee</entityType>
-     <entitySource>{fn:tokenize($id, "/")[4]}</entitySource>
-     <entityId>{string($content//employeeId)}</entityId>
-     <entityName>{concat(string($content//firstName), " ", string($content//lastName))}</entityName>
-  </HRHeader>
+(: Generated Code of Type headers For Class Employee :)
+<Header>
+  <lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS>
+  <entityType>Employee</entityType>
+  <sourceDocument>{$id}</sourceDocument>
+   <entityId>{string($content/employeeId)}</entityId>
+   <entityName>{map:get($options, "employeeName")}</entityName>
+</Header>
 };

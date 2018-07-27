@@ -1,0 +1,688 @@
+<export><workspace name="XMI2ESMovieTalk"><query name="Step 1 - Populate Physical Data" focus="false" listorder="1" taborder="1" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+ * This script shows how to populate physical data. Just run it. Don't look at
+ * how the code works!!!! We want to DISCOVER the physical data structure
+ * without reading the code.
+ * 
+ * MUST RUN AGAINST THE FOLLOWING DB: xmi2es-examples-movieTalk-content
+ */
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+declareUpdate();
+
+function URI(type, id) {
+	return "/" + type + "/" + id + ".json";
+}
+
+function getInsertOptions(typePlural) {
+	return {"collections": ["talkdata", typePlural]};	
+}
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function predicateIRI(type) {
+	return sem.iri("http://org.jude/movie-talk/" + type);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickSome(me, universe, lowerSize, upperSize) {
+  var size = getRandomInt(lowerSize, upperSize);
+  if (size == 0) return [];
+  
+  var deck = [];
+  var matches = [];
+  for (var item of universe) {
+    deck.push({item: item, mhavey: getRandomInt(0, 10000)});
+  }
+  deck.sort(function(a,b) {
+    if (a.mhavey &lt; b.mhavey) return -1;
+    else if (a.mhavey &gt; b.mhavey) return 1;
+    return 0;
+  });
+  var counter = 0;
+  while(matches.length &lt; size) {
+    var item = deck[counter].item;
+    counter++;
+    if (item == me) continue;
+    matches.push(deck[counter].item);
+  }
+  return matches;
+}
+
+/*
+ * We make createPost a function because our data has the silly initial posts
+ * and a much better manual post about tenerife. Notice we used MS-style
+ * properties (CamelBack, not camelBack)
+ */
+function createPost(userName, postType, subjectName, postTitle, text) {
+
+  // postType is like movie/hasReview
+  var postDoc = {
+    PostId : sem.uuidString(),
+    PostType : postType,
+    Title : postTitle,
+    CreationDate : new Date(),
+    LastUpdateDate : new Date(),
+    Text : text
+  }
+  xdmp.documentInsert(URI("post", postDoc.PostId), postDoc,
+      getInsertOptions("posts"));
+  sem.rdfInsert(sem.triple(entityIRI(postType.split("/")[0],
+      techName(subjectName)), predicateIRI(postType), entityIRI("post",
+      postDoc.PostId), predicateIRI("post")));
+  sem.rdfInsert(sem.triple(entityIRI("user", userID),
+      predicateIRI("hasPost"), entityIRI("post", postDoc.PostId),
+      predicateIRI("post")));
+}
+
+// random titles courtesy of
+// http://www.starmanseries.com/toolkit/titles_mystery.html
+var movieTitles = [
+  "The Clue Of The Sparkling Ghost",
+  "The Quest Of The Exotic Pony",
+  "The Humming Botanist",
+  "The Silk Basilisk",
+  "The Clue Of The Metallic Circuitry",
+  "The Clue Of The Lavender Giraffe",
+  "The Clue Of The Creaking Spearman",
+  "The Mysterious Barley",
+  "The Towering Portrait",
+  "The Case Of The Black Jalopy",
+  "The Secret Of The Jade Courtyard",
+  "The Mystery Of The Alabaster Milkman",
+  "The Mysterious Race",
+  "The Leaping Coin",
+  "The Clue In The Nuisance"
+];
+
+// random names courtesy of http://listofrandomnames.com
+var personNames = [
+    "Karon Dossett",
+    "Rachel Pagel",
+    "Jessenia Wilbert",
+    "Kip Trott",
+    "Steve Threatt",
+    "Charmain Mclelland",
+    "Brice Coleman",
+    "Daniell League",
+    "Macy Whittenberg",
+    "Kassandra Bladen",
+    "Franklyn Donlon",
+    "Patrica Uriarte",
+    "Shirl Leonetti",
+    "Debora Guizar",
+    "Milagro Gibby",
+    "Jasmin Wilkey",
+    "Pablo Fallin",
+    "Basilia Brar",
+    "Hassie Endres",
+    "Myesha Wittenberg",
+    "Shenita Betz",
+    "Lemuel Macbeth",
+    "Torrie Gust",
+    "Mandi Slattery",
+    "Talia Placek",
+    "Lauretta Brousseau",
+    "Craig Via",
+    "Chan Banerjee",
+    "Sixta Poirrier",
+    "Damon Noonan",
+    "Michael Havey"
+];
+
+var contribNames = personNames.splice(0,10);
+var userNames = personNames;
+
+// insert movies
+for (var movieTitle of movieTitles) {
+  var movieID = techName(movieTitle);
+  var doc = {
+    movieTitle: movieTitle, 
+    movieDetail: "details about " + movieTitle
+  };
+  xdmp.documentInsert(URI("movie", movieID), doc, getInsertOptions("movies"));
+  
+  var cast = [["hasActor", 1, 5], ["hasProducer", 1, 2], ["hasDirector", 1, 1], ["hasWriter", 1, 2]];
+  for (var c of cast) {
+    var pick = pickSome("", contribNames, c[1], c[2]);
+    for (var p of pick) {
+      sem.rdfInsert(sem.triple(entityIRI("movie", movieID), predicateIRI(c[0]), entityIRI("contributor", techName(p)), predicateIRI("cast")));
+    }  
+  }
+}
+
+// insert contributors
+for (var contribName of contribNames) {
+  var doc = {
+    contributorId: contribName, 
+    contribDetail: "details about " + contribName
+  };
+  xdmp.documentInsert(URI("contributor", techName(contribName)), doc, getInsertOptions("contributors"));
+}
+
+// insert users
+for (var userName of userNames) {
+  var userID = techName(userName);
+  var doc = {
+    userId: userID,
+    firstName: userName.split(" ")[0],
+    lastName: userName.split(" ")[1],
+    emailAddress: techName(userName) + "@gmail.earth",
+    blurb: "a blurb about " + userName
+  };
+  xdmp.documentInsert(URI("user", userID), doc, getInsertOptions("users"));
+  
+  // followers
+  var following = pickSome(userName, userNames, 0, 6);
+  for (var f of following) {
+    sem.rdfInsert(sem.triple(entityIRI("user", userID), predicateIRI("hasFollower"), entityIRI("user", techName(f)), predicateIRI("follower")));
+  }
+  
+  // posts
+  var posts = [
+    [contribNames, "contributor/hasBio", 0, 1], 
+    [contribNames, "contributor/hasGossip", 0, 3],
+    [movieTitles, "movie/hasReview", 0, 1],
+    [movieTitles, "movie/hasTrivia", 0, 1],
+    [movieTitles, "movie/hasGoof", 0, 1],
+    [movieTitles, "movie/hasGossip", 0, 2]
+  ];
+  for (var c of posts) {
+    var pick = pickSome("", c[0], c[2], c[3]);
+    for (var p of pick) {
+    	createPost(userID, c[1], p, "Another post of type " + c[1] + " about " + p + " from " + userName, "I, " + userName + " am a really gut riter. Thusforth i rit like this stile " + c[1] + " aboote " + p);
+    }      
+  }
+}
+
+/* Now for a new post - this time a good one */
+createPost("Michael Havey", "movie/hasGoof", "The Towering Portrait", "Tenerife crash scene full of goofs", "They messed up the Tenerife scene. First, both planes were 747s, but the KLM plane shown is a 757. Second, the airlines were KLM and PanAM. They show KLM and Eastern.");
+
+/*
+ * And let's create an alert subscription that will match my tenerife post.
+ * Notice the SQL-like property names. Also we have typos like CREAT_DATE (a
+ * UNIXy typo!!) . Also notice how the uri is /sub/ and the collection is subs.
+ * Not subscription but sub!!
+ */
+var userName = "Michael Havey";
+var userID = techName(userName);
+var subscriptionName = "TenerifeInTheMovies";
+var doc = {
+  USER_ID: userID,
+  CREAT_DATE: new Date(),
+  SUB_ID: sem.uuidString(),
+  SUB_NAME: subscriptionName,
+  CRITERIA: cts.andQuery([
+    cts.collectionQuery("posts"),
+    cts.wordQuery("tenerife")
+  ]).toObject()
+};
+xdmp.documentInsert(URI("sub", doc.SUB_ID), doc, getInsertOptions("subs"));
+
+</query><query name="View Movie" focus="false" listorder="2" taborder="3" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show movie and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var movieTitle = "The Humming Botanist";
+var movieDoc = cts.search(cts.andQuery([ 
+  cts.collectionQuery("movies"), 
+  cts.jsonPropertyValueQuery("movieTitle", movieTitle)
+]));
+
+var movieIRI = entityIRI("movie", techName(movieTitle));
+var srels = cts.triples(movieIRI, null, null);
+var orels = cts.triples(null, null, movieIRI);
+
+[
+  movieDoc,
+  srels,
+  orels
+]
+
+
+</query><query name="View User" focus="false" listorder="3" taborder="5" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show user and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var userName = techName("Michael Havey");
+var userDoc = cts.search(cts.andQuery([ 
+  cts.collectionQuery("users"), 
+  cts.jsonPropertyValueQuery("userId", userName)
+]));
+
+var userIRI = entityIRI("user", userName);
+var srels = cts.triples(userIRI, null, null);
+var orels = cts.triples(null, null, userIRI);
+
+[
+  userDoc,
+  srels,
+  orels
+]
+
+
+</query><query name="Cast Triples" focus="false" listorder="4" taborder="8" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">select *  from &lt;http://org.jude/movie-talk/cast&gt; where {?s ?p ?o}
+
+</query><query name="View Contributor" focus="false" listorder="6" taborder="4" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show contrib and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var contribName = "Kip Trott";
+var contribDoc = cts.search(cts.andQuery([ 
+  cts.collectionQuery("contributors"), 
+  cts.jsonPropertyValueQuery("contributorId", contribName)
+]));
+
+var contribIRI = entityIRI("contributor", techName(contribName));
+var srels = cts.triples(contribIRI, null, null);
+var orels = cts.triples(null, null, contribIRI);
+
+[
+  contribDoc,
+  srels,
+  orels
+]
+
+
+</query><query name="View Posts Per Subject" focus="false" listorder="7" taborder="7" active="false" database="1952654142594417627" server="12637936017176057021" database-name="" server-name="" mode="javascript">'use strict';&#13;&#13;</query><query name="View Post" focus="false" listorder="8" taborder="6" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show post and its relationships
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function entityIRI(type, id) {
+	return sem.iri("http://org.jude/movie-talk/" + type + "#" + id);
+}
+
+function techName(bizName) {
+  return bizName.split(" ").join("")
+}
+
+var anyPost = fn.head(cts.search(cts.andQuery([
+  cts.collectionQuery("posts"), 
+  cts.wordQuery("tenerife")
+  ])));
+
+var postIRI = entityIRI("post", anyPost.toObject().postID);
+var srels = cts.triples(postIRI, null, null);
+var orels = cts.triples(null, null, postIRI);
+
+[
+  anyPost,
+  srels,
+  orels
+]
+</query><query name="View Subs and Alerts" focus="false" listorder="11" taborder="7" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Show subscriptions and alerts
+*/
+
+var subs = cts.search(cts.collectionQuery("subs"));
+var alerts = cts.search(cts.directoryQuery("/alert/"));
+
+["subs", subs, "alerts", alerts]</query><query name="Step 2 - Discover" focus="true" listorder="22" taborder="2" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+/*
+Let's try to map physical back to logical. We know the logical model that we built in UML. 
+We have an Entity-Services version of it in this DB; the toolkit was able to produce the ES model thanks to its "lax" mode.
+There are several ways to determine this mapping:
+1. Ask the team that developed the application. - They're long gone. Can't ask them.
+2. Look at the code. - We don't know where the code is. We could look for it and pore through it. But that's hard and we're not prepared for that struggle.
+3. Query the DB through various means and see how it compares to logical - That's what we're going to do. We'll write code that queries much the same way we would query manually in QC.
+
+What we know:
+- Physical faintly resembles logical but there are differences. 
+- Physical is a mix of JSON and managed triples. 
+- All the JSON stuff is in the "talkdata" collection.
+
+Impl notes:
+- The code below is heavy. We can run it in QC because our data is small.
+- We err on the side of false positives. 
+*/
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+function normalName(name) {
+  return name.toLowerCase().split("_").join("");
+}
+
+function matchPhysical(physicalSet, normalAttribName) {
+  var results = [];
+  cts.walk(physicalSet, cts.jsonPropertyWordQuery("normalName", normalAttribName, ["stemmed"]), 
+    function(text, node, queries, start) {
+      results.push(node.parentNode);
+      return "continue";
+    });
+  return results;
+}
+
+function highlightMatch(uri, dataQuery, attributeName) {
+  var doc = cts.doc(uri);
+  var results = [];
+  cts.walk(doc, dataQuery, function(text, node, queries, start) {
+    var foundAttributeName = node.xpath("node-name(.)");
+    if (attributeName == foundAttributeName) {
+      results.push(""+node);
+    }
+    return "continue";
+  });
+  return {"highlights": results};
+}
+
+var logicalDoc = cts.doc("/xmi2es/es/MovieTalk.json");
+if (!logicalDoc) throw "Unable to find logical data model";
+var defs = logicalDoc.toObject().definitions;
+var discoveryReport = {
+  "allCollections": cts.collections(),
+  "classes": {}
+};
+
+/* 
+Step 1 - Where in Physical are the classes from my logical model. 
+We'll use the URI and collection lexicons to help track this down.
+*/
+
+// This data structure indicates data we expect to find in the DB.
+// It locates that data in terms of the logical model. But we'll need to find it physical.
+// Uses lower-case names for easier matching
+var logicalData = {
+  "Alert": "tenerife",
+  "User": "michael havey",
+  "AlertSubscription": "tenerife",
+  "TalkSubject": null,
+  "Movie": "humming botanist",
+  "MovieContributor": "kip trott",
+  "Post": "tenerife",
+  "Role": "actor"
+};
+
+var rootDirectories = cts.uris()
+for (var clazz in defs) {
+  var logicalClassName = ""+clazz;
+  var className = normalName(logicalClassName);
+  var dataUnderClass = logicalData[logicalClassName] ? logicalData[logicalClassName].split(" ") : [];
+  /*
+  for (var attrib in logicalData[className]) {
+    var values = logicalData[className].split(" ");
+    for (var v in values) dataUnderClass.push(values[v]);
+  }
+  */
+  var dataQuery = cts.orQuery([
+      cts.wordQuery(dataUnderClass.join(""), ["case-insensitive"]),
+      cts.wordQuery(dataUnderClass.join("*"), ["case-insensitive"]),
+      cts.wordQuery(dataUnderClass, ["case-insensitive"])
+    ]);
+  var candidateURIs = [];
+  var collectionMatch = cts.collectionMatch("*" + className + "*");
+  var uriMatch = fn.subsequence(cts.uriMatch("*" + className + "*"), 1, 3);
+  var uriMatchWithID = cts.uriMatch("*" + className + "*" + dataUnderClass.join("*") + "*", ["case-insensitive"]);
+  var uriMatchWithData = cts.uriMatch("*" + className + "*", ["case-insensitive"], dataQuery); 
+  var dataMatch = cts.uris(null, null, dataQuery);
+  candidateURIs = candidateURIs.concat(uriMatchWithID.toArray());
+  candidateURIs = candidateURIs.concat(uriMatchWithData.toArray());
+  candidateURIs = candidateURIs.concat(dataMatch.toArray());
+  discoveryReport.classes[className] = {
+    collectionMatch: collectionMatch, 
+    uriMatch: uriMatch, 
+    uriMatchWithID: uriMatchWithID,
+    uriMatchWithData: uriMatchWithData,
+    dataMatch: dataMatch
+  };  
+  
+  /*
+    Step 2 - Within this class, what are the logical attributes, and where in physical can we find them?  
+  */
+  var attribs = defs[clazz].properties;
+  
+  var physicalAttribs = {};
+  var physicalPredicates = {};  
+  var knownDocs = cts.search(cts.documentQuery(candidateURIs));
+  for (var doc of knownDocs) {
+    var uri = xdmp.nodeUri(doc);
+    if (doc.documentFormat == "JSON") {
+      for (var pattrib in doc.toObject()) {
+        var pAttribName = "" + pattrib;
+        if (!physicalAttribs[pAttribName]) {
+          physicalAttribs[pAttribName] = {name: pAttribName, normalName: normalName(pAttribName)};
+          physicalAttribs[pAttribName].uris = {};
+        }
+        if (!physicalAttribs[pAttribName].uris[uri]) {
+          physicalAttribs[pAttribName].uris[uri] = highlightMatch(uri, dataQuery, pAttribName);
+        }
+      }
+    }
+    else if (doc.documentFormat == "XML") {
+      try {
+        var semTriple = sem.rdfParse(doc, ["triplexml"]);
+        var predicate = "" + sem.triplePredicate(semTriple);
+        if (!physicalPredicates[predicate]) {
+          var splits = predicate.split("/");
+          var leaf = normalName(splits[splits.length - 1]);
+          var nohas = (leaf.startsWith("has") ? leaf.substring(3) : leaf);
+          physicalPredicates[predicate] = {predicate: predicate, predicateLeaf: normalName(splits[splits.length - 1]), normalName: nohas};
+          physicalPredicates[predicate].uris = [];
+        }
+        if (physicalPredicates[predicate].uris.indexOf(uri) &lt; 0) {
+          physicalPredicates[predicate].uris.push(uri);
+        }
+      }
+      catch(e) {
+        xdmp.log("Error parsing XML * " + uri + "*. Error is " + e, "error");
+      }
+    }
+    else {
+      xdmp.log("IGNORE *" + uri + "* of type *" + doc.documentFormat + "*", "info");
+    }
+  }
+  discoveryReport.classes[className].physicalAttribs = physicalAttribs;
+  discoveryReport.classes[className].physicalPredicates = physicalPredicates;
+  discoveryReport.classes[className].attribs = {};
+  
+  for (var attrib in attribs) {
+    var attribName = "" + attrib;
+    var normalAttribName = normalName(attribName);
+    discoveryReport.classes[className].attribs[attribName] = {normalName: normalName(attribName)};
+    discoveryReport.classes[className].attribs[attribName].physicalAttributes = matchPhysical(physicalAttribs, normalAttribName); 
+    discoveryReport.classes[className].attribs[attribName].physicalPredicates = matchPhysical(physicalPredicates, normalAttribName);
+  }
+}
+
+/*
+Step 3 - present findings
+*/
+["Discovery Report ", discoveryReport]
+
+/*
+Step 4 - Deduce from findings:
+The big JSON report contains a lot of information. Here is its structure:
+- allCollections: All the collections in the DB. This is a good second-chance place to map logical class to physical collection.
+- classes.&lt;className&gt;: For each class in the logical model, here is the place where we determine its physical equivalent.
+- classes.&lt;className&gt;.collectionMatch: Collections that match the logical name. 
+- classes.&lt;className&gt;.uriMatch: URIs that contain the logical class name. We show at most three. There might be lots of them.
+- classes.&lt;className&gt;.uriMatchWithID: URIs that contain the logical class name plus text that identifies a specific instance (like a movie title). 
+  Here we see if we can find the actual document that represents the instance of a logical class. We use known business data for this.
+- classes.&lt;className&gt;.dataMatch: URIs for ANY document that contains the instance text. This is a reach. 
+  We expect these matches might be other documents that merely refer to our desired document.
+- classes.&lt;className&gt;.physicalAttribs: All JSON properties found in any of the URIs discovered above. If the text was found in that property, 
+  the matching text is indicated. We will try to tie logical attribute to these physical attributes.
+- classes.&lt;className&gt;.physicalPredicates: All semantic predicates found in any of the URIs discovered above. We know the physical implementation
+  is a mixed model; we will try to tie logical attributes to predicates.
+- classes.&lt;className&gt;.attribs: Here we list each attribute in the class from the logical model. If any of the above physical attributes or predicates has the same name, 
+  we indicate that we found a match.
+
+Some of the stuff in the report is noise, as you'll see.
+
+Let's see what the report tells us. Let's also try to infer that which the report could not tell us:
+
+Logical class: Movie
+- uriMatchWithID indicates exactly which document contains our sample instance.
+- collectionMatch tells us there is a collection called "movies". We expected that. 
+  There is also a collection "http://org.jude/movie-talk/cast". This looks like a semantic graph. 
+  It's probably where the movie cast is maintained.
+- Under attribs:
+  - movieName: The report can't match it, but we see in the physicalPredicates section that there is a physical attribute called movieTitle that seems to match.
+  - details: The report can't match it, but we see in the physicalPredicates section that there is a physical attribute called movieDetail that seems to match.
+  - cast: The report can't match it. We remember there is likely a semantic graph for cast, but the report did not list any physical predicates matching cast.
+    Digging deeper, we run a SPARQL query (in the Cast Triples) tab, looking for any triples in the cast graph. We find plenty. 
+    The predicates are hasActor, hasDirector, hasProducer, hasWriter. The subjects are movies. The objects are contributors.
+
+Logical class: MovieContributor
+- collectionMatch and uriMatchWithID come up dry. But dataMatch shows there is a document with URI /contributor/KipTrott.json. 
+  We infer that contributors are in /contributor/ directory.
+- Under attribs:
+  - contributorName: The report can't match it, but we see in physicalPredicates that there is a physical attribute called contributorId that seems to match.
+  - details: The report can't match it, but we see in physicalPredicates that there is a physical attribute called contribDetail that seems to match.
+  - filmography: The report can't match it, so we go with our inference above about movie cast. 
+    Contributors are objects in triples hasActor, hasProducer,  hasDirector, and hasWriter in the cast graph.
+
+Logical class: Role
+- There report reveals absolutely nothing. We infer that roles are expressed as triples in the cast graph. 
+The roleType attribute of the logical Role class must be expressed in physical as the predicate hasActor, hasProducer, hasDirector, hasWriter.
+
+Logical class: User
+- Under collectionMatch we have "users". Under uriMatchWithID we have "/user/MichaelHavey.json". I think we found it!
+- Attribs:
+  - username: The report can't match it, but the physical attribute userId looks like a match. 
+    Interestingly the physical attribute USER_ID is probably NOT a match. 
+    The former attribute is found in URI /user/MichaelHavey.json, so it's a "user" attribute. 
+    The latter attribute is found in URI /sub/cdc70c3a-4a01-4945-83c3-6c2f495ce4fc.json. It looks like a reference to a user from a subscription document.
+    Noise!
+  - firstName: The report matches it to firstName in the user document.
+  - lastName: The report matches it to firstName in the user document.
+  - emailAddress: The report matches it to emailAddress in the user document.
+  - blurb: The report matches it to blurb in the user document.
+  - followers: The report matches it to the predicate "http://org.jude/movie-talk/hasFollower". 
+    Intrigued, we run the SPARQL query in tab Follower Triples. We see that these triples have users as subject and object.
+  - following: The report can't match it. But from our investigation into followers, we infer that A is following B if there is a triple: B hasFollower A.
+
+Logical class: Post
+- Under collectionMatch, there is a collection called "posts". Under uriMatch we see several URIs of the form /post/. 
+- We see nothing under uriMatchWithID. This is expected: post ID is a technical value; we don't know its value.
+- Under uriMatchWithData, we see a post about our sample text "tenerife." The URI is /post/3dedcf9e-1855-44c5-8219-7fd72eca3dc5.json. 
+  This looks almost certain to be the physical document that ties back to our logical Post class.
+- Time to match attributes:
+  - postID: The report matches it to PostId. 
+  - postType: The report matches it to PostType.
+  - title: The report matches it to Title.
+  - creationDate: The report matches it to CreationDate.
+  - lastUpdateDate: The report matches it to LastUpdateDate.
+  - text: The report matches it to Text.
+  - primarySubjectOfPost: The report can't match it, and the report shows nothing under physical predicates for this class. 
+    We know that there are posts about the actor Kip Trott, so we look MovieContributor part of the report and see two promising physical predicates:
+    "http://org.jude/movie-talk/contributor/hasGossip" and "http://org.jude/movie-talk/contributor/hasBio". We run a SPARQL query against the first
+    (in tab "Gossip Triples"). The query shows that this predicate associates a contributor with a post. Thus, the primarySubjectOfPost is the 
+    subject of a triple whose object is IRI of the postID and whose predicate is contributor/hasGossip, contributor/hasBio, and possibly others. 
+    Which others? We run the code in the tab "All Predicates" to list all predicates in the database. We infer that the predicates describing 
+    subjects of posts are the following: 
+    
+    "http://org.jude/movie-talk/contributor/hasBio" 
+    "http://org.jude/movie-talk/contributor/hasGossip" 
+    "http://org.jude/movie-talk/movie/hasGoof"
+    "http://org.jude/movie-talk/movie/hasGossip" 
+    "http://org.jude/movie-talk/movie/hasReview" 
+    "http://org.jude/movie-talk/movie/hasTrivia"
+    
+  - author: The report can't match it. But we see under collectionMatch "http://org.jude/movie-talk/post", which looks like a semantic graph. 
+    We run a SPARQL query on that graph (in tab "Post Triples") and see a user and a post. A user is the author of a post if there is a triple: User hasPost Post.
+
+Logical class: TalkSubject
+- The report finds nothing, but we inferred the relationship between post and subject above. TalkSubject in the logical model the base
+class for the subject of a post. Both Movie and MovieContributor inherit from it, indicating that the subject of a post can be either
+a movie or a contributor. The physical implementation does not follow this approach. It uses triples.
+
+Logical class: AlertSubscription
+- The report's findings are slim. We see under dataMatch the URI "/sub/cdc70c3a-4a01-4945-83c3-6c2f495ce4fc.json". Could this be an alert subscription?
+If we look under physicalAttribs for attributes associated with this URI find these: USER_ID, CREAT_DATE, SUB_ID, SUB_NAME, CRITERIA. We infer
+these attributes correspond to the logical attributes user, creationDate, subscriptionId, subcriptionName, and subscriptionCriteria. 
+- Looking at the attribs section, we see nothing but noise. Every finding is incorrect. In any case, we have already inferred the mapping of physical alert subscription attributes back to logical. 
+  Here is a summary of the noise:
+  - subscriptionID is mapped to subsciptionID in an alert document. Nope, that's just a reference.
+  - subscriptionName is mapped to subscriptionName in an alert document. It's just a reference.
+  - creationDate is mapped to CreationDate in a post document. That's the post's creation date, not the subscription's creation date.
+- In the logical model the "criteria" attribute is of an undefined type. A subscription is a request to be alerted when new posts are published that meet specific criteria. 
+  In the physical model, we can see how criteria is represented by examing the document /sub/cdc70c3a-4a01-4945-83c3-6c2f495ce4fc.json. 
+  In the tab "View Subs and Alerts" run the code to reveal that, in the subscription document, criteria is a cts query. Presumably the application code runs a reverse query against a new post to determine which subscription criteria match it. 
+  The user with that subscription is then sent an alert. 
+
+Logical class: Alert
+- Under collectMatch we have alert. Under uriMatchWithData we have "/alert/8fffa733-d88d-4f4b-a38c-44bacce67e07.json". 
+  So we have a fair idea how to locate an alert in the physical implementation.
+- In the attributes section:
+  - alertID maps to the alertId property in the alert document
+  - alertTime: The report can't find a match for it, and none of the attributes from the physicalAttribs section fits either. It turns out this attribute is not present in the physical model.
+  - details: Same as with alertTime: not in the physical model.
+  - subscription: The report can't find a match for it, but when we look at the physical attributes, we see that the alert document contains two subscription fields:
+  subscriptionID and subscriptionName.
+  - post: Similar to subscription. The report can't find it, but physically there are several post attributes in the alert document:
+    postURI, postType, postTitle, postDate
+
+*/</query><query name="Follower Triples" focus="false" listorder="11" taborder="9" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
+
+select * where {?s &lt;http://org.jude/movie-talk/hasFollower&gt; ?o}
+
+</query><query name="Post Triples" focus="false" listorder="12" taborder="10" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
+
+select * where {?s &lt;http://org.jude/movie-talk/hasPost&gt; ?o}</query><query name="Gossip Triples" focus="false" listorder="14" taborder="12" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
+
+select * where {?s &lt;http://org.jude/movie-talk/contributor/hasGossip&gt; ?o}</query><query name="All Predicates" focus="false" listorder="15" taborder="13" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+
+var triples = cts.triples([],[],[]);
+var predicates = [];
+for (var triple of triples) {
+  var thisPredicate = ""+sem.triplePredicate(triple);
+  if (predicates.indexOf(thisPredicate) &lt; 0) {
+    predicates.push(thisPredicate);
+  }
+}
+predicates.sort()
+</query></workspace></export>

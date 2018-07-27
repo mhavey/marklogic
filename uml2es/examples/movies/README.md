@@ -106,7 +106,7 @@ gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDepl
 
 Confirm:
 - Content DB now has element range indexes
-- Schemas DB has ONLY ONE tdex document: /MovieModelPhysical-0.0.1.tdex
+- Schemas DB has ONLY ONE tdex document: /MovieModel-0.0.1.tdex
 
 ### Ingest
 Ingest movie data based on the model

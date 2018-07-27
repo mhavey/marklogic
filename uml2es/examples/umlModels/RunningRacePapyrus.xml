@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_n13BxnR0EeilsZ_N7KCVsg">
+  <uml:Model xmi:id="_o7LkIGvbEeiomuDVf_64Jg" name="RunningRacePapyrus">
+    <ownedComment xmi:type="uml:Comment" xmi:id="_1ymE8GyrEeiomuDVf_64Jg">
+      <body>A nice comment for everyone</body>
+    </ownedComment>
+    <packageImport xmi:type="uml:PackageImport" xmi:id="_o8GKIGvbEeiomuDVf_64Jg">
+      <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+    </packageImport>
+    <packagedElement xmi:type="uml:Package" xmi:id="_4JyQsGypEeiomuDVf_64Jg" name="RunningRacePapyrus"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_r2O-8GyqEeiomuDVf_64Jg" name="Race">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_gZR1wG2iEeiomuDVf_64Jg" name="name">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_hLeuwG2iEeiomuDVf_64Jg" name="courseLength">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Real"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_geieUG2kEeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_gek6kG2kEeiomuDVf_64Jg" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_JebYsG2kEeiomuDVf_64Jg" name="wonByRunner" type="_gms1QG13EeiomuDVf_64Jg" association="_JeaxoG2kEeiomuDVf_64Jg"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_iZGtkG2kEeiomuDVf_64Jg" name="comprisedOfRuns" type="_hSjOoG13EeiomuDVf_64Jg" aggregation="composite" association="_iZGGgG2kEeiomuDVf_64Jg">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_pjURgG2kEeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_pjYi8G2kEeiomuDVf_64Jg" value="*"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_gms1QG13EeiomuDVf_64Jg" name="Runner">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_ai3cAG2iEeiomuDVf_64Jg" name="name">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_bIn0cG2iEeiomuDVf_64Jg" name="age">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_bij-cG2iEeiomuDVf_64Jg" name="gender">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_1iP-IG2jEeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_1iRzUG2jEeiomuDVf_64Jg" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_hSjOoG13EeiomuDVf_64Jg" name="Run">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_kDjIEG2iEeiomuDVf_64Jg" name="id">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_kjCgcG2iEeiomuDVf_64Jg" name="date"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_k_TlsG2iEeiomuDVf_64Jg" name="distance">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Real"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_ldWMkG2iEeiomuDVf_64Jg" name="distanceLabel">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_hQSg0G2jEeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hQWyQG2jEeiomuDVf_64Jg" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_l8oJkG2iEeiomuDVf_64Jg" name="duration"/>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_3PxP4G2jEeiomuDVf_64Jg" name="runByRunner" type="_gms1QG13EeiomuDVf_64Jg" association="_3PuzoG2jEeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_3PuzoG2jEeiomuDVf_64Jg" memberEnd="_3PxP4G2jEeiomuDVf_64Jg _3PxP4W2jEeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_3Pwo0G2jEeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_3Pwo0W2jEeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_3PxP4W2jEeiomuDVf_64Jg" name="run" type="_hSjOoG13EeiomuDVf_64Jg" association="_3PuzoG2jEeiomuDVf_64Jg">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ABx4EG2kEeiomuDVf_64Jg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_AB3-sG2kEeiomuDVf_64Jg" value="*"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_JeaxoG2kEeiomuDVf_64Jg" memberEnd="_JebYsG2kEeiomuDVf_64Jg _JebYsW2kEeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_JeaxoW2kEeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_Jeaxom2kEeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_JebYsW2kEeiomuDVf_64Jg" name="race" type="_r2O-8GyqEeiomuDVf_64Jg" association="_JeaxoG2kEeiomuDVf_64Jg"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_iZGGgG2kEeiomuDVf_64Jg" memberEnd="_iZGtkG2kEeiomuDVf_64Jg _iZGtkW2kEeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_iZGGgW2kEeiomuDVf_64Jg" source="org.eclipse.papyrus">
+        <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_iZGGgm2kEeiomuDVf_64Jg" key="nature" value="UML_Nature"/>
+      </eAnnotations>
+      <ownedEnd xmi:type="uml:Property" xmi:id="_iZGtkW2kEeiomuDVf_64Jg" name="race" type="_r2O-8GyqEeiomuDVf_64Jg" association="_iZGGgG2kEeiomuDVf_64Jg"/>
+    </packagedElement>
+    <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_o7a0sGvbEeiomuDVf_64Jg">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_o7a0sWvbEeiomuDVf_64Jg" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <references xmi:type="ecore:EPackage" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_n13Bw3R0EeilsZ_N7KCVsg"/>
+      </eAnnotations>
+      <appliedProfile xmi:type="uml:Profile" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
+    </profileApplication>
+  </uml:Model>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_jsBQQGveEeiomuDVf_64Jg" version="0.0.1" baseUri="http://com.marklogic.es.umldemo.race" base_Package="_o7LkIGvbEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_jsfxYGveEeiomuDVf_64Jg" prefix="r" base_Package="_o7LkIGvbEeiomuDVf_64Jg" url="http://com.marklogic.es.umldemo.race"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_SMjb4G2jEeiomuDVf_64Jg" base_Property="_kDjIEG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_WETwkG2jEeiomuDVf_64Jg" base_Property="_kjCgcG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_WFD-gG2jEeiomuDVf_64Jg" mlType="date" base_Property="_kjCgcG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_e6l0wG2jEeiomuDVf_64Jg" base_Property="_k_TlsG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_mb8tYG2jEeiomuDVf_64Jg" mlType="dayTimeDuration" base_Property="_l8oJkG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_mcrGIG2jEeiomuDVf_64Jg" base_Property="_l8oJkG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_tgGsoG2jEeiomuDVf_64Jg" base_Property="_ai3cAG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_tgypIG2jEeiomuDVf_64Jg" indexType="lexicon" base_Property="_ai3cAG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_Dn_w0G2kEeiomuDVf_64Jg" prefix="rn" base_Class="_gms1QG13EeiomuDVf_64Jg" url="http://org.jude.athletes.runners"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_d-1hsG2kEeiomuDVf_64Jg" base_Property="_gZR1wG2iEeiomuDVf_64Jg"/>
+  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_NVNGwG81EeiomuDVf_64Jg" base_Property="_ldWMkG2iEeiomuDVf_64Jg"/>
+</xmi:XMI>
