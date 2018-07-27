@@ -20,11 +20,11 @@ for (var match of matchingSubscriptions) {
 	var alert = {
 		alertID: sem.uuidString(),
 		postURI: uri,
-		postType: odoc.postType,
-		postTitle: odoc.title,
-		postDate: odoc.lastUpdateDate,
-		subscriptionID: omatch.subscriptionID,
-		subscriptionName: omatch.subscriptionName
+		postType: odoc.PostType,
+		postTitle: odoc.Title,
+		postDate: odoc.LastUpdateDate,
+		subscriptionID: omatch.SUB_ID,
+		subscriptionName: omatch.SUB_NAME
 	};
 
 	var alertURI = URI("alert", alert.alertID);

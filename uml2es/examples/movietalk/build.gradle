@@ -87,12 +87,3 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = '{"genlang":"xqy", "lax": "true"}'
 }
-
-task loadPhysical(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  input_file_type = "archive"
-  input_file_path = "data/physical.zip"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-}

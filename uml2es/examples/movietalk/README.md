@@ -41,16 +41,13 @@ Confirm:
 	* /xmi2es/findings/MovieTalk.xml
 	* /xmi2es/xmi/MovieTalk.xml
 
-### Load Physical
+## Explore Logical vs. Physical
+In Query Console, import XMI2ESMovieTalk.xml workspace. 
 
-Now let's setup our MovieTalk database with physical data: 
+Your first step is to import the physical data. Go to the "Populate Physical Data" tab and run to load data. Don't cheat! Don't look at code that populates the data. Assume that code is missing and you want to discover the data's structure by querying it.
 
-gradle -PenvironmentName=local -i loadPhysical
-
-Confirm:
-- Content DB now has 513 documents. 505 were added in this step.
+Next go to the tab "Discover" to discover the data.
 
 
-## Check Model Differences
-In Query Console, import XMI2ESMovieTalk.xml workspace. The tab "Discover" is where we map physical back to logical. 
+The tab "Discover" is where we map physical back to logical. 
 
