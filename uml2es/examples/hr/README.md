@@ -11,6 +11,8 @@ This example shows the following:
 - How to link departments and employees using semantics. The model specifies the semantic relationships. The code to create triples is GENERATED when we transform the UML model to Entity Services!!
 - How to use code generated from the model to build the harmonization logic. Generated code includes: writer, headers, triples (discussed in previous bullet), and content. Generated content code of two parts: the conversion module to build the document itself (discussed above); and special code to set calculated fields defined in the model.  
 
+Here is a blog post about this example: <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>.
+
 For more on MarkLogic's Data Hub Framework (aka DHF), visit its GitHub page: <https://github.com/marklogic-community/marklogic-data-hub>.
 
 Our source data comes from one of the DHF examples. <https://github.com/marklogic-community/marklogic-data-hub/tree/master/examples/hr-hub>
