@@ -6,6 +6,7 @@ This is a toolkit to support modeling MarkLogic data in UML and mapping that UML
 
 - <http://www.marklogic.com/blog/how-to-model-manage-entities-uml/>
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services>
+- <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>
 
 The toolkit consists of the following parts:
 - uml2esTransform: MarkLogic server-side modules to map UML to Entity Services.
