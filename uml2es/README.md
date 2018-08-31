@@ -16,6 +16,7 @@ The toolkit consists of the following parts:
 - examples/runningRace: A sample demonstrating interop. We model a running race in three UML editors: MagicDraw, Eclipse Modeling Framework (EMF), and Papyrus. We show that these UML models transform to the same ES model descriptor. Our model is based on one of the examples from MarkLogic's Entity Services github: <https://github.com/marklogic/entity-services/tree/master/entity-services-examples/example-races/>. 
 - examples/blockFactory: A sample UML model that shows a technique for denormalization.
 - examples/movietalk: A UML logcal data model for user posts about movies and actors. The model is merely logical. We do not generate an Entity Services model from it. Rather, when the application team built the movietalk application, they referred to the model but arranged the data in MarkLogic somewhat differently. The example demonstrates a strategy to compare the physical model to the logical model.  
+- examples/hrexcel: Demonstates loading an entity services model from an Excel data model template. No UML! We use the HR example from above (examples/hr). We pass our Excel spreadsheet (containing the HR model in tablular form) into the transformation. The transformation produces the same entity services model (including extensions and generated code) as produces from the UML model in examples/hr. 
 - examples/umlModels: The full set of models
 
 ## How We Expect You Will Use This Toolkit
