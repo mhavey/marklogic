@@ -60,7 +60,7 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 				let $attribCollation:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "N"||$row, $pt, ())
 				let $attribExternalRef:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "O"||$row, $pt, ())
 				let $attribHeader:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "P"||$row, $pt, ())
-				let $attribCalcuated:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "Q"||$row, $pt, ())
+				let $attribCalculated:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "Q"||$row, $pt, ())
 				let $attribImpl:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "R"||$row, $pt, ())
 				let $attribPO:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "S"||$row, $pt, ())
 
@@ -121,10 +121,10 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:xHeader xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" field="{$attribHeader}"/>)
 					else (),
-					if (count($attribCalcuated) gt 0) then
+					if (count($attribCalculated) gt 0) then
 						json:array-push($classAttribStereotypes, 
 							<ml:xCalculated xmi:id="{sem:uuid-string()}" base_Property="{$attribID}">{
-								for $calc in $attribCardinality return 
+								for $calc in $attribCalculated return 
 									<concat>{$calc}</concat>
 							}</ml:xCalculated>)
 					else ()
