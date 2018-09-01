@@ -66,10 +66,13 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 
 				(: attrib-level stereotypes :)
 				let $attribTypeRef := map:get(map:get($classDetailsPerClassName, $attribType), "classID")
+				let $attribMLType :=
+					if (string-length($attribTypeRef) gt 0) then ""
+					else $attribType
 				let $_ := (
-					if (string-length($attribTypeRef) eq 0 or string-length($attribCollation) eq 0 or string-length($attribExternalRef) gt 0) then
+					if (string-length($attribMLType) gt 0 or string-length($attribCollation) eq 0 or string-length($attribExternalRef) gt 0) then
 						json:array-push($classAttribStereotypes,
-							<ml:esProperty xmi:id="{sem:uuid-string()}" mlType="{$attribType}" 
+							<ml:esProperty xmi:id="{sem:uuid-string()}" mlType="{$attribMLType}" 
 								collation="{$attribCollation}" externalRef="{$attribExternalRef}" 
 								base_Property="{$attribID}"/>)
 					else (),
