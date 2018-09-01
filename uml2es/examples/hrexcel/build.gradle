@@ -88,6 +88,28 @@ task loadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   transform_param = "dummy"
 }
 
+task loadUML(type: com.marklogic.gradle.task.MlcpTask) {
+  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "xml"
+  input_file_path = xmiDir + "/DHFEmployeeSample.xml"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/xmi/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = mlHost
+  port = mlAppServicesPort.toInteger()
+
+  transform_module = "/xmi2es/xmi2esTransform.xqy"
+  transform_namespace ="http://marklogic.com/xmi2es"
+  transform_param = '{"genlang":"xqy"}'
+}
+
 task loadTest1(type: com.marklogic.gradle.task.MlcpTask) {
   def xmiDir = new File("${projectDir}").getAbsolutePath()
   def unixDir = xmiDir.replace('\\', '/');
