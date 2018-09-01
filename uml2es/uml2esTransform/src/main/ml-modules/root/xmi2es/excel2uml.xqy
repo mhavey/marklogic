@@ -380,22 +380,55 @@ declare function xlsx:excelLastRow($sheet as node(), $sheetName as xs:string,
 	$stringTable as node(), $pt) as xs:integer? {
 
 	(: find last A cell at or beyond the last prop row :)
-	let $lastARow := xs:integer($sheet//*:row[
+	let $lastARowAttrib := $sheet//*:row[
 		xs:integer(@*:r) ge $FIRST_PROP_ROW and 
-		exists(*:c[fn:starts-with(@*:r, "A")])][last()]/@*:r)
+		exists(*:c[fn:starts-with(@*:r, "A")])][last()]/@*:r
+	return 
+		if (not(exists($lastARowAttrib))) then 0
+		else
+			let $lastARow := xs:integer($lastARowAttrib)
+			let $firstEmptyRow := 0
+			let $lastPopRow := 0
+			let $_ := for $row in $FIRST_PROP_ROW to $lastARow return
+				let $cellVal := xlsx:excelCell($sheet, $sheetName, $stringTable, "A"||$row, $pt, ())
 
-	let $lastRow := 0
-	let $_ := for $row in $FIRST_PROP_ROW to $lastARow return
-		let $cellVal := xlsx:excelCell($sheet, $sheetName, $stringTable, "A"||$row, $pt, ())
+				return 
+					if ($firstEmptyRow eq 0 and (count($cellVal) eq 0 or $cellVal eq "")) then (
+						if ($row eq $FIRST_PROP_ROW) then () else xdmp:set($lastPopRow, $row - 1),
+						xdmp:set($firstEmptyRow, $row)
+					)
+					else ()
 
-		return 
-			if ($lastRow eq 0 and (count($cellVal) eq 0 or $cellVal eq "")) then
-				xdmp:set($lastRow, $row)
-			else ()
+let $_ := xdmp:log(concat($sheetName, " loop result ", $lastARow, " and ", $firstEmptyRow, " and ", $lastPopRow), "info")
+			
+			return 
+				if ($firstEmptyRow eq 0) then $lastARow
+				else $lastPopRow
 
-	return
-		if ($lastRow eq 0) then $lastARow + 1
-		else $lastRow - 1
+(:
+Case 1:
+20 - e
+
+Case 2:
+20 - p
+21 - p (last)
+
+Case 3:
+20 - p
+21 - e (last)
+
+Case 4:
+20 - p
+21 - p
+22 - e (last)
+
+Case 5:
+20 - p
+21 - p
+22 - e
+23 - e 
+23 - e (last)
+:)					
 };
 
 (:
