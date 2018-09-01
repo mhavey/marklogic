@@ -384,18 +384,14 @@ declare function xlsx:excelLastRow($sheet as node(), $sheetName as xs:string,
 		xs:integer(@*:r) ge $FIRST_PROP_ROW and 
 		exists(*:c[fn:starts-with(@*:r, "A")])][last()]/@*:r)
 
-let $_ := xdmp:log(concat("LASTAROW is ", $lastARow), "info")
-
 	let $lastRow := 0
 	let $_ := for $row in $FIRST_PROP_ROW to $lastARow return
 		let $cellVal := xlsx:excelCell($sheet, $sheetName, $stringTable, "A"||$row, $pt, ())
-let $_ := xdmp:log(concat($row, "*", $cellVal, "*"), "info")
 
 		return 
 			if ($lastRow eq 0 and (count($cellVal) eq 0 or $cellVal eq "")) then
 				xdmp:set($lastRow, $row)
 			else ()
-let $_ := xdmp:log(concat("loop result ", $lastRow), "info")
 
 	return
 		if ($lastRow eq 0) then $lastARow + 1
