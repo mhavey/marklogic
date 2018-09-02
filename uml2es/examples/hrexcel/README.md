@@ -1,7 +1,29 @@
 # Human Resources Data Model from Excel (No UML!!)
 
 ## Intro
-This example demonstates loading an entity services model from an Excel data model template. No UML! We use the HR example from above (examples/hr). We pass our Excel spreadsheet (containing the HR model in tablular form) into the transformation. The transformation produces the same entity services model (including extensions and generated code) as produces from the UML model in examples/hr. 
+In this example, we build a data model using an Excel spreadsheet. No UML! ... Well, not much UML anyway. You'll know why presently.
+
+Our toolkit has the generic capability to generate an Entity Services model from an Excel document that follows the template, which you can find here: (../../excel/uml2es-excel-template.xlsx). In this example, we use that template to build a human resources data model of employees, departments, and their relationships. Our example shows how to transform the Excel model into Entity Services by running a gradle task. 
+
+Our spreadsheet is HRExcel.xlsx. Here is a snapshot of it 
+
+![HRExcel](HRExcel.png) 
+
+If you've gone through the other examples in this toolkit, you will notice the similiarity of the model in this spreadsheet to the UML model in examples/hr. Here is what that UML model looks like:
+
+![DHFEmployeeSample](../umlModels/DHFEmployeeSample.png)
+
+Our goal in this example is to model in Excel EXACTLY THE SAME HR model as in our HR UML example. To judge whether we have succeeded, we'll compare the output of the Excel- and UML-based HR models when passed through our toolkit's Entity Services transform. If they result in the same Entity Services model, we have succeeded.
+
+That transform accepts two types of input: a UML model in XMI (XML Metadata Interchange) form; or an Excel spreadsheet based on our Excel model template. The transform outputs three artifacts: an Entity Services model descriptor (JSON), an extended model as a set of semantic triples (in TTL, or turtle, form), and generated code. To check model equivalence, we'll compare that the JSON descriptor and the TTL extended model are equivalent. (We don't need to compare the generated code, as its content is determined by the extended model anyway.)
+
+Coming back to our boast of "No UML," that proves not to be wholly true. Under the covers, the transform converts Excel to UML form as the first step in its process to produce an Entity Services model from the Excel. Its second step is to convert that UML to Entity Services; the second step is exactly the logic the transform uses when converting an original UML model to Entity Services. 
+
+Simply put, the two processes are:
+
+Excel -> UML (as XMI) -> ES
+UML (as XMI) -> ES
+
 
 ## How to run:
 
@@ -21,7 +43,7 @@ Confirm:
 
 ### Transform HR Excel to ES
 
-Run the following:
+Run the following to load the Excel HR model:
 
 gradle -PenvironmentName=local -i loadExcel
 
@@ -38,9 +60,8 @@ Confirm:
 	* /xmi2es/xmi/HRExcel.xml - Excel model converted to XMI form.
 
 ### Transform HR UML to ES
-For comparison, we will load the HR UML model from examples/hr. 
 
-Run the following:
+For comparison, we will load the HR UML model from examples/hr. Run the following:
 
 gradle -PenvironmentName=local -i loadUML
 
