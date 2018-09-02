@@ -98,7 +98,7 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 					else (),
 					if ($attribURI eq "Y") then
 						json:array-push($classAttribStereotypes, 
-							<ml:URI xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+							<ml:xURI xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
 					if ($attribBizKey eq "Y") then
 						json:array-push($classAttribStereotypes, 
