@@ -49,11 +49,11 @@ gradle -PenvironmentName=local -i loadExcel
 
 Confirm:
 - Content DB has the following documents
-	* /xmi2es/es/HRExcel.json - Entity Services Model
-	* /xmi2es/excel/findings/HRExcel.xml - Excel conversion findings. Should be no problems.
+	* /xmi2es/es/HRExcel.json - Excel-originated entity services model descriptor
+	* /xmi2es/excel/findings/HRExcel.xml - Excel-to-XMI conversion findings. Should be no problems.
 	* /xmi2es/excel/HRExcel.xlsx - Original Excel file
-	* /xmi2es/extension/HRExcel.ttl - Extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/HRExcel.txt - Extended model described textually
+	* /xmi2es/extension/HRExcel.ttl - Excel extended model as semantic triples (Turtle format)
+	* /xmi2es/extension/HRExcel.txt - Excel dxtended model described textually
 	* /xmi2es/findings/HRExcel.xml - Findings while converting to Entity Services. Should be no problems.
 	* /xmi2es/gen/HRExcel.txt - Generated code for DHF
 	* /xmi2es/intermediate/HRExcel.xml - XMI/ES intermediate form
@@ -67,9 +67,9 @@ gradle -PenvironmentName=local -i loadUML
 
 Confirm:
 - Content DB now has, in addition to the document created in the previous step, the following documents
-	* /xmi2es/es/DHFEmployeeSample.json	 - Entity Services Model
-	* /xmi2es/extension/DHFEmployeeSample.ttl - Extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/DHFEmployeeSample.txt - Extended model described textually
+	* /xmi2es/es/DHFEmployeeSample.json	 - UML-originated Entity Services Model
+	* /xmi2es/extension/DHFEmployeeSample.ttl - UML extended model as semantic triples (Turtle format)
+	* /xmi2es/extension/DHFEmployeeSample.txt - UML extended model described textually
 	* /xmi2es/findings/DHFEmployeeSample.xml - Findings while converting to Entity Services. Should be no problems.
 	* /xmi2es/gen/DHFEmployeeSample.txt - Generated code for DHF
 	* /xmi2es/intermediate/DHFEmployeeSample.xml - XMI/ES intermediate form
