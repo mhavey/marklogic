@@ -22,6 +22,7 @@ Coming back to our boast of "No UML," that proves not to be wholly true. Under t
 Simply put, the two processes are:
 
 Excel -> UML (as XMI) -> ES
+
 UML (as XMI) -> ES
 
 
