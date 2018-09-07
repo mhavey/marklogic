@@ -1,0 +1,915 @@
+[
+    {
+        "name": "Shanghai",
+        "country": "CN",
+        "population": "24153",
+        "metro-population": "34000",
+        "language": "zh-CN"
+    },
+    {
+        "name": "BEIJING",
+        "country": "CN",
+        "population": "18590",
+        "metro-population": "24900",
+        "language": "zh-CN"
+    },
+    {
+        "name": "Karachi",
+        "country": "PK",
+        "population": "18000",
+        "metro-population": "27506",
+        "language": "es"
+    },
+    {
+        "name": "Istanbul",
+        "country": "TR",
+        "population": "14657",
+        "metro-population": "14804",
+        "language": "de"
+    },
+    {
+        "name": "DHAKA",
+        "country": "BD",
+        "population": "14543",
+        "metro-population": "18898"
+    },
+    {
+        "name": "TOKYO",
+        "country": "JP",
+        "population": "13617",
+        "metro-population": "37800",
+        "language": "ja"
+    },
+    {
+        "name": "MOSCOW",
+        "country": "RU",
+        "population": "13197.596",
+        "metro-population": "17900",
+        "language": "ru"
+    },
+    {
+        "name": "MANILA",
+        "country": "PH",
+        "population": "12877",
+        "metro-population": "22710"
+    },
+    {
+        "name": "Tianjin",
+        "country": "CN",
+        "population": "12784",
+        "metro-population": "15469"
+    },
+    {
+        "name": "Mumbai (Bombay)",
+        "country": "IN",
+        "population": "12400",
+        "metro-population": "27750"
+    },
+    {
+        "name": "Sao Paulo",
+        "country": "BR",
+        "population": "12038",
+        "metro-population": "21243",
+        "language": "pt-BR"
+    },
+    {
+        "name": "Shenzhen",
+        "country": "CN",
+        "population": "11908",
+        "metro-population": "11980"
+    },
+    {
+        "name": "Guangzhou",
+        "country": "CN",
+        "population": "11548",
+        "metro-population": "14044"
+    },
+    {
+        "name": "DELHI",
+        "country": "IN",
+        "population": "11035",
+        "metro-population": "26454"
+    },
+    {
+        "name": "Wuhan",
+        "country": "CN",
+        "population": "10608",
+        "metro-population": "10608"
+    },
+    {
+        "name": "Lahore",
+        "country": "PK",
+        "population": "10355",
+        "metro-population": "Unknown"
+    },
+    {
+        "name": "Seoul",
+        "country": "KR",
+        "population": "10290",
+        "metro-population": "25600"
+    },
+    {
+        "name": "Chengdu",
+        "country": "CN",
+        "population": "10152",
+        "metro-population": "14427"
+    },
+    {
+        "name": "KINSHASA",
+        "country": "CD",
+        "population": "10125",
+        "metro-population": "21265",
+        "language": "zh-CN"
+    },
+    {
+        "name": "LIMA",
+        "country": "PE",
+        "population": "9752",
+        "metro-population": "10852"
+    },
+    {
+        "name": "JAKARTA",
+        "country": "ID",
+        "population": "9608",
+        "metro-population": "30214"
+    },
+    {
+        "name": "CAIRO",
+        "country": "EG",
+        "population": "9500",
+        "metro-population": "20440"
+    },
+    {
+        "name": "MEXICO CITY",
+        "country": "MX",
+        "population": "8919",
+        "metro-population": "20400"
+    },
+    {
+        "name": "TEHRAN",
+        "country": "IR",
+        "population": "8847",
+        "metro-population": "15233"
+    },
+    {
+        "name": "BAGHDAD",
+        "country": "IQ",
+        "population": "8765",
+        "metro-population": "Unknown"
+    },
+    {
+        "name": "Xian",
+        "country": "CN",
+        "population": "8705",
+        "metro-population": "13560"
+    },
+    {
+        "name": "LONDON",
+        "country": "UK",
+        "population": "8674",
+        "metro-population": "13880"
+    },
+    {
+        "name": "New York City",
+        "country": "US",
+        "population": "8550",
+        "metro-population": "23724"
+    },
+    {
+        "name": "Nanjing",
+        "country": "CN",
+        "population": "8460",
+        "metro-population": "8460"
+    },
+    {
+        "name": "Bangalore",
+        "country": "IN",
+        "population": "8444",
+        "metro-population": "8729"
+    },
+    {
+        "name": "Ho Chi Minh City",
+        "country": "VN",
+        "population": "8426",
+        "metro-population": "10050"
+    },
+    {
+        "name": "BANGKOK",
+        "country": "TH",
+        "population": "8281",
+        "metro-population": "14566"
+    },
+    {
+        "name": "Chongquin",
+        "country": "CN",
+        "population": "8165.5",
+        "metro-population": "18380"
+    },
+    {
+        "name": "BOGOTA",
+        "country": "CO",
+        "population": "8081",
+        "metro-population": "9800"
+    },
+    {
+        "name": "Lagos",
+        "country": "NG",
+        "population": "8048",
+        "metro-population": "16060"
+    },
+    {
+        "name": "RIYADH",
+        "country": "SA",
+        "population": "7506",
+        "metro-population": "7506"
+    },
+    {
+        "name": "Hong Kong",
+        "country": "CN",
+        "population": "7234.8",
+        "metro-population": "Unknown"
+    },
+    {
+        "name": "Chennai",
+        "country": "IN",
+        "population": "7088",
+        "metro-population": "8653"
+    },
+    {
+        "name": "Hangzhou",
+        "country": "CN",
+        "population": "7082",
+        "metro-population": "9188"
+    },
+    {
+        "name": "Hyderabad",
+        "country": "IN",
+        "population": "6809",
+        "metro-population": "7749"
+    },
+    {
+        "name": "Rio de Janeiro",
+        "country": "BR",
+        "population": "6454",
+        "metro-population": "12281"
+    },
+    {
+        "name": "Zhengzhou",
+        "country": "CN",
+        "population": "6406",
+        "metro-population": "9468"
+    },
+    {
+        "name": "Shenyang",
+        "country": "CN",
+        "population": "6255",
+        "metro-population": "8106"
+    },
+    {
+        "name": "Qingdao",
+        "country": "CN",
+        "population": "6188",
+        "metro-population": "9046"
+    },
+    {
+        "name": "SANTIAGO",
+        "country": "CL",
+        "population": "6158",
+        "metro-population": "6582",
+        "language": "zh-CN"
+    },
+    {
+        "name": "Dalian",
+        "country": "CN",
+        "population": "5900",
+        "metro-population": "6700"
+    },
+    {
+        "name": "SINGAPORE",
+        "country": "SG",
+        "population": "5607",
+        "metro-population": "5607"
+    },
+    {
+        "name": "Ahmadabad",
+        "country": "IN",
+        "population": "5577",
+        "metro-population": "6357"
+    },
+    {
+        "name": "Suzhou",
+        "country": "CN",
+        "population": "5468",
+        "metro-population": "10578"
+    },
+    {
+        "name": "St Petersburg",
+        "country": "RU",
+        "population": "5323",
+        "metro-population": "7500"
+    },
+    {
+        "name": "Harbin",
+        "country": "CN",
+        "population": "5282",
+        "metro-population": "6704"
+    },
+    {
+        "name": "ANKARA",
+        "country": "TR",
+        "population": "5271",
+        "metro-population": "6280"
+    },
+    {
+        "name": "KHARTOUM",
+        "country": "SD",
+        "population": "5185",
+        "metro-population": "5185"
+    },
+    {
+        "name": "Yangon",
+        "country": "MM",
+        "population": "5160",
+        "metro-population": "7360"
+    },
+    {
+        "name": "Casablanca",
+        "country": "MA",
+        "population": "5118",
+        "metro-population": "6861"
+    },
+    {
+        "name": "Sydney",
+        "country": "AU",
+        "population": "5005",
+        "metro-population": "5005"
+    },
+    {
+        "name": "Jinan",
+        "country": "CN",
+        "population": "4694",
+        "metro-population": "7068"
+    },
+    {
+        "name": "Melbourne",
+        "country": "AU",
+        "population": "4641",
+        "metro-population": "4641"
+    },
+    {
+        "name": "Changsha",
+        "country": "CN",
+        "population": "4597",
+        "metro-population": "7432"
+    },
+    {
+        "name": "Kolkata",
+        "country": "IN",
+        "population": "4497",
+        "metro-population": "14618"
+    },
+    {
+        "name": "Fuzhou",
+        "country": "CN",
+        "population": "4468",
+        "metro-population": "7200"
+    },
+    {
+        "name": "Surat",
+        "country": "IN",
+        "population": "4467",
+        "metro-population": "4591"
+    },
+    {
+        "name": "Abidjan",
+        "country": "CI",
+        "population": "4396",
+        "metro-population": "4707"
+    },
+    {
+        "name": "DAR ES SALAAM",
+        "country": "TZ",
+        "population": "4364",
+        "metro-population": "4364"
+    },
+    {
+        "name": "Shiziahuang",
+        "country": "CN",
+        "population": "4303",
+        "metro-population": "10701"
+    },
+    {
+        "name": "Jeddah",
+        "country": "SA",
+        "population": "4276",
+        "metro-population": "4276"
+    },
+    {
+        "name": "Faisalabad",
+        "country": "PK",
+        "population": "4075",
+        "metro-population": "4075"
+    },
+    {
+        "name": "Nanning",
+        "country": "CN",
+        "population": "4037",
+        "metro-population": "6914",
+        "language": "zh-CN"
+    },
+    {
+        "name": "Alexandria",
+        "country": "EG",
+        "population": "4028",
+        "metro-population": "4984"
+    },
+    {
+        "name": "AMMAN",
+        "country": "JO",
+        "population": "4008",
+        "metro-population": "4008"
+    },
+    {
+        "name": "Los Angeles",
+        "country": "US",
+        "population": "3976",
+        "metro-population": "13131"
+    },
+    {
+        "name": "Kunming",
+        "country": "CN",
+        "population": "3891",
+        "metro-population": "6626"
+    },
+    {
+        "name": "Changchun",
+        "country": "CN",
+        "population": "3815",
+        "metro-population": "7674"
+    },
+    {
+        "name": "Yokohama",
+        "country": "JP",
+        "population": "3733",
+        "metro-population": "3733"
+    },
+    {
+        "name": "KABUL",
+        "country": "AF",
+        "population": "3678",
+        "metro-population": "3678"
+    },
+    {
+        "name": "BERLIN",
+        "country": "DE",
+        "population": "3671",
+        "metro-population": "6004"
+    },
+    {
+        "name": "Giza",
+        "country": "EG",
+        "population": "3628",
+        "metro-population": "3628"
+    },
+    {
+        "name": "Urumqi",
+        "country": "CN",
+        "population": "3550",
+        "metro-population": "3550"
+    },
+    {
+        "name": "Wuxi",
+        "country": "CN",
+        "population": "3542",
+        "metro-population": "6372"
+    },
+    {
+        "name": "Busan",
+        "country": "KR",
+        "population": "3526",
+        "metro-population": "8202"
+    },
+    {
+        "name": "Guayaquil",
+        "country": "EC",
+        "population": "3500",
+        "metro-population": "5000"
+    },
+    {
+        "name": "HANOI",
+        "country": "VN",
+        "population": "3435",
+        "metro-population": "7588"
+    },
+    {
+        "name": "Hyderabad",
+        "country": "PK",
+        "population": "3429",
+        "metro-population": "3429"
+    },
+    {
+        "name": "ADDIS ABABA",
+        "country": "ET",
+        "population": "3385",
+        "metro-population": "4567"
+    },
+    {
+        "name": "ALGIERS",
+        "country": "DZ",
+        "population": "3336",
+        "metro-population": "5000"
+    },
+    {
+        "name": "Kano",
+        "country": "NG",
+        "population": "3333",
+        "metro-population": "3333"
+    },
+    {
+        "name": "Mashhad",
+        "country": "IR",
+        "population": "3312",
+        "metro-population": "3372"
+    },
+    {
+        "name": "Hefei",
+        "country": "CN",
+        "population": "3310",
+        "metro-population": "5484"
+    },
+    {
+        "name": "Changzhou",
+        "country": "CN",
+        "population": "3290",
+        "metro-population": "4592"
+    },
+    {
+        "name": "Taiyuan",
+        "country": "CN",
+        "population": "3212",
+        "metro-population": "4202"
+    },
+    {
+        "name": "Rawalpindi",
+        "country": "PK",
+        "population": "3189",
+        "metro-population": "3189"
+    },
+    {
+        "name": "Tangshan",
+        "country": "CN",
+        "population": "3187",
+        "metro-population": "7577"
+    },
+    {
+        "name": "MADRID",
+        "country": "ES",
+        "population": "3141",
+        "metro-population": "6240"
+    },
+    {
+        "name": "NAIROBI",
+        "country": "KE",
+        "population": "3138",
+        "metro-population": "6547"
+    },
+    {
+        "name": "Zibo",
+        "country": "CN",
+        "population": "3129",
+        "metro-population": "4131"
+    },
+    {
+        "name": "Pune",
+        "country": "IN",
+        "population": "3124",
+        "metro-population": "5057"
+    },
+    {
+        "name": "Ibadan",
+        "country": "NG",
+        "population": "3050",
+        "metro-population": "3520"
+    },
+    {
+        "name": "Jaipur",
+        "country": "IN",
+        "population": "3046",
+        "metro-population": "3046"
+    },
+    {
+        "name": "Guiyang",
+        "country": "CN",
+        "population": "3037",
+        "metro-population": "4024"
+    },
+    {
+        "name": "Incheon",
+        "country": "KR",
+        "population": "3002",
+        "metro-population": "3002"
+    },
+    {
+        "name": "BRASILIA",
+        "country": "BR",
+        "population": "2978",
+        "metro-population": "2978",
+        "language": "pt-BR"
+    },
+    {
+        "name": "TSHWANE (PRETORIA)",
+        "country": "ZA",
+        "population": "2922",
+        "metro-population": "2922"
+    },
+    {
+        "name": "Kanpur",
+        "country": "IN",
+        "population": "2920",
+        "metro-population": "4152"
+    },
+    {
+        "name": "Salvador",
+        "country": "BR",
+        "population": "2913",
+        "metro-population": "3920"
+    },
+    {
+        "name": "BUENOS AIRES",
+        "country": "AR",
+        "population": "2900",
+        "metro-population": "12740"
+    },
+    {
+        "name": "KIEV",
+        "country": "UA",
+        "population": "2900",
+        "metro-population": "3375"
+    },
+    {
+        "name": "ROME",
+        "country": "IT",
+        "population": "2877",
+        "metro-population": "4353"
+    },
+    {
+        "name": "Surabaya",
+        "country": "ID",
+        "population": "2865",
+        "metro-population": "6485"
+    },
+    {
+        "name": "Izmir",
+        "country": "TR",
+        "population": "2848",
+        "metro-population": "4113"
+    },
+    {
+        "name": "Lucknow",
+        "country": "IN",
+        "population": "2817",
+        "metro-population": "2902"
+    },
+    {
+        "name": "Basrah",
+        "country": "IQ",
+        "population": "2750",
+        "metro-population": "2750"
+    },
+    {
+        "name": "Toronto",
+        "country": "CA",
+        "population": "2731",
+        "metro-population": "5928"
+    },
+    {
+        "name": "Gujranwala",
+        "country": "PK",
+        "population": "2723",
+        "metro-population": "2723"
+    },
+    {
+        "name": "Chicago",
+        "country": "US",
+        "population": "2720",
+        "metro-population": "9513"
+    },
+    {
+        "name": "TAIPEI",
+        "country": "TW",
+        "population": "2705",
+        "metro-population": "8500"
+    },
+    {
+        "name": "QUITO",
+        "country": "EC",
+        "population": "2671",
+        "metro-population": "4700",
+        "language": "es"
+    },
+    {
+        "name": "Osaka",
+        "country": "JP",
+        "population": "2668",
+        "metro-population": "19342"
+    },
+    {
+        "name": "Xuzhou",
+        "country": "CN",
+        "population": "2623",
+        "metro-population": "3054"
+    },
+    {
+        "name": "Fortaleza",
+        "country": "BR",
+        "population": "2610",
+        "metro-population": "4019"
+    },
+    {
+        "name": "Chittagong",
+        "country": "BD",
+        "population": "2581",
+        "metro-population": "4009"
+    },
+    {
+        "name": "PYONGYANG",
+        "country": "KP",
+        "population": "2581",
+        "metro-population": "2581"
+    },
+    {
+        "name": "Bandung",
+        "country": "ID",
+        "population": "2575",
+        "metro-population": "8465"
+    },
+    {
+        "name": "Kaohsiung",
+        "country": "TW",
+        "population": "2540",
+        "metro-population": "2779"
+    },
+    {
+        "name": "YAOUNDE",
+        "country": "CM",
+        "population": "2535",
+        "metro-population": "2765"
+    },
+    {
+        "name": "Daegu",
+        "country": "KR",
+        "population": "2522",
+        "metro-population": "5020"
+    },
+    {
+        "name": "Taichung",
+        "country": "TW",
+        "population": "2520",
+        "metro-population": "2752"
+    },
+    {
+        "name": "Belo Horizonte",
+        "country": "BR",
+        "population": "2502",
+        "metro-population": "5156"
+    },
+    {
+        "name": "Puebla",
+        "country": "MX",
+        "population": "2500",
+        "metro-population": "2929"
+    },
+    {
+        "name": "Douala",
+        "country": "CM",
+        "population": "2447",
+        "metro-population": "3000"
+    },
+    {
+        "name": "Medellin",
+        "country": "CO",
+        "population": "2441",
+        "metro-population": "3731"
+    },
+    {
+        "name": "Nagpur",
+        "country": "IN",
+        "population": "2405",
+        "metro-population": "2498"
+    },
+    {
+        "name": "Cali",
+        "country": "CO",
+        "population": "2401",
+        "metro-population": "3400"
+    },
+    {
+        "name": "Omdurman",
+        "country": "SD",
+        "population": "2396",
+        "metro-population": "2396"
+    },
+    {
+        "name": "Nanchang",
+        "country": "CN",
+        "population": "2357",
+        "metro-population": "5043"
+    },
+    {
+        "name": "Brisbane",
+        "country": "AU",
+        "population": "2350",
+        "metro-population": "3500"
+    },
+    {
+        "name": "Bursa",
+        "country": "TR",
+        "population": "2340",
+        "metro-population": "2842"
+    },
+    {
+        "name": "TASHKENT",
+        "country": "UZ",
+        "population": "2310",
+        "metro-population": "2310"
+    },
+    {
+        "name": "Houston",
+        "country": "US",
+        "population": "2296",
+        "metro-population": "6313"
+    },
+    {
+        "name": "Nagoya",
+        "country": "JP",
+        "population": "2283",
+        "metro-population": "9107"
+    },
+    {
+        "name": "MOGADISHU",
+        "country": "SO",
+        "population": "2265",
+        "metro-population": "2265"
+    },
+    {
+        "name": "Isfahen",
+        "country": "IR",
+        "population": "2243",
+        "metro-population": "3793"
+    },
+    {
+        "name": "PARIS",
+        "country": "FR",
+        "population": "2230",
+        "metro-population": "12405",
+        "language": "fr"
+    },
+    {
+        "name": "ACCRA",
+        "country": "GH",
+        "population": "2227",
+        "metro-population": "4000"
+    },
+    {
+        "name": "MANAGUA",
+        "country": "NI",
+        "population": "2206",
+        "metro-population": "2561"
+    },
+    {
+        "name": "Kowloon",
+        "country": "CN",
+        "population": "2204",
+        "metro-population": "2204"
+    },
+    {
+        "name": "Lanzhou",
+        "country": "CN",
+        "population": "2177",
+        "metro-population": "3616"
+    },
+    {
+        "name": "Baku",
+        "country": "AZ",
+        "population": "2122",
+        "metro-population": "2724"
+    },
+    {
+        "name": "GUATAMALA CITY",
+        "country": "GT",
+        "population": "2110",
+        "metro-population": "4500"
+    },
+    {
+        "name": "LUANDA",
+        "country": "AO",
+        "population": "2108",
+        "metro-population": "2825"
+    },
+    {
+        "name": "BUCHAREST",
+        "country": "RO",
+        "population": "2106",
+        "metro-population": "2281"
+    }
+]
