@@ -1,13 +1,20 @@
 # A City Data Model With "Declarative Mapper" Source Mapping
 
 ## Intro
-This example shows the interop of two tools: our UML-to-Entity Services toolkit; and the Declarative Mapper (TBD - link). The Declarative Mapper tool allows you to map data from source to target models using a configurable template. You can map source to target without writing code. At runtime, you apply the template to each source document; the Declarative Mapper outputs the desired target document, whose structure and content is determined by the template.
+This example shows the interop of two tools: our UML-to-Entity Services toolkit; and the Declarative Mapper (TBD - link). The Declarative Mapper tool allows us to map data from source to target models using a configurable template. We can map source to target without writing code. At runtime, we apply the template to each source document; the Declarative Mapper outputs the desired target document, whose structure and content is determined by the template.
 
-Using Declarative Mapper as a standlone tool, you write the template by hand. In this example, we let the UML model help generate the Declarative Mapper template. Let's see how this works. In the example, we model a city. Here is the model:
+Using Declarative Mapper as a standlone tool, you write the template by hand. In this example, we let the UML model help generate the Declarative Mapper template. Let's see how this works. In the example, we model a city. 
+
+![End to end diagram][./end2end.png]
+
+
+Here is the model:
 
 ![DeclarativeCity](../umlModels/DeclarativeCity.png)
 
-As with our other examples, the city model uses the ML profile to embellish the UML structure with ML-specific configuration. Specifically we use the xImpl stereotype to specify for each attribute of our City class, how that attribute is mapped from source data. The City class shown is the desired target structure. We have two sources from which we build this target structure: dmdemo and funbase. More on those in a moment. We don't bother modeling the sources, though in the xImpl stereotype we indicate, using the Declarative Mapper's path expression language, where in the source to find the attribute's value.
+As with our other examples, the city model uses the ML profile to embellish the UML structure with ML-specific configuration. Specifically we use the xImpl stereotype to specify, for each attribute of our City class, how that attribute is mapped from source data. The City class shown is the desired target structure. We don't bother modeling the source. The only flavor of source in the UML model is the xImpl mappings. , though in the xImpl stereotype we indicate, using the Declarative Mapper's path expression language, where in the source to find the attribute's value.
+
+We have two sources from which we build this target structure: dmdemo and funbase. More on those in a moment. 
 
 Here is how we map the population:
 
@@ -78,7 +85,7 @@ Confirm:
 
 ### Deploy Declarative Mapper
 
-Obtain the Declarative Mapper tool and deploy to the modules database from this example (xmi2es-examples-dmcity-modules). 
+Obtain the Declarative Mapper tool and deploy to the modules database from this example: xmi2es-examples-dmcity-modules. (If you deploy it to a different modules database in the instance, following the instructions in the workspace to point to that modules DB.)
 
 ## Explore the Mapping
 In Query Console, import XMI2ESDeclarative.xml workspace. You won't want to miss this part; it's where the fun happens. In this workspace you will: 

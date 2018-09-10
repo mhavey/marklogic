@@ -21,12 +21,14 @@ Make sure your database is xmi2es-examples-dmcity-content
   "funbase", cts.search(cts.collectionQuery("funbase")),
   "dmdemo", cts.doc("/population.json"),
   "lookup country code to name", cts.doc("/countries.json")
-]</query><query name="Apply Declarative Mapper Templates" focus="false" listorder="4" taborder="4" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
+]</query><query name="Apply Declarative Mapper Templates" focus="true" listorder="4" taborder="4" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
 
 /*
 Apply declarative mapper templates to inputs.
-Make sure your database is xmi2es-examples-dmcity-content.
-You will need Declarative Mapper deployed to xmi2es-examples-dmcity-modules
+Make sure your database is xmi2es-examples-dmcity-content.You will need Declarative Mapper deployed to xmi2es-examples-dmcity-modules.
+
+Alternatively, if it resides in a different modules DB in the instance, change the line below:
+"modules": xdmp.database("xmi2es-examples-dmcity-modules"), 
 */
 
 function applyTemplate(mappingName, entity, sourceDocs) {
@@ -58,7 +60,7 @@ applyTemplate("funbase", "City", funs);
 var popdocs = Sequence.from(cts.doc('/population.json').root);
 applyTemplate("dmdemo", "City", popdocs);
 
-</query><query name="Explore Target Data" focus="true" listorder="5" taborder="5" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
+</query><query name="Explore Target Data" focus="false" listorder="5" taborder="5" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
 
 /*
 Let's look at one target of the mapping per mapping type. 
