@@ -1,7 +1,7 @@
 # A City Data Model With "Declarative Mapper" Source Mapping
 
 ## Intro
-This example shows the interop of two tools: our UML to Entity Services toolkit; and the Declarative Mapper (TBD link). The Declarative Mapper tool allows you to map data from source to target models using a configurable template. You can map source to target without writing code. At runtime, you apply the template to each source document; the Declarative Mapper outputs the desired target document, whose structure and content is determined by the template.
+This example shows the interop of two tools: our UML-to-Entity Services toolkit; and the Declarative Mapper (TBD - link). The Declarative Mapper tool allows you to map data from source to target models using a configurable template. You can map source to target without writing code. At runtime, you apply the template to each source document; the Declarative Mapper outputs the desired target document, whose structure and content is determined by the template.
 
 Using Declarative Mapper as a standlone tool, you write the template by hand. In this example, we let the UML model help generate the Declarative Mapper template. Let's see how this works. In the example, we model a city. Here is the model:
 
@@ -11,7 +11,7 @@ As with our other examples, the city model uses the ML profile to embellish the 
 
 Here is how we map the population:
 
-http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('population') * 1000 ]]
+http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('population') * 1000 ]].
 
 TODO explain this...
 
@@ -43,7 +43,7 @@ Run the following:
 gradle -PenvironmentName=local -i includeXMI2ESTransform mlDeploy
 
 Confirm:
-- New DB and app server created with name xmi2es-examples-hrdmcity.
+- New DB and app server created with name xmi2es-examples-dmcity.
 
 ### Import the Model
 
@@ -53,36 +53,31 @@ gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
 - Content DB has the following documents
-TODO...
-	* /xmi2es/es/HRExcel.json - Excel-originated entity services model descriptor
-	* /xmi2es/excel/findings/HRExcel.xml - Excel-to-XMI conversion findings. Should be no problems.
-	* /xmi2es/excel/HRExcel.xlsx - Original Excel file
-	* /xmi2es/extension/HRExcel.ttl - Excel extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/HRExcel.txt - Excel dxtended model described textually
-	* /xmi2es/findings/HRExcel.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/HRExcel.txt - Generated code for DHF
-	* /xmi2es/intermediate/HRExcel.xml - XMI/ES intermediate form
-	* /xmi2es/xmi/HRExcel.xml - Excel model converted to XMI form.
+	* /xmi2es/es/DeclarativeCity.json - Entity Services model descriptor.
+	* /xmi2es/extension/DeclarativeCity.ttl - Entity Services extended model
+	* /xmi2es/extension/DeclarativeCity.txt - Entity Services extended model described textually
+	* /xmi2es/findings/DeclarativeServices.xml - Findings while converting to Entity Services. Should be no problems.
+	* /xmi2es/gen/DeclarativeCity.txt - Generated code for DHF. Not used in this example.
+	* /xmi2es/intermediate/DeclarativeCity.xml - XMI/ES intermediate form
+	* /xmi2es/xmi/DeclarativeCity.xml - UML model in XMI form.
 
-### Load the Data
+### Load the Source Data
 
-For comparison, we will load the HR UML model from examples/hr. Run the following: TODO...
+Load the source data into our content database:
 
-gradle -PenvironmentName=local -i loadSourceData
+gradle -PenvironmentName=local -i loadSources
 
 Confirm:
-- Content DB now has, in addition to the document created in the previous step, the following documents
-	* /xmi2es/es/DHFEmployeeSample.json	 - UML-originated Entity Services Model
-	* /xmi2es/extension/DHFEmployeeSample.ttl - UML extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/DHFEmployeeSample.txt - UML extended model described textually
-	* /xmi2es/findings/DHFEmployeeSample.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/DHFEmployeeSample.txt - Generated code for DHF
-	* /xmi2es/intermediate/DHFEmployeeSample.xml - XMI/ES intermediate form
-	* /xmi2es/xmi/DHFEmployeeSample.xml - XMI form of UML model
+- Content DB now has, in addition to the documents created in the previous step, the following documents
 
-
-TODO .. don't i need to load the declarative mapper itself...
+	* /population.json - A large JSON containing the source city data for the dmdemo data set
+	* /countries.json - A JSON lookup file that maps country code to country name. Used during our Declarative Mapper transformation.
+	* /Otter Lake.json - A city record from the funbase data set.
+	* /US Flag.json - A city record from the funbase data set.
+	* /Venustown.json - A city record from the funbase data set.
 
 ## Explore the Mapping
-In Query Console, import XMI2ESDeclarative.xml workspace. TODO
-- prepare the mapper template; apply it to each input; examine outputs...
+In Query Console, import XMI2ESDeclarative.xml workspace. You won't want to miss this part; it's where the fun happens. In this workspace you will: 
+- Examine the source data and the entity services model.
+- Generate the Declarative Mapper templates
+- Pass the source data through the Declarative Mapper templates to obtain target data that conforms to the Entity Services model.
