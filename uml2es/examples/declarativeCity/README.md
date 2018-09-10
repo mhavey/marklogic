@@ -5,7 +5,7 @@ This example shows the interop of two tools: our UML-to-Entity Services toolkit;
 
 Using Declarative Mapper as a standlone tool, you write the template by hand. In this example, we let the UML model help generate the Declarative Mapper template. Let's see how this works. In the example, we model a city. 
 
-![End to end diagram][./end2end.png]
+![End to end diagram](./end2end.png)
 
 
 Here is the model:
