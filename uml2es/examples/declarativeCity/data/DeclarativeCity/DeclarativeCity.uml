@@ -13,7 +13,7 @@
         <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_fYPfcLISEeiBv8houo55Zg"/>
         <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_fYR7sLISEeiBv8houo55Zg" value="1"/>
       </ownedAttribute>
-      <ownedAttribute xmi:type="uml:Property" xmi:id="_iYJ4ELIQEeiBv8houo55Zg" name="countyName">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_iYJ4ELIQEeiBv8houo55Zg" name="countryName">
         <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
       </ownedAttribute>
       <ownedAttribute xmi:type="uml:Property" xmi:id="_hF7YALIMEeiBv8houo55Zg" name="population">
@@ -41,7 +41,7 @@
   </uml:Model>
   <MarkLogicEntityServicesProfile.es:esModel xmi:id="_9rQc4LIQEeiBv8houo55Zg" version="0.0.1" baseUri="http://org.jude/ml/uml2es/declarativeMapper/city" base_Package="_cbGAkLIMEeiBv8houo55Zg"/>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_KAIH0LIREeiBv8houo55Zg" base_Property="_fWcXYLIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('name') => lowerCase()]]</triplesPO>
+    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('name')]]</triplesPO>
     <triplesPO>http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('city_name')]]</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_LWW68LIREeiBv8houo55Zg" base_Property="_gOARgLIMEeiBv8houo55Zg">
@@ -57,12 +57,12 @@
     <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,&quot;[[if((@'population' / @'metro-population') > 0.75, 'dense', 'sparse')]]&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_PCGM4LIREeiBv8houo55Zg" base_Property="_iYJ4ELIQEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,&quot;[[lookup('/countries.json', @country, coalesce(@language, 'en'))]]&quot;</triplesPO>
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('country']]</triplesPO>
+    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,&quot;[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]&quot;</triplesPO>
+    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('country')]]</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_ty0IELIREeiBv8houo55Zg" base_Class="_dWq4ALIMEeiBv8houo55Zg">
     <triplesPO>http://marklogic.com/xmi2es/xes/hasMapper,dmdemo</triplesPO>
     <triplesPO>http://marklogic.com/xmi2es/xes/hasMapper,funbase</triplesPO>
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapperLanguage,xml</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
+  <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_HObGsLT6EeiBv8houo55Zg" prefix="dm" base_Package="_cbGAkLIMEeiBv8houo55Zg" url="http://org.jude/ml/uml2es/declarativeMapper/city"/>
 </xmi:XMI>

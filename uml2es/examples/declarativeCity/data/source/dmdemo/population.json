@@ -97,12 +97,6 @@
         "metro-population": "10608"
     },
     {
-        "name": "Lahore",
-        "country": "PK",
-        "population": "10355",
-        "metro-population": "Unknown"
-    },
-    {
         "name": "Seoul",
         "country": "KR",
         "population": "10290",
@@ -150,12 +144,6 @@
         "country": "IR",
         "population": "8847",
         "metro-population": "15233"
-    },
-    {
-        "name": "BAGHDAD",
-        "country": "IQ",
-        "population": "8765",
-        "metro-population": "Unknown"
     },
     {
         "name": "Xian",
@@ -222,12 +210,6 @@
         "country": "SA",
         "population": "7506",
         "metro-population": "7506"
-    },
-    {
-        "name": "Hong Kong",
-        "country": "CN",
-        "population": "7234.8",
-        "metro-population": "Unknown"
     },
     {
         "name": "Chennai",

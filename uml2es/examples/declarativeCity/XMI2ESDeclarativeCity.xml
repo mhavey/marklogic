@@ -1,0 +1,121 @@
+<export><workspace name="XMI2ESDeclarativeCity"><query name="Explore UML Toolkit Output" focus="false" listorder="1" taborder="1" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
+
+var sem = require("/MarkLogic/semantics.xqy");
+
+/*
+Let's take a look at the most important outputs of the UML-2-ES transform of our city data model
+Make sure your database is xmi2es-examples-dmcity-content 
+*/
+
+[
+  "the entity services city model", cts.doc("/xmi2es/es/DeclarativeCity.json"),
+  "the extended model - and notice our Declarative Mapper expressions", sem.rdfParse(cts.doc("/xmi2es/extension/DeclarativeCity.ttl"), ["turtle"])
+]</query><query name="Explore Source Data" focus="false" listorder="2" taborder="2" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
+
+/*
+Let's take a look at the most source data.
+Make sure your database is xmi2es-examples-dmcity-content 
+*/
+
+[
+  "funbase", cts.search(cts.collectionQuery("funbase")),
+  "dmdemo", cts.doc("/population.json"),
+  "lookup country code to name", cts.doc("/countries.json")
+]</query><query name="Apply Declarative Mapper Templates" focus="false" listorder="4" taborder="4" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
+
+/*
+Apply declarative mapper templates to inputs.
+Make sure your database is xmi2es-examples-dmcity-content.
+You will need Declarative Mapper deployed to xmi2es-examples-dmcity-modules
+*/
+
+function applyTemplate(mappingName, entity, sourceDocs) {
+  var cmd = "";
+  cmd += "const dm = require('/ext/declarative-mapper.sjs');\n";
+  cmd += "declareUpdate();\n";
+  cmd += "const config = cts.doc('/dm/mapper/" + mappingName + "/" + entity + ".xml');\n";
+  cmd += "const context = dm.newCompilerContext(config);\n";
+  cmd += "var mapper = dm.prepare(context);\n";
+  cmd += "for (const sourceDoc of sourceDocs) {\n";
+  cmd += "   var targetDoc = mapper(sourceDoc);\n";
+  cmd += "   var uri = '/target/" + entity + "/' + targetDoc.xpath('//name/text()') + '_' + targetDoc.xpath('//countryName/text()') + '.xml';\n";
+  cmd += "   xdmp.documentInsert(uri, targetDoc, {collections: ['target']});\n";
+  cmd += "}\n";
+  
+  xdmp.log(cmd, "info");
+  xdmp.eval(cmd, {
+    "sourceDocs" : sourceDocs
+  }, {
+    "modules": xdmp.database("xmi2es-examples-dmcity-modules"), 
+    "database": xdmp.database("xmi2es-examples-dmcity-content"),
+    "update": "auto"
+  });
+}
+
+var funs = cts.search(cts.collectionQuery("funbase"));
+applyTemplate("funbase", "City", funs);
+
+var popdocs = Sequence.from(cts.doc('/population.json').root);
+applyTemplate("dmdemo", "City", popdocs);
+
+</query><query name="Explore Target Data" focus="true" listorder="5" taborder="5" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="javascript">'use strict';
+
+/*
+Let's look at one target of the mapping per mapping type. 
+You will need Declarative Mapper deployed to xmi2es-examples-dmcity-modules
+*/
+
+[
+  "fundemo", 
+  cts.doc("/target/City/US Flag_Moon.xml"),
+  "dmdemo", 
+  cts.doc("/target/City/ACCRA_Ghana.xml")
+]
+</query><query name="Generate DM Mappings" focus="false" listorder="8" taborder="3" active="true" database="13577650931094978922" server="9696959519385244357" database-name="xmi2es-examples-dmcity-content" server-name="xmi2es-examples-dmcity" mode="xquery">xquery version "1.0-ml";
+
+import module namespace es = "http://marklogic.com/entity-services"
+    at "/MarkLogic/entity-services/entity-services.xqy";
+import module namespace sem = "http://marklogic.com/semantics" 
+      at "/MarkLogic/semantics.xqy";
+      
+(:
+Through introspection of the model, generate mapper templates. This is the germ of a generic generation capability.
+Make sure your database is xmi2es-examples-dmcity-content.
+:)      
+      
+let $xes := &lt;xesTriples&gt;{sem:rdf-parse(fn:doc("/xmi2es/extension/DeclarativeCity.ttl"), ("turtle"))}&lt;/xesTriples&gt;
+let $esModel := es:model-to-xml(fn:doc("/xmi2es/es/DeclarativeCity.json"))
+let $baseIRI := concat($esModel//es:info/es:base-uri/text(), "/", 
+  $esModel//es:info/es:title/text(), "-", 
+  $esModel//es:info/es:version/text())
+for $entity in $esModel//es:definitions/* return
+  let $entityName := string($entity/fn:node-name(.))
+  let $entityIRI := concat($baseIRI, "/", $entityName)
+  let $xmlns := string($entity/es:namespace)
+  let $mapperNames := $xes//sem:triple[sem:subject/text() eq $entityIRI and 
+    sem:predicate/text() eq "http://marklogic.com/xmi2es/xes/hasMapper"]/sem:object/text()
+  for $mapperName in $mapperNames return
+    let $mapperURI := concat("/dm/mapper/", $mapperName, "/", $entityName, ".xml")
+    let $attribMappingPred := concat("http://marklogic.com/xmi2es/xes/mapper", "/", $mapperName)
+    let $mapper := 
+      element {fn:QName("http://marklogic.com/declarative-mapper", "config")} {(
+        element {fn:QName("http://marklogic.com/declarative-mapper", "format")} {"XML"},
+        element {fn:QName("http://marklogic.com/declarative-mapper", "template")} {
+          element {fn:QName($xmlns, $entityName)} {
+            for $attribName in $entity/es:properties/*/fn:node-name(.)
+              let $attribIRI := concat($entityIRI, "/", $attribName)
+              let $attribMapping := string($xes//sem:triple[sem:subject/text() eq $attribIRI and 
+                sem:predicate/text() eq $attribMappingPred]/sem:object)
+              return 
+                if (string-length($attribMapping) gt 0) then
+                  element {$attribName} {$attribMapping}
+                else ()
+          }
+        })}
+        return xdmp:document-insert($mapperURI, $mapper, 
+          &lt;options xmlns="xdmp:document-insert"&gt;  
+            &lt;collections&gt;
+              &lt;collection&gt;mapper&lt;/collection&gt;
+            &lt;/collections&gt;
+          &lt;/options&gt;)
+</query></workspace></export>
