@@ -76,6 +76,10 @@ Confirm:
 	* /US Flag.json - A city record from the funbase data set.
 	* /Venustown.json - A city record from the funbase data set.
 
+### Deploy Declarative Mapper
+
+Obtain the Declarative Mapper tool and deploy to the modules database from this example (xmi2es-examples-dmcity-modules). 
+
 ## Explore the Mapping
 In Query Console, import XMI2ESDeclarative.xml workspace. You won't want to miss this part; it's where the fun happens. In this workspace you will: 
 - Examine the source data and the entity services model.
