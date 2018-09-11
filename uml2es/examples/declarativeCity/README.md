@@ -1,34 +1,80 @@
 # A City Data Model With "Declarative Mapper" Source Mapping
 
 ## Intro
-This example shows the interop of two tools: our UML-to-Entity Services toolkit; and the Declarative Mapper (TBD - link). The Declarative Mapper tool allows us to map data from source to target models using a configurable template. We can map source to target without writing code. At runtime, we apply the template to each source document; the Declarative Mapper outputs the desired target document, whose structure and content is determined by the template.
+This example shows the interop of two tools: our UML-to-Entity Services toolkit; and the Declarative Mapper (TBD - link). The Declarative Mapper tool allows us to map data from source to target document using a configurable template. We map source to target without writing code. Rather, we compose a template, which is an XML or JSON document that specifies mapping expressions to transform source to target. At runtime, we apply the template to each source document; the Declarative Mapper outputs the desired target document.
 
-Using Declarative Mapper as a standlone tool, you write the template by hand. In this example, we let the UML model help generate the Declarative Mapper template. Let's see how this works. In the example, we model a city. 
+Using Declarative Mapper as a standlone tool, we would write the template by hand. In this example, we generate it from a UML model. Our UML model defines the target structure of a city. Within the model, we use stereotypes from our ML profile to configure Declarative Mapper transformation expressions for each attribute. 
 
-![End to end diagram](./end2end.png)
-
-
-Here is the model:
+Here is our UML model. 
 
 ![DeclarativeCity](../umlModels/DeclarativeCity.png)
 
-As with our other examples, the city model uses the ML profile to embellish the UML structure with ML-specific configuration. Specifically we use the xImpl stereotype to specify, for each attribute of our City class, how that attribute is mapped from source data. The City class shown is the desired target structure. We don't bother modeling the source. The only flavor of source in the UML model is the xImpl mappings. , though in the xImpl stereotype we indicate, using the Declarative Mapper's path expression language, where in the source to find the attribute's value.
+Notice we have a class, called City, consisting of several attributes: name, countryCode, population, metroPopulation, dense, and countryName. City is our target structure. We want the output of Declarative Mapper to bear the structure of City. The source data -- the input of Declarative Mapper -- has a much different structure. We don't model in UML the structure of the source. Rather, in the UML model, for each attribute, we stereotype the attribute as xImpl and tag the stereotype with a mapping expression. The stereotype indicates how obtain the value of that attribute from source data. In effect, the UML model defines the target structure and reveals how to arrive at that structure from source data. 
 
-We have two sources from which we build this target structure: dmdemo and funbase. More on those in a moment. 
+In our example we have two sources of data: dmdemo and funbase. Each source has its own structure, and thus each needs its own mapping. 
 
-Here is how we map the population:
+dmdemo is a large JSON file, population.json, that contains hundreds of city records. Here is an excerpt:
 
-http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('population') * 1000 ]].
+	{
+        "name": "BEIJING",
+        "country": "CN",
+        "population": "18590",
+        "metro-population": "24900",
+        "language": "zh-CN"
+    },
+    {
+        "name": "Karachi",
+        "country": "PK",
+        "population": "18000",
+        "metro-population": "27506",
+        "language": "es"
+    }
 
-TODO explain this...
+In funbase, cities are defined in a CSV. Here is an excerpt:
 
-Here is how we map the country name:
+	city_name,country
+	Otter Lake,USA
+	US Flag,Moon
+	Venustown,Mars
 
-http://marklogic.com/xmi2es/xes/mapper/dmdemo,"[[lookup('/countries.json', @country, coalesce(@language, 'en'))]]"
-http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('country']]
+For a given attribute, the xImpl stereotype's tagged value defines how to map that attribute from source. Here is the mapping for countryName:
 
+	* http://marklogic.com/xmi2es/xes/mapper/dmdemo,"[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]"
+	* http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('country')]]
 
-TODO explain this... 
+The first of these is the dmdemo mapping; to obtain countryName, we lookup in another document (countries.json), the English text name for the country whose code country source attribute. The second is the funbase mapping; from funbase the country attribute maps to the target countryName attribute.
+
+When we put these transformations together -- you'll see this later when you open the Query Console workspace and work through the exercise -- we have enough detail to fully define Declarative Mapper templates for each source. Here is the template to produce a City document from dmdemo source. 
+
+	<config xmlns="http://marklogic.com/declarative-mapper">
+		<format>XML</format>
+		<template>
+			<City xmlns="http://org.jude/ml/uml2es/declarativeMapper/city">
+				<name xmlns="">[[extract('name')]]</name>
+				<countryCode xmlns="">[[extract('country')]]</countryCode>
+				<countryName xmlns="">[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]</countryName>
+				<population xmlns="">[[extract('population') * 1000 ]]</population>
+				<metroPopulation xmlns="">[[extract('metroPopulation') * 1000 ]]</metroPopulation>
+				<dense xmlns="">[[if((@'population' / @'metro-population') > 0.75, 'dense', 'sparse')]]</dense>
+			</City>
+		</template>
+	</config>
+
+Here is the template to produce a City document from funbase source:
+
+	<config xmlns="http://marklogic.com/declarative-mapper">
+		<format>XML</format>
+		<template>
+		<City xmlns="http://org.jude/ml/uml2es/declarativeMapper/city">
+			<name xmlns="">[[extract('city_name')]]</name>
+			<countryName xmlns="">[[extract('country')]]</countryName>
+		</City>
+		</template>
+	</config>
+
+The following figure shows the end-to-end flow. We define our model in our favorite toolkit-compliant UML tool. From that tool we export is as XMI and pass it though our UML-to-Entity Services toolkit. From the resulting Entity Services model (both the base model and its extensions), we generate the Declarative Mapper templates for each source. We produce target documents by applying these templates to the source documents. Significantly, the target documents have the form of our UML model. And we didn't have to write the templates by hand; our UML model defines them!
+
+![End to end diagram](./end2end.png)
 
 
 A few design points to mention:
