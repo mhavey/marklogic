@@ -17,6 +17,8 @@ The toolkit consists of the following parts:
 - examples/blockFactory: A sample UML model that shows a technique for denormalization.
 - examples/movietalk: A UML logcal data model for user posts about movies and actors. The model is merely logical. We do not generate an Entity Services model from it. Rather, when the application team built the movietalk application, they referred to the model but arranged the data in MarkLogic somewhat differently. The example demonstrates a strategy to compare the physical model to the logical model.  
 - examples/hrexcel: Demonstrates loading an entity services model from an Excel data model template. No UML! We use the HR example from above (examples/hr). We pass our Excel spreadsheet (containing the HR model in tablular form) into the transformation. The transformation produces the same entity services model (including extensions and generated code) as produces from the UML model in examples/hr. 
+- examples/declarativeCity: A simple city data model that uses the Declarative Mapper tool to map source data. The example shows the integration of UML, Entity Services, and Declarative Mapper. 
+- examples/hubhub: A fun extra, modeling airport hubs on MarkLogic's Data Hub Framework. Helps find routes that hub-and-spoke airlines fly where neither source nor destination is a hub. 
 - examples/umlModels: The full set of models
 
 ## How We Expect You Will Use This Toolkit
