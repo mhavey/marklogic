@@ -1,0 +1,71 @@
+
+buildscript {
+
+  repositories {
+    jcenter{url "http://jcenter.bintray.com/"}
+    mavenLocal()
+    maven { url "http://plugins.gradle.org/m2" }
+  }
+  dependencies {
+    classpath "com.marklogic:ml-gradle:3.9.0"
+    classpath "net.saliman:gradle-properties-plugin:1.4.6"
+  }
+}
+
+apply plugin: "net.saliman.properties"
+apply plugin: "com.marklogic.ml-gradle"
+
+repositories {
+  jcenter{url "http://jcenter.bintray.com/"}
+
+  // Needed for mlcp dependencies
+  maven { url "http://plugins.gradle.org/m2" }
+  maven { url "http://developer.marklogic.com/maven2/" }
+
+  // Needed for hadoop dependencies for mlcp
+  maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+}
+
+configurations {
+  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
+  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
+  // shown below.  Need to force to use certain version of xml-apis library.
+  mlcp {
+      resolutionStrategy {
+        force "xml-apis:xml-apis:1.4.01"
+      }
+    }
+}
+
+dependencies {
+  mlcp "com.marklogic:mlcp:9.0.6"
+  mlcp "org.apache.commons:commons-csv:1.2"
+  mlcp files("lib")
+}
+
+task includeXMI2ESTransform(type: Copy) {
+    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
+    into "src/main/ml-modules/root/xmi2es"
+}
+
+task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
+  def xmiDir = new File("${projectDir}").getAbsolutePath() 
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "xml"
+  input_file_path = xmiDir + "/MyMLModel.xml"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/xmi/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = mlAppServicesHost
+  port = mlAppServicesPort.toInteger()
+
+  transform_module = "/xmi2es/xmi2esTransform.xqy"
+  transform_namespace ="http://marklogic.com/xmi2es"
+  transform_param = "dummy"
+}

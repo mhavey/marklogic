@@ -33,6 +33,8 @@ If that's you, we think this toolkit is for you. You will need the following ing
 ## Where To Begin
 Dive into the examples! The movies example is a good place to start. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the hr example. 
 
+Here are a few tutorials on how to use the toolkit with MagicDraw and Papyrus: [Tool how-to's](tutorials/README.md). 
+
 ## UML-to-Entity Services Mapping
 Once you get deeper into the toolkit, you will need to better understand how the transform maps UML to Entity Services. Here is an overview:
 - The transform maps a UML package to an Entity Services model. The package name is mapped to the entity model's title. The package's documentation comment is mapped to the entity model's description. If your packaged is stereotyped as esModel, the version and baseUri tags of that stereotype are mapped to the entity model's baseUri and version.
