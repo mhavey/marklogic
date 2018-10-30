@@ -1,6 +1,8 @@
 # How To Edit the UML-to-Entity Services Profile in MagicDraw
 
 ## Intro
+This tutorial shows how to edit the UML-to-Entity Services profile in MagicDraw.
+
 You probably don't need to modify the profile, unless you need to add new stereotypes. Before you do this, bear in mind:
 - The profile has an xImplHint stereotype in which you can embellish your model with a limitless set of general hints.  Will xImplHint suit your purpose, or do you still need to add your own stereotypes?
 - If you add stereotypes, you will also need to modify the code of the transform module to process that stereotype ... unless the stereotype is merely for diagrammatic purposes.

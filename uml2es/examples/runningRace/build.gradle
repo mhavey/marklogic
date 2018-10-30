@@ -87,26 +87,3 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = "dummy"
 }
-
-// you didn't see this.
-task _special(type: com.marklogic.gradle.task.MlcpTask) {  
-  def xmiDir = "/Users/mhavey/Documents/workspace/PapyrusFeaturesTest"
-  def unixDir = xmiDir.replace('\\', '/');
-  def regex = '"' + unixDir + ",'',/,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "xml"
-  input_file_path = xmiDir + "/FeaturesTest.uml"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/xmi/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "xmi2es"
-  host = mlAppServicesHost
-  port = mlAppServicesPort.toInteger()
-
-  transform_module = "/xmi2es/xmi2esTransform.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es"
-  transform_param = "dummy"
-}
