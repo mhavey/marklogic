@@ -33,7 +33,7 @@ If that's you, we think this toolkit is for you. You will need the following ing
 ## Where To Begin
 Dive into the examples! The movies example is a good place to start. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the hr example. 
 
-The following how-to guide shows how to get up and running with this toolkit in MagicDraw and Papyrus: [Tool how-to's](userguide/README.md). 
+Here are a few tutorials on how to use the toolkit with MagicDraw and Papyrus: [Tool how-to's](tutorials/README.md). 
 
 ## UML-to-Entity Services Mapping
 Once you get deeper into the toolkit, you will need to better understand how the transform maps UML to Entity Services. Here is an overview:
