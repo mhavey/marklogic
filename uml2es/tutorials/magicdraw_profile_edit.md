@@ -53,6 +53,12 @@ If you want to add tagged values to your new stereotype, double-click on your ne
 
 ![Containment panel in MagicDraw - new Element - Stereotype - spec](md_profile_newelem_spec.png)
 
+You should decide whether the stereotype applies to UML packages, classes, properties, or some combination of these. Let's configure semYippee to apply to properties. Double-click on the stereotype to open its specification. Select Metaclass, click the 3-dotted button, deselect Element and then select Property. 
+
+![Containment panel in MagicDraw - new Element - Stereotype - metaclass](md_profile_metaclass.png)
+
+![Containment panel in MagicDraw - new Element - Stereotype - metaclass changed](md_profile_metaclass2.png)
+
 ### Saving the profile
 
 When you are done editing, save the profile by selecting File | Save Project from the menu. MagicDraw saves it to uml2es/umlProfile/magicdraw/MLProfile.xml.

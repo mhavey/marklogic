@@ -19,7 +19,7 @@ Click OK to create the model. It opens up like this:
 
 ### Add the Profile
 
-To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. In the Containnment panel on the left, select "Model". Then from the File menu, select Use Model - Local Model. 
+To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. In the Containment panel on the left, select "Model". Then from the File menu, select Use Model - Local Model. 
 
 ![Project in MagicDraw - use profile](md_project_useproject.png)
 
@@ -55,7 +55,7 @@ Rename it to MySimpleModel.
 
 ![Project in MagicDraw - new model](md_project_mysimplemodel.png)
 
-Let's add a class. In the diagram, drag a class onto the canvas. Name is Person.
+Let's add a class. In the diagram, drag a class onto the canvas. Name it Person.
 
 ![Project in MagicDraw - new class](md_project_person.png)
 
