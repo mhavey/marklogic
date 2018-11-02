@@ -67,11 +67,7 @@ You can use that profile for your MagicDraw models, but if you want the profile 
 
 ![Export MagicDraw profile](md_profile_export.png)
 
-You will be asked to provide a directory to save the exported files to. Note that MagicDraw produces SEVERAL files during this export. Keep the default directory name mlProfileEclipseProject5. Save under your uml2es/umlProfile/magicdraw directory.
-
-![Export MagicDraw profile](md_profile_export2.png)
-
-We'll use only one of the files in the new mlProfileEclipseProject5 directory. It is MarkLogic_Entity_Services_Profile.profile.uml. Copy it to the following location, overwriting the file that is already there: uml2es/umlProfile/MLProfile.xml. 
+You will be asked to provide a directory to save the exported files to. Note that MagicDraw produces SEVERAL files during this export. Keep the default directory name mlProfileEclipseProject5. Save under your uml2es/umlProfile/magicdraw directory. We'll use only one of the files in the new mlProfileEclipseProject5 directory. It is MarkLogic_Entity_Services_Profile.profile.uml. Copy it to the following location, overwriting the file that is already there: uml2es/umlProfile/MLProfile.xml. 
 
 As a result of all this, you just updated the profile in two forms:
 
