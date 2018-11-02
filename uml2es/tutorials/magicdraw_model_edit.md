@@ -1,7 +1,7 @@
 # How To Build a Model in MagicDraw for MarkLogic
 
 ## Intro
-This tutorial shows how to create a UML model for MarkLogic in MagicDraw. 
+This tutorial shows how to create a UML model for MarkLogic in MagicDraw. I tested this on MagicDraw Enterprise 18.5 SP2.
 
 ## How to create the model:
 
