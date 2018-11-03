@@ -1,7 +1,7 @@
 # How To Edit the UML-to-Entity Services Profile in MagicDraw
 
 ## Intro
-This tutorial shows how to edit the UML-to-Entity Services profile in MagicDraw.
+This tutorial shows how to edit the UML-to-Entity Services profile in MagicDraw. I tested this on MagicDraw Enterprise 18.5 SP2. 
 
 You probably don't need to modify the profile, unless you need to add new stereotypes. Before you do this, bear in mind:
 - The profile has an xImplHint stereotype in which you can embellish your model with a limitless set of general hints.  Will xImplHint suit your purpose, or do you still need to add your own stereotypes?
@@ -61,4 +61,18 @@ You should decide whether the stereotype applies to UML packages, classes, prope
 
 ### Saving the profile
 
-When you are done editing, save the profile by selecting File | Save Project from the menu. MagicDraw saves it to uml2es/umlProfile/magicdraw/MLProfile.xml.
+When you are done editing, save the profile by selecting File | Save Project from the menu. MagicDraw saves it to uml2es/umlProfile/magicdraw/MLProfile.xml. 
+
+You can use that profile for your MagicDraw models, but if you want the profile to be available to other UML tools, such as Papyrus, you should export as an XMI profile document. MagicDraw supports multiple representations; we'll use Eclipse XMI. From the File menu, choose Export To | Eclipse UML2 XMI File | Eclipse UML2 (v5.x) XMI File.
+
+![Export MagicDraw profile](md_profile_export.png)
+
+You will be asked to provide a directory to save the exported files to. Note that MagicDraw produces SEVERAL files during this export. Keep the default directory name mlProfileEclipseProject5. Save under your uml2es/umlProfile/magicdraw directory. We'll use only one of the files in the new mlProfileEclipseProject5 directory. It is MarkLogic_Entity_Services_Profile.profile.uml. Copy it to the following location, overwriting the file that is already there: uml2es/umlProfile/MLProfile.xml. 
+
+As a result of all this, you just updated the profile in two forms:
+
+- MagicDraw form, to uml2es/umlProfile/magicdraw/MLProfile.xml
+- Generalized XMI form, to uml2es/umlProfile/MLProfile.xml
+
+If you run the Papyrus tutorials, you'll need uml2es/umlProfile/MLProfile.xml.
+
