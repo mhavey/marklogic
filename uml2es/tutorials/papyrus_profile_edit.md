@@ -71,13 +71,25 @@ In the Create Extensions window, under Choice Pattern enter "property". Then und
 
 ![Papyrus profile - extension property added](pap_profile_extension3.png)
 
-
 When done click OK.
+
+The last step is to "define" the profile. This is a one-click step that is important for technical reasons. Refer to the links below for more. To perform this step, right-click on the node labeled MarkLogicEntityServicesProfile under UML. Delete it. 
+
+![Papyrus profile - delete the anno](pap_profile_deleteanno.png)
+
+Then select the node labelled "<Profile>Marklogic Entity Services Profile". From main Eclipse menu select UML Editor | Profile | Define. 
+
+![Papyrus profile - define](pap_profile_define.png)
+
+In the dialogic click OK. Done!!
 
 ### Saving the profile
 
 When you are done editing, save the profile by selecting File | Save All from the menu. You can use this modified profile in your Papyrus models.
 
+## Useful Reading
+- <https://wiki.eclipse.org/MDT/UML2/Introduction_to_UML2_Profiles> - useful guide to designing profiles in the EMF UML editor.
+- <https://www.eclipse.org/papyrus/resources/PapyrusUserGuideSeries_AboutUMLProfile_v1.0.0_d20120606.pdf> - useful guide to designing profiles in Papyrus
 
 
 
