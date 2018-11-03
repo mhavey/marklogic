@@ -109,7 +109,7 @@ Create three additional attributes. Name them firstName, lastName, and hobbies. 
 
 To help map this to Entity Services, we'll add a few stereotypes to our model. 
 
-- We will make the id attribute a primary key. To do this, select the id attribute. In the Properties panel select Profile. Click the + button above Applied Stereotypes. From the list of applicable stereotypes select PK and click the arrow to move it to Applied Stereotypes.
+First we will make the id attribute a primary key. To do this, select the id attribute. In the Properties panel select Profile. Click the + button above Applied Stereotypes. From the list of applicable stereotypes select PK and click the arrow to move it to Applied Stereotypes.
 
 ![Project in Papyrus - id PK](pap_model_idpk.png)
 
