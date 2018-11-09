@@ -1,0 +1,24 @@
+# UML-to-Entity Services Toolkit: UML Mapping
+
+Here we discuss how the transform maps UML to Entity Services.
+- The transform maps a UML package to an Entity Services model. The package name is mapped to the entity model's title. The package's documentation comment is mapped to the entity model's description. If your packaged is stereotyped as esModel, the version and baseUri tags of that stereotype are mapped to the entity model's baseUri and version.
+- The transform maps a UML class to an Entity Services entity. The class name is mapped to the entity name. The class's documenation comment is mapped to the entity's description. If the class is stereotyped as xmlNamespace, the prefix and url tags of that stereotype are mapped to the entity's prefix and uri. If the class is not stereotyped as xmlNamespace but the package is, then the transform maps the package's xmlNamespace to each entity's prefix and uri.
+- The Transform maps a UML class attribute to an Entity Services property. The name of the attribute is mapped to the entity property's name. The package's documentation comment is mapped to the entity property's description.
+- In a UML aggregation (whether shared or composition) relationship between two classes A and B, each is an attribute. The transform maps the attribute to a property in Entity Services. The type of that property is by default an **internal reference** to the other entity; A's property is a reference to B, and vice versa. If you stereotype that attribute as FK, the transform maps its type to the primitive type of the PK attribute of the corresponding entity; A's property type is that of B's primary key property, and vice versa.
+- In a UML binary association relationship between two classes where there is **no association class**, the transform mapping logic is the same as with aggregation.
+- In a UML binary association relationship between two classes A and B where there is an association class C, the transform maps as follows:
+	* It maps the association class C to an entity.
+	* In classes A and B, it maps the type of the attribute that refers to the association as an **internal reference to C**. 
+	* It adds properties to C referencing A and B. The names of these attributes are refA and refB. The types of these attributes are by default **internal references** to A and B, respectively. If class A's attribute to the association is stereotyped as FK, then the transform sets the refB property type as the primary key of B. Similarly, class B's attribute to the association is stereotyped as FK, then the transform sets the refA property type as the primary key of A. It's subtle, I know. Take a look at the movie example's Role association for a concrete example. 
+- The transform does not support ternary associations or any n-ary association beyond binary.
+- In a UML generalization relationship, in which one class B inherits from class A, the transform ensures that entity B inherits the attributes and stereotypes of entity A. The transform also allows subclass B to override and refine class A. For example, it can change the type of an attribute, change the primary key, or add more collections or SEM types to those it inherits. 
+- In the UML model, we can exclude a class or attribute. In this case, it is NOT added to the entity services descriptor. The movies example demonstrates one reason for doing this: excluding the superclass (MovieContributor), but keeping the subclasses (PersonContributor, CompanyContributor) in a generalization relationship.
+- Type resolution. We have discussed how the transform maps type in the case of association and aggregation relationships. Generally the transform's type resolution sequence for an attribute is the following:
+	* If the attribute has the mlType tag of the esProperty stereotype set, the transform sets the property's type as that value.
+	* If the attribute has the externalRef tag of the esProperty stereotype set, the transform sets the property's type as an external reference with that value.
+	* If the attribute refers to another class (via association or aggregation), the transform uses the logic described above to assign the property's Entity Services type.
+	* If the attribute has a standard UML primitive type, the transform maps that type to the 
+- Cardinality: 
+	* If in the UML model an attribute has a multiplicity of 1, the transform designates it as a required property in the entity definition.
+	* If in the UML model an attribute has a multiplicity of 0..* or 1..*, the transform designates the property as an array in the entity definition.
+- Range indexes and PK: If one attribute in the UML class is stereotyped PK, the transform designates it the primary key of the entity. If an attribute in the UML class is stereotyped rangeIndex, the transform designates it as one of the indexes for the entity. 
