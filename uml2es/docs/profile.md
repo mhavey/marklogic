@@ -1,4 +1,4 @@
-#The MarkLogic Entity Services Profile For UML
+# The MarkLogic Entity Services Profile For UML
 
 ## Intro
 This folder contains the UML profile for MarkLogic Entity Services. The profile contains stereotypes. You apply stereotypes to your model, class, or attribute to affect how this toolkit's transform maps your UML model to MarkLLogic Entity Services format. 
