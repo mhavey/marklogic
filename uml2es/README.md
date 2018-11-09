@@ -10,7 +10,7 @@ This is a toolkit to support modeling MarkLogic data in UML and mapping that UML
 
 It works like this:
 
-![toolkit](toollit.png)
+![toolkit](toolkit.png)
 
 You use a third-party UML tool, along with a set of MarkLogic stereotypes, to build a data model. (If you don't have a UML tool or prefer spreadsheets, you can design your model in Excel instead!) The toolkit helps you use that model in MarkLogic. It does this by transforming your model to MarkLogic's Entity Services form; you can use gradle to include this transformation as part of your build. Once in Entity Services form, your model can be used to generate all sort of useful code to ensure that the data in MarkLogic conforms to your model. 
 
