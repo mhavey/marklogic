@@ -23,7 +23,7 @@ To use your new model with MarkLogic, you need to add the UML-to-Entity Service 
 
 ![Project in MagicDraw - use profile](md_project_useproject.png)
 
-In the Use Project dialog, under "Select Project To Use", select "From File System". Under "Project File", click on the button with three dots to find the profile in your filesystem. You should have a local clone of this toolkit. From that clone, choose the file uml2es/umlProfile/magicdraw/MLProfile.xml. When you have found it, click Open. Your Use Model dialog should now look like this:
+In the Use Project dialog, under "Select Project To Use", select "From File System". Under "Project File", click on the button with three dots to find the profile in your filesystem. You should have a local clone of this toolkit. From that clone, choose the file [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml). When you have found it, click Open. Your Use Model dialog should now look like this:
 
 ![Project in MagicDraw - select profile](md_project_profile.png)
 

@@ -15,7 +15,7 @@ We recommend you open an Issue with your enhancement request rather than editing
 
 Open MagicDraw. Close any existing projects: File | Close All Projects
 
-Open the profile by selecting File | Open Project from the menu. Select the following file from your local clone of this repo: uml2es/umlProfile/magicdraw/MLProfile.xml. Click Open. The profile opens in MagicDraw. It should look like this:
+Open the profile by selecting File | Open Project from the menu. Select the following file from your local clone of this repo: [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml). Click Open. The profile opens in MagicDraw. It should look like this:
 
 ![Profile open in MagicDraw](md_profile_afteropen.png)
 
@@ -61,18 +61,18 @@ You should decide whether the stereotype applies to UML packages, classes, prope
 
 ### Saving the profile
 
-When you are done editing, save the profile by selecting File | Save Project from the menu. MagicDraw saves it to uml2es/umlProfile/magicdraw/MLProfile.xml. 
+When you are done editing, save the profile by selecting File | Save Project from the menu. MagicDraw saves it to [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml). 
 
 You can use that profile for your MagicDraw models, but if you want the profile to be available to other UML tools, such as Papyrus, you should export as an XMI profile document. MagicDraw supports multiple representations; we'll use Eclipse XMI. From the File menu, choose Export To | Eclipse UML2 XMI File | Eclipse UML2 (v5.x) XMI File.
 
 ![Export MagicDraw profile](md_profile_export.png)
 
-You will be asked to provide a directory to save the exported files to. Note that MagicDraw produces SEVERAL files during this export. Keep the default directory name mlProfileEclipseProject5. Save under your uml2es/umlProfile/magicdraw directory. We'll use only one of the files in the new mlProfileEclipseProject5 directory. It is MarkLogic_Entity_Services_Profile.profile.uml. Copy it to the following location, overwriting the file that is already there: uml2es/umlProfile/MLProfile.xml. 
+You will be asked to provide a directory to save the exported files to. Note that MagicDraw produces SEVERAL files during this export. Keep the default directory name mlProfileEclipseProject5. Save under your [uml2es/umlProfile/magicdraw](../umlProfile/magicdraw) directory. We'll use only one of the files in the new mlProfileEclipseProject5 directory. It is MarkLogic_Entity_Services_Profile.profile.uml. Copy it to the following location, overwriting the file that is already there: [uml2es/umlProfile/MLProfile.xml](../umlProfile/MLProfile.xml). 
 
 As a result of all this, you just updated the profile in two forms:
 
-- MagicDraw form, to uml2es/umlProfile/magicdraw/MLProfile.xml
-- Generalized XMI form, to uml2es/umlProfile/MLProfile.xml
+- MagicDraw form, to [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml)
+- Generalized XMI form, to [uml2es/umlProfile/MLProfile.xml] (../umlProfile/MLProfile.xml)
 
-If you run the Papyrus tutorials, you'll need uml2es/umlProfile/MLProfile.xml.
+If you run the Papyrus tutorials, you'll need your newly overwritten [uml2es/umlProfile/MLProfile.xml](../umlProfile/MLProfile.xml).
 

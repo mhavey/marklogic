@@ -29,7 +29,7 @@ Click Finish. You now see your new project. From Project Explorer, delete the du
 
 ![New papyrus project](pap_profile_newproj_delete_model.png)
 
-Import into the project the MLProfile.xml file that is in your local clone of the toolkit. The location is uml2es/umlProfile/MLProfile.xml. Do NOT use the MagicDraw file at uml2es/umlProfile/magicdraw/MLProfile.xml. To import, in Project Explorer right-click on the project name (MLProfile). From the context menu, select Import.
+Import into the project the MLProfile.xml file that is in your local clone of the toolkit. The location is [uml2es/umlProfile/MLProfile.xml](../umlProfile/MLProfile.xml). Do NOT use the MagicDraw file at [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml). To import, in Project Explorer right-click on the project name (MLProfile). From the context menu, select Import.
 
 ![Papyrus project import](pap_profile_import.png)
 
