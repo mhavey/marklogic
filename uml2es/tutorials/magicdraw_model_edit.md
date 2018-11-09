@@ -115,7 +115,7 @@ The UML-to-Entity Services toolkit will transform your MagicDraw UML model into 
 
 ![Project in MagicDraw - final diagram](md_project_save.png)
 
-You now follow the same approach as the numerous examples of this toolkit. You use a gradle project to ingest your model to MarkLogic and convert it to Entity Services. For this tutorial, use the gradle project in uml2es/tutorials/gradle directory of your local clone. You first need to setup a database and deploy the transform. 
+You now follow the same approach as the numerous [examples](../examples) of this toolkit. You use a gradle project to ingest your model to MarkLogic and convert it to Entity Services. For this tutorial, use the gradle project in [uml2es/tutorials/gradle](gradle) directory of your local clone. You first need to setup a database and deploy the transform. 
 
 - The first step is to review and modify gradle.properties; set suitable values for hostname, ports, username/password, and application name. 
 - Next copy your MagicDraw model that you saved in XML form above to the gradle directory. 

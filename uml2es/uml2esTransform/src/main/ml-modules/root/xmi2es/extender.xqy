@@ -628,8 +628,15 @@ declare function xes:addFact($xes as map:map,
 };
 
 (:
-Parse and validate extender params. Return map entry for them.
-Currently we ignore them. genland is assumed to be xqy
+Parse and validate extender params. Return map entry for them. Params:
+
+genlang: xqy, sjs
+format: xml, json
+lax: true/false
+notional: 
+
+
+Currently we ignore them. genlang is assumed to be xqy
 :)
 declare function xes:getParams($param as xs:string?) as map:map {
 	let $nparam := fn:normalize-space($param)
