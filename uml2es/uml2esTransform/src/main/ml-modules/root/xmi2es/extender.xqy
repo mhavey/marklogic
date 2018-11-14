@@ -5,6 +5,11 @@ This module builds an "Extended" ES model, which consists of:
 Here we leverage the ES extension mechanism - define your own triples
 :)
 
+(:
+TODO - concat can use a prefix like :org. If it's ":org", use that string, but if it''s not quoted, it's the prefix;
+if name clash, use the prefix and throw a warning
+:)
+
 xquery version "1.0-ml";
 
 module namespace xes = "http://marklogic.com/xmi2es/extender"; 
