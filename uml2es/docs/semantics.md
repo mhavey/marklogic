@@ -25,12 +25,32 @@ Here is the DHFEmployeeSample model and how triples are generated from it. To se
 
 ![DHFEmployeeSample](DHFEmployeeSample_triples.png)
 
-
 ### Joke Book
 Here is the JokeBook model and how triples are generated from it. 
 
 ![JokeBook](JokeBook_triples.png). To see a working example, refer to [../examples/jokeBook](../examples/jokeBook).
 
-## Dynamic Names and Script
-TODO - how this works...	
+Notice the following about this model:
 
+- 5. Qualified attribution requires more than just a predicate. It uses custom Turtle code to describe the attribution.
+- 7. We use semFacts create a new OWL class containing brilliant works of the specific contributor.
+- 15. Qualified derivation uses custom Turtle to describe the derivation. Here some of the data -- sourceData.chapter and sourceData.selectionReason) is not based on any attribute of the model. They will be resolved at implementation time.
+
+## Constructing Semantic Tags: Conventions
+
+- For semIRI, the value is the value of the designated attribute. The attribute must be of resolved type String or IRI. If it is a String, it can be specified as either a prefixed (p:abc) or a fully-qualified IRI (http://path/to/abc). If you use xCalculated's concat tag to build the value, pay attention to concat conventions (described below).
+- For semLabel, the value is the value of the desginated attribute. The attribute must be a String. You can use xCalculated's concat tag to build it dynamically.
+- For semType, the types tag is a String array. Each item in the array is meant to be an IRI. It can be either a prefixed (p:abc) or a fully-qualified IRI (http://path/to/abc). The type is known at design time.
+- For semPredicate's predicate tag, the predicate is meant to be an IRI.  It can be either a prefixed (p:abc) or a fully-qualified IRI (http://path/to/abc). The predicate is known at design time. The object of the predicate is the value of the attribute bearing the semPredicate stereotype. If it of resolved type IRI, it is an IRI. If it a String, it denotes an IRI if it is in prefixed form (p:abc) or in angled brackets. Otherwise, it is a literal. The object can be dynamic. If you use xCalculated's concat tag to build the value, pay attention to concat conventions (described below).
+- For semFacts or semPredicate's predicateTtl tag, you are writing Turtle code! If you need to substitute in dynamic values, use ${abc} to substitute in the value of attribute abc, ${Xyz.abc} to substitute in the value of attribute abc in class Xyz.
+
+### xCalculated Concat Rules
+The concat tag is an array of strings. 
+
+- If a string is the array is quoted, the concatentation uses its literal value. 
+- If a string is unquoted but of the form :p, it is treated as IRI prefix p.
+- If a string is unquoted but does NOT have the form :p, it is treated as an attribute name. The concatenation, at runtime, takes the value of that attribute. You can specify the attribute name in the following ways:
+	- abc: the attribute named abc in the current class.
+	- ${abc}: equivalent to abc
+	- Xyz.abc: the attribute named abc in class Xyz
+	- ${Xyz.abc}: equivalent to Xyz.abc
