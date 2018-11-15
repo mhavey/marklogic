@@ -32,9 +32,9 @@ Here is the JokeBook model and how triples are generated from it.
 
 Notice the following about this model:
 
-- 5. Qualified attribution requires more than just a predicate. It uses custom Turtle code to describe the attribution.
-- 7. We use semFacts create a new OWL class containing brilliant works of the specific contributor.
-- 15. Qualified derivation uses custom Turtle to describe the derivation. Here some of the data -- sourceData.chapter and sourceData.selectionReason) is not based on any attribute of the model. They will be resolved at implementation time.
+- in (5) Qualified attribution requires more than just a predicate. It uses custom Turtle code to describe the attribution.
+- in (7). We use semFacts create a new OWL class containing brilliant works of the specific contributor.
+- in (15). Qualified derivation uses custom Turtle to describe the derivation. Here some of the data -- sourceData.chapter and sourceData.selectionReason) is not based on any attribute of the model. They will be resolved at implementation time.
 
 ## Constructing Semantic Tags: Conventions
 
