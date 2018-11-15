@@ -7,10 +7,14 @@ Before we open the envelope, recognize two important points about the toolkit:
 
 The toolkit's code generation feature builds code that persists your business data to MarkLogic in an envelope form that conforms to your UML model. Specifically:
 
-1 Its *instance* has a structure that matches your UML class/attribute structure. (For more see [uml_mapping.md](uml_mapping.md).) *Core* stereotypes also influence the structure; for example, *<<FK>>* affects document relationships, *<<esProperty>>* affects type.
-2 Its *headers* contains specially designated header attributes from your model. The *<<xHeader>>* stereotype is used here.
-3 Its *triples* section conforms to the *sem* stereotypes used in the model. 
-4 The URI, collections, permissions, and metadata of the document conform to the *<<xDocument>>* stereotype. 
+1. Its *instance* has a structure that matches your UML class/attribute structure. (For more see [uml_mapping.md](uml_mapping.md).) *Core* stereotypes also influence the structure; for example, *<<FK>>* affects document relationships, *<<esProperty>>* affects type.
+
+2. Its *headers* contains specially designated header attributes from your model. The *<<xHeader>>* stereotype is used here.
+
+3. Its *triples* section conforms to the *sem* stereotypes used in the model. 
+
+4. The URI, collections, permissions, and metadata of the document conform to the *<<xDocument>>* stereotype. 
+
 
 (If you're curious about the stereotypes mentioned above, read the profile reference [here](profile.md).)
 
