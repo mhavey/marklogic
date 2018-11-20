@@ -45,13 +45,25 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
 
 
 (:
+
+
+TODO - I parse the CV. Likewise I need to do sem types and determine IRI vs. literal...
+
+
+
+:)
+
+
+
+
+(:
 On ingest of XMI model, transform to ES. Along with ingest of XMI model, also ingest
 a) ES model descriptor
 b) Findings/problems
 c) ES validation problems (if any)
 d) Model extension as turtle 
 e) Model extension as text comment
-f) SEM triple code gen
+f) Code gen
 :)
 declare function xmi2es:transform(
   $content as map:map,
@@ -127,6 +139,7 @@ declare function buildModel($xmi as node(), $problems) as node()? {
   let $description := string(($model/ownedComment/@body, $model/ownedComment/body)[1])
   let $rootNamespace := $xmi/*/*:xmlNamespace[@base_Package eq $model/@*:id]
   let $hints := $xmi/*/*:xImplHints[@base_Package eq $model/@*:id]
+  let $semPrefixes :=  string($xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/@*:prefixesTtl)
 
   return
     if (count($model) ne 1) then 
@@ -135,6 +148,7 @@ declare function buildModel($xmi as node(), $problems) as node()? {
       <Model name="{$modelName}">
         <esModel version="{$version}" baseUri="{$baseUri}"/>
         <xImplHints>{xmi2es:xImplHints("model", $hints, $problems)}</xImplHints>
+        <semPrefixes><prefixesTtl>{$semPrefixes}</prefixesTtl></semPrefixes>
         <description>{$description}</description>
         <classes>{
           (: Build each contained class. Do the non-assoc classes first, then the assocs. This is because in UML
@@ -165,9 +179,12 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
       return
         if (string-length($indexType) eq 0) then "element"
         else $indexType
+  let $pii := exists($xmi/*/*:PII[@base_Property eq $attrib/@*:id])
   let $xCalculated := $xmi/*/*:xCalculated[@base_Property eq $attrib/@*:id]/concat
   let $xHeader := normalize-space($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field)
-  let $semProperty := normalize-space($xmi/*/*:semProperty[@base_Property eq $attribID]/@predicate)
+  let $semProperty := $xmi/*/*:semProperty[@base_Property eq $attribID]
+  let $semPropertyPredicate := normalize-space($semProperty/@predicate)
+  let $semPropertyPredicateTtl := normalize-space($semProperty/@predicateTtl)
   let $esProperty := $xmi/*/*:esProperty[@base_Property eq $attribID]
   let $isArray := count($attrib/upperValue[@value="*"]) eq 1
   let $isRequired := not(exists($attrib/lowerValue))
@@ -186,9 +203,10 @@ declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib
       <exclude>{$exclude}</exclude>
       <FK>{$FK}</FK>
       <rangeIndex>{$rangeIndex}</rangeIndex>
+      <pii>{$pii}</pii>
       <xCalculated>{for $c in $xCalculated return <item>{normalize-space($c)}</item>}</xCalculated>
       <xHeader>{$xHeader}</xHeader>
-      <semProperty>{$semProperty}</semProperty>
+      <semProperty><predicate>{$semPropertyPredicate}</predicate><predicateTtl>{$semPropertyPredicateTtl}</predicateTtl></semProperty>
       <esProperty collation="{normalize-space($esProperty/@collation)}" 
         mlType="{normalize-space($esProperty/@mlType)}" externalRef="{normalize-space($esProperty/@externalRef)}"/> 
     </Attribute>
@@ -252,6 +270,17 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
         for $c in $currentSEMTypes return <item>{normalize-space($c)}</item>)
 
   (:
+  SEM Facts
+  :)
+  let $semFacts := 
+    if (count($descDef/semFacts/factsTtl) gt 0) then $descDef/semFacts
+    else 
+      let $currentSEMFacts := $xmi/*/*:semFacts[@base_Class eq $class/@*:id]/*:factsTtl/text()
+      return 
+        if (string-length($currentSEMFacts) eq 0) then ()
+        else <semFacts><factsTtl>{$currentSEMFacts}</factsTtl></semFacts>
+
+  (:
   Attributes
   :)
   let $currentAttribs := $class/*:ownedAttribute[string-length(normalize-space(@name)) gt 0]
@@ -276,6 +305,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
   let $def:= <Definition>
     <xDocument>{$xDoc}</xDocument>
     <semTypes>{$semTypes}</semTypes>
+    <semFacts>{$semFacts}</semFacts>
     <attributes>{$resolvedAttribs}</attributes>
     <pks>{$resolvedPKs}</pks>
     <semIRIs>{$resolvedSEMIRIs}</semIRIs>
@@ -346,6 +376,7 @@ declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as
           <xImplHints>{xmi2es:xImplHints(concat("*",$className,"*",$classID), $hints, $problems)}</xImplHints>
           <xDocument>{$inheritance/xDocument/*}</xDocument>
           <semTypes>{$inheritance/semTypes/item}</semTypes>
+          <semFacts>{$inheritance/semFacts/factsTtl}</semFacts>
           <description>{$classDescription}</description>
           <exclude>{$exclude}</exclude>
           <pks>{$inheritance/pks/item}</pks>
