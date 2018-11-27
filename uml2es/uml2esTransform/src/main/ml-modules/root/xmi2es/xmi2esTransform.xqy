@@ -10,24 +10,16 @@ Main xmi to ES descriptor function, Pass in XMI. Return descriptor,findings, ES 
 :)
 declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map {
   let $problems := pt:init()
-  let $xmodel := xes:init($problems, $param)
-  let $profileForm := xmi2es:buildModel($xmi, $problems)
-
-  (:
-  We will use a 2-pass approach. Pass 1 is to gather all the stuff we need from the XMI. 
-  We produce an xml structure based on the "profile form" of the model. 
-  In pass 2, we transform profile form to ES descriptor, and also derive model extensions 
-  and SEM codegen.
-  :)
+  let $xes := xes:init($problems, $param)
+  let $params := xmi2es:getParams($param)
+  let $descriptor := xmi2es:buildModel($xmi, $xes, $problems, $params)
 
   (: if there is no model, we're in a bad way :)
   return
-    if (not(exists($profileForm))) then map:new((
+    if (not(exists($descriptor))) then map:new((
       if(exists($problems)) then map:entry("problems", pt:dumpProblems($problems)) else ()
     ))
     else
-      let $_ := xes:transform($xmodel, $profileForm)
-      let $descriptor := xes:getDescriptor($xmodel)
       let $val := xmi2es:isEsValid($descriptor)
       let $_ := 
         if (count($val) eq 1) then pt:addProblem($problems, (), (), $pt:MODEL-INVALID, ())
@@ -36,25 +28,11 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
       (: return the descriptor,findings, ES validation status :)
       return map:new((
         if(exists($descriptor)) then map:entry("descriptor", $descriptor) else (),
-        if(exists($xmodel)) then map:entry("xmodel", $xmodel) else (),
-        if(exists($profileForm)) then map:entry("profileForm", $profileForm) else (),
+        if(exists($xes)) then map:entry("xmodel", $xes) else (),
         if(exists($problems)) then map:entry("problems", pt:dumpProblems($problems)) else (),
         if(exists($val)) then map:entry("esval", $val) else ()
       ))
 };
-
-
-(:
-
-
-TODO - I parse the CV. Likewise I need to do sem types and determine IRI vs. literal...
-
-
-
-:)
-
-
-
 
 (:
 On ingest of XMI model, transform to ES. Along with ingest of XMI model, also ingest
@@ -75,19 +53,11 @@ declare function xmi2es:transform(
   let $param := map:get($context, "transform_param")
   let $transformResult := xmi2es:xmi2es($xmi, $param)
 
-
   let $modelDescMap := 
     if (map:contains($transformResult, "descriptor")) then
       map:new((
         map:entry("uri", concat("/xmi2es/es/", $docName, ".json")),
         map:entry("value", xdmp:to-json(map:get($transformResult, "descriptor")))
-      ))
-    else ()
-  let $intermediateMap := 
-    if (map:contains($transformResult, "profileForm")) then
-      map:new((
-        map:entry("uri", concat("/xmi2es/intermediate/", $docName, ".xml")),
-        map:entry("value", map:get($transformResult, "profileForm"))
       ))
     else ()
   let $findingsMap := 
@@ -129,87 +99,322 @@ declare function xmi2es:transform(
     $extensionTurtleMap, $extensionCommentMap, $genMap) 
 };
 
-declare function buildModel($xmi as node(), $problems) as node()? {
+declare function buildModel($xmi as node(), $xes, $problems, $params) as json:object? {
   let $_ := xdmp:log("BUILDMODEL", "info")
   let $model := $xmi/*/*:Model
   let $modelName := normalize-space(string($model/@name))
-  let $modelTags := $xmi/*/*:esModel
-  let $version := normalize-space(string($modelTags/@version))
-  let $baseUri := normalize-space(string($modelTags/@baseUri))
-  let $description := string(($model/ownedComment/@body, $model/ownedComment/body)[1])
-  let $rootNamespace := $xmi/*/*:xmlNamespace[@base_Package eq $model/@*:id]
-  let $hints := $xmi/*/*:xImplHints[@base_Package eq $model/@*:id]
-  let $semPrefixes :=  string($xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/@*:prefixesTtl)
-
+  
   return
     if (count($model) ne 1) then 
       pt:addProblem($problems, (), (), $pt:MODEL-NOT-FOUND, count($model)) 
+    else if (string-length($modelName) eq 0) then 
+      pt:addProblem($problems, (), (), $pt:MODEL-NO-NAME, count($model)) 
     else 
-      <Model name="{$modelName}">
-        <esModel version="{$version}" baseUri="{$baseUri}"/>
-        <xImplHints>{xmi2es:xImplHints("model", $hints, $problems)}</xImplHints>
-        <semPrefixes><prefixesTtl>{$semPrefixes}</prefixesTtl></semPrefixes>
-        <description>{$description}</description>
-        <classes>{
-          (: Build each contained class. Do the non-assoc classes first, then the assocs. This is because in UML
-          it is easy to inadventantly create duplicate classes when drawing an association class. In this case, we
-          want the one that has type AssociationClass to come last, so it will supercede the one that is of type Class. 
-          :)
-          let $classes := ($model//packagedElement[@*:type eq "uml:Class"], 
-            $model//packagedElement[@*:type eq "uml:AssociationClass"])
-          for $class in $classes return xmi2es:buildClass($xmi, $class, $classes, $rootNamespace, $problems) 
-        }</classes>
-      </Model>
+      let $modelTags := $xmi/*/*:esModel
+      let $version := xes:resolveVersion($xes, normalize-space(string($modelTags/@version)))
+      let $baseUri := xes:resolveBaseUri(normalize-space(string($modelTags/@baseUri)))
+      let $description := string(($model/ownedComment/@body, $model/ownedComment/body)[1])
+      let $rootNamespace := $xmi/*/*:xmlNamespace[@base_Package eq $model/@*:id]
+      let $hints := $xmi/*/*:xImplHints[@base_Package eq $model/@*:id]
+      let $semPrefixes :=  string($xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/@*:prefixesTtl)
+      let $modelIRI := xes:modelIRI($xes, $modelName, $baseUri, $version)
+
+      (: Model-level facts :)
+      let $_ := (
+        xes:addFact($xes, $modelIRI, $xes:PRED-SEM-PREFIXES, $semPrefixes, false()),
+        xmi2es:xImplHints($modelIRI, $hints, $xes, $problems)
+      )
+      return
+        let $descriptor := json:object()
+        let $modelJson := json:object()
+        let $classesJson := json:object()
+        let $_ := map:put($descriptor, "info", $modelJson)
+        let $_ := map:put($modelJson, "title", $modelName)
+        let $_ := map:put($modelJson, "version", $version) 
+        let $_ := map:put($modelJson, "baseUri", $resolvedURI) 
+        let $_ := map:put($modelJson, "description", string($profileForm/description))
+
+        let $_ := map:put($descriptor, "definitions", $classesJson)
+        (: Build each contained class. Do the non-assoc classes first, then the assocs. This is because in UML
+        it is easy to inadventantly create duplicate classes when drawing an association class. In this case, we
+        want the one that has type AssociationClass to come last, so it will supercede the one that is of type Class. 
+        :)
+        let $classes := ($model//packagedElement[@*:type eq "uml:Class"], 
+          $model//packagedElement[@*:type eq "uml:AssociationClass"])
+        let $_ := for $class in $classes return 
+          xmi2es:buildClass($xmi, $modelIRI, $classesJson, $class, $classes, $rootNamespace, $xes, $problems, $params) 
+
+        (: need to do another pass - this time to resolve the FK :)
+        let $_ := for $class in $classes return 
+          xmi2es:resolveFK($xmi, $modelIRI, $classesJson, $class, $classes, $rootNamespace, $xes, $problems, $params) 
+
+        return $descriptor
+};
+
+(: build the ES definition of an entity, mapping it from UML class :)
+declare function xmi2es:buildClass($xmi as node(), $modelIRI as xs:string, $classesJson as json:object, 
+  $class as node(), $classes as node()*, 
+  $rootNamespace as node()?, $xes, $problems, $params) as empty-sequence() {
+
+  let $_ := xdmp:log(concat("BUILDCLASS *", $class/@name, "*"), "info")
+
+  (: start building the class. NOTE: hints and namespace are NOT inherited. :)
+  let $className := fn:normalize-space($class/@name)
+  let $classID := string($class/@*:id)
+
+  return 
+    if (string-length($className) eq 0) then pt:addProblem($problems, (), $classID, $pt:CLASS-NO-NAME, "")
+    else
+      let $classIRI := xes:classIRI($modelIRI, $className)
+      let $classDescription := string(($class/ownedComment/@body, $class/ownedComment/body)[1])
+      let $xmlNamespace := ($xmi/*/*:xmlNamespace[@base_Class eq $classID], $rootNamespace)[1]
+      let $hints := $xmi/*/*:xImplHints[@base_Class eq $classID]
+      let $exclude := exists($xmi/*/*:exclude[@base_Class eq $classID])
+      let $inheritance := xmi2es:determineInheritance($xmi, $problems, $class, $classes, ())
+      let $_ := 
+        if (count($class/generalization) gt 1) then 
+          pt:addProblem($problems, (), concat("*", $className, "*", $classID), 
+            $pt:CLASS-MULTI-INHERIT, count($class/generalization)) 
+        else ()      
+
+        (: now we need to know all about the attributes :)
+      let $associationClass := $class/@*:type eq "uml:AssociationClass"
+      let $assocClassEnds := 
+        if ($associationClass eq true()) then
+          let $attribs := $xmi//*:ownedAttribute[@*:association eq $classID]
+        else ()
+      let $attributes := 
+        <Attributes>{(
+          for $attrib in $inheritance/attributes/* return 
+            xmi2es:buildAttribute($xmi, $classIRI, $class, $attrib, $xes, $problems),
+          for $end in $assocClassEnds return 
+          for $a in $attribs return 
+            <end attribute="{normalize-space($a/@name)}" 
+            class="{normalize-space($a/../@name)}" 
+            FK="{exists($xmi/*/*:FK[@base_Property eq $a/@*:id])}"/>
+              <Attribute name="{concat("ref", $end/@class)}" type="{$end/@class}" 
+                array="false" required="true" typeIsReference="true">
+                <FK>{string($end/@FK)}</FK>
+              </Attribute>)}</Attributes> 
+
+
+      (: Gather the info about the class :)
+      let $attribsJson := json:object()
+      let $classJson := json:object()
+
+      let $allAttribs := $class/attributes/Attribute
+      let $includes := $allAttribs[exclude/text() eq false()]
+      let $pks := $class/pks/item/text()[. eq $includes/@name]
+      let $requireds := $includes[@required eq true()]/@name
+      let $paths := $includes[string(rangeIndex) eq "path"]/@name
+      let $elements :=$includes[string(rangeIndex) eq "element"]/@name
+      let $lexicons := $includes[string(rangeIndex) eq "lexicon"]/@name
+      let $piis := $includes[@pii eq true()]/@name
+
+(: TODO - base class :)
+
+    if (string-length($class/@baseClass) gt 0) then 
+      xes:addFact($xes, $classIRI, $IRI-BASE_CLASS, concat(map:get($xes, "modelIRI"), "/", $class/@baseClass), true()) 
+      else ()
+  )
+
+
+
+
+
+
+
+
+      let $_ := (
+          xmi2es:xImplHints($classIRI, $hints, $xes, $problems),
+          xes:addFact($xes, $classIRI, $xes:PRED-HAS-COLLECTIONS, $inheritance/xDocument/collections/item, false()),
+          for $perm in $inheritance/xDocument/permsCR/item return 
+            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-PERM, 
+              ($xes:PRED-HAS-CAPABILITY, xes:PRED-HAS-ROLE), 
+              ($perm/@capability, pred/@role)),
+          xes:addFact($xes, $classIRI, $xes:PRED-HAS-QUALITY, $inheritance/xDocument/quality, false()),
+          for $md in $inheritance/xDocument/metadataKV/item return 
+            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-METADATA, 
+              ($xes:PRED-HAS-KEY, xes:PRED-HAS-VALUE), 
+              ($md/@key, md/@value)),
+          xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-METADATA, $inheritance/xDocument/quality, false()),
+          xes:addFact($xes, $classIRI, $xes:PRED-HAS-SEM-TYPES,$inheritance/semTypes/item, false()),
+          xes:addFact($xes, $classIRI, $xes:PRED-HAS-SEM-FACTS,$inheritance/semFacts/factsTtl, false()),
+          xes:addFact($xes, $classIRI, $xes:PRED-IS-ASSOC-CLASS, string($inheritance/baseClass), false()),
+          xes:addFact($xes, $classIRI, $xes:PRED-HAS-BASE-CLASS, $associationClass, false()),
+          for $end in $assocClassEnds return 
+            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-ASSOC-CLASS-END,
+              ($xes:PRED-ASSOC-CLASS-END-ATTRIB, $xes:PRED-ASSOC-CLASS-END-CLASS, $xes:PRED-ASSOC-CLASS-END-FK),
+              ($end/@attribute, $end/@class, $end/@FK))
+      )
+      return   (: Build the ES descriptor for the class :)
+        if ($exclude eq true()) then
+        else 
+          let $classJson := json:object()
+          let $attribsJson := json:object()
+          map:put($classesJson, $className, $classJson),
+          map:put($classJson, "properties", $attribsJson),
+          map:put($classJson, "description", $classDescription), 
+
+          if (count($requireds) gt 0) then map:put($classJson, "required", json:to-array($requireds)) else (),
+          if (count($piis) gt 0) then map:put($classJson, "pii", json:to-array($piis)) else (),
+      if (count($pks) gt 0) then map:put($classJson, "primaryKey", $pks) else (),
+      if (count($class/xmlNamespace/@prefix)) then (
+        map:put($classJson, "namespace", $class/xmlNamespace/@url),
+        map:put($classJson, "namespacePrefix", $class/xmlNamespace/@prefix)           
+        )
+      else (),
+      if (count($paths) gt 0) then map:put($classJson, "pathRangeIndex", json:to-array($paths)) else (),
+      if (count($elements) gt 0) then map:put($classJson, "elementRangeIndex", json:to-array($elements)) else (),
+      if (count($lexicons) gt 0) then map:put($classJson, "wordLexicon", json:to-array($lexicons)) else (),
+      for $attrib in $allAttribs return 
+        xes:transformAttribute($xes, $profileForm, $class, $attrib, $attribsJson)
+    )
+
+
+        <Class name="{$className}" iri="{$classIRI}" id="{$classID}" isAssociationClass="{$associationClass}" 
+          baseClass="{string($inheritance/baseClass)}">
+          <associationClass>{
+            for $a in $assocClassEnds return $a
+          }</associationClass>
+          <xmlNamespace> {
+            if (exists($xmlNamespace)) then (
+              attribute {"prefix"} {normalize-space($xmlNamespace/@prefix)}, 
+              attribute {"url"} {normalize-space($xmlNamespace/@url)}
+            )
+            else ()
+          }</xmlNamespace>
+          <description>{$classDescription}</description>
+          <exclude>{$exclude}</exclude>
+          <pks>{$inheritance/pks/item}</pks>
+          <attributes>{(
+            (: Add the attributes. If assoc class, need one attrib for each end. :)
+            for $attrib in $inheritance/attributes/* return 
+              xmi2es:buildAttribute($xmi, $classIRI, $class, $attrib, $xes, $problems),
+            for $end in $assocClassEnds return 
+              <Attribute name="{concat("ref", $end/@class)}" type="{$end/@class}" 
+                array="false" required="true" typeIsReference="true">
+                <FK>{string($end/@FK)}</FK>
+              </Attribute> 
+          )}</attributes>
+        </Class>
 };
 
 (: obtain "profile form" of attrib :)
-declare function xmi2es:buildAttribute($xmi as node(), $class as node(), $attrib as node(), $problems) as node()? {
+declare function xmi2es:buildAttribute($xmi as node(), $classIRI as xs:string, $class as node(), $attrib as node(), $xes, $problems) as node()? {
 
   let $attribName := fn:normalize-space($attrib/@name)
   let $attribID := $attrib/@*:id
-  let $attribDescription := string(($attrib/ownedComment/@body, $attrib/ownedComment/body)[1])
-  let $hints := $xmi/*/*:xImplHints[@base_Property eq $attribID]
-  let $exclude := exists($xmi/*/*:exclude[@base_Property eq $attribID])
-  let $FK :=  exists($xmi/*/*:FK[@base_Property eq $attribID])
-  let $rangeIndexElem :=  $xmi/*/*:rangeIndex[@base_Property eq $attribID]
-  let $rangeIndex := 
-    if (not(exists($rangeIndexElem))) then ""
-    else 
-      let $indexType := normalize-space($rangeIndexElem/@indexType)
-      return
-        if (string-length($indexType) eq 0) then "element"
-        else $indexType
-  let $pii := exists($xmi/*/*:PII[@base_Property eq $attrib/@*:id])
-  let $xCalculated := $xmi/*/*:xCalculated[@base_Property eq $attrib/@*:id]/concat
-  let $xHeader := normalize-space($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field)
-  let $semProperty := $xmi/*/*:semProperty[@base_Property eq $attribID]
-  let $semPropertyPredicate := normalize-space($semProperty/@predicate)
-  let $semPropertyPredicateTtl := normalize-space($semProperty/@predicateTtl)
-  let $esProperty := $xmi/*/*:esProperty[@base_Property eq $attribID]
-  let $isArray := count($attrib/upperValue[@value="*"]) eq 1
-  let $isRequired := not(exists($attrib/lowerValue))
-  let $relationship := ($attrib/@*:aggregation, if (exists($attrib/@*:association)) then "association" else ())[1]
-  let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
-  let $associationClass := $xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name  
-  let $type := ($attrib/*:type/@href, 
-    $xmi//*:packagedElement[@*:id eq $attrib/@type]/@name, 
-    $xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name)[1]
+
   return 
-    <Attribute name="{$attribName}" id="{$attribID}" array="{$isArray}" required="{$isRequired}" 
-      type="{$type}" typeIsReference="{$typeIsReference}" relationship="{$relationship}"
-      associationClass="{$associationClass}">
-      <xImplHints>{xmi2es:xImplHints(concat("*",$attribName,"*",$attribID), $hints, $problems)}</xImplHints>
-      <description>{$attribDescription}</description>
-      <exclude>{$exclude}</exclude>
-      <FK>{$FK}</FK>
-      <rangeIndex>{$rangeIndex}</rangeIndex>
-      <pii>{$pii}</pii>
-      <xCalculated>{for $c in $xCalculated return <item>{normalize-space($c)}</item>}</xCalculated>
-      <xHeader>{$xHeader}</xHeader>
-      <semProperty><predicate>{$semPropertyPredicate}</predicate><predicateTtl>{$semPropertyPredicateTtl}</predicateTtl></semProperty>
-      <esProperty collation="{normalize-space($esProperty/@collation)}" 
-        mlType="{normalize-space($esProperty/@mlType)}" externalRef="{normalize-space($esProperty/@externalRef)}"/> 
-    </Attribute>
+    if (string-length($attribName) eq 0) then pt:addProblem($problems, (), $attribID, $pt:ATTRIB-NO-NAME, "")
+    else
+      let $attribIRI := xes:attribIRI($classIRI, $attribName)
+      let $attribDescription := string(($attrib/ownedComment/@body, $attrib/ownedComment/body)[1])
+      let $exclude := exists($xmi/*/*:exclude[@base_Property eq $attribID])
+      let $PK :=  exists($xmi/*/*:PK[@base_Property eq $attribID])
+      let $FK :=  exists($xmi/*/*:FK[@base_Property eq $attribID])
+      let $pii := exists($xmi/*/*:PII[@base_Property eq $attrib/@*:id])
+      let $esProperty := $xmi/*/*:esProperty[@base_Property eq $attribID]
+      let $elementRangeIndex :=  exists($xmi/*/*:elementRangeIndex[@base_Property eq $attribID])
+      let $pathRangeIndex :=  exists($xmi/*/*:pathRangeIndex[@base_Property eq $attribID])
+      let $wordLexicon :=  exists($xmi/*/*:wordLexicon[@base_Property eq $attribID])
+      let $xURI :=  exists($xmi/*/*:xURI[@base_Property eq $attribID])
+      let $xBizKey :=  exists($xmi/*/*:xBizKey[@base_Property eq $attribID])
+      let $hints := $xmi/*/*:xImplHints[@base_Property eq $attribID]      
+      let $xCalculated := $xmi/*/*:xCalculated[@base_Property eq $attrib/@*:id]/concat
+      let $xHeader := normalize-space($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field)
+      let $semProperty := $xmi/*/*:semProperty[@base_Property eq $attribID]
+      let $semPropertyPredicate := normalize-space($semProperty/@predicate)
+      let $semPropertyPredicateTtl := normalize-space($semProperty/@predicateTtl)
+      let $semIRI :=  exists($xmi/*/*:semIRI[@base_Property eq $attribID])
+      let $semLabel :=  exists($xmi/*/*:semLabel[@base_Property eq $attribID])
+      let $isArray := count($attrib/upperValue[@value="*"]) eq 1
+      let $isRequired := not(exists($attrib/lowerValue))
+      let $relationship := ($attrib/@*:aggregation, if (exists($attrib/@*:association)) then "association" else ())[1]
+      let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
+      let $associationClass := $xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name  
+      let $type := ($attrib/*:type/@href, 
+        $xmi//*:packagedElement[@*:id eq $attrib/@type]/@name, 
+        $xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name)[1]
+
+      let $resolvedType := 
+        if (string-length($esProperty/@mlType) gt 0) then (string($esProperty/@mlType), "datatype")
+        else if (string-length($esProperty/@externalRef) gt 0) then (string($esProperty/@externalRef), "$ref")
+        else if ($typeIsReference eq true()) then
+          if (string-length($associationClass) gt 0) then (concat("#/definitions/", $associationClass), "$ref")
+          else if ($FK/text() eq true()) then ("TBD", "$ref")
+          else (concat("#/definitions/", $type), "$ref")
+        else if (xes:emptyString($type) and map:get(map:get($xes, "params"), "lax") eq true()) then ("string", "datatype")
+        else 
+          if (ends-with($type, "#String")) then ("string", "datatype")
+          else if (ends-with($type, "#Boolean")) then ("boolean", "datatype")
+          else if (ends-with($type, "#Real")) then ("float", "datatype")
+          else if (ends-with($type, "#Integer")) then ("int", "datatype")
+          else (string($type), "datatype") (: whatever it is, use it. problem get rejected by ES val :)
+      (:TODO - FK - need to get this on a second pass :)
+
+      (: attrib-level facts :)
+      let $_ := (
+        xmi2es:xImplHints($attribIRI, $hints, $xes, $problems),
+
+        xes:addFact($xes, $attribIRI, $xes:PRED-RELATIONSHIP,$relationship, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-IS-REFERENCE,$typeIsReference, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-ASSOCIATION_CLASS,$associationClass, false()),
+
+          for $end in $assocClassEnds return 
+            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-ASSOC-CLASS-END,
+              ($xes:PRED-ASSOC-CLASS-END-ATTRIB, $xes:PRED-ASSOC-CLASS-END-CLASS, $xes:PRED-ASSOC-CLASS-END-FK),
+              ($end/@attribute, $end/@class, $end/@FK))
+
+
+        xes:addFact($xes, $attribIRI, $xes:PRED-ASSOCIATION_CLASS,$associationClass, false()),
+        TODO type??
+
+        xes:addFact($xes, $attribIRI, $xes:PRED-FK,$FK, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-EXCLUDED,$exclude, false()),
+
+        xes:addFact($xes, $attribIRI, $xes:PRED-BIZ-KEY, $xBizKey, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-URI, $xURI, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, for $c in $xCalculated return normalize-space($c), false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-HEADER, $xHeader, false()),
+
+        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-IRI, $semIRI, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-LABEL, $semLabel, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE, $semPropertyPredicate, false()),
+        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE-TTL, $semPropertyPredicateTtl, false()),
+      )
+
+
+    if ($exclude eq true()) then ()
+    else (
+      map:put($attribsJson, $attribName, $attribJson),
+      if ($array eq true()) then 
+        let $itemsJson := json:object()
+        return (
+          map:put($itemsJson, $typeKey, $type),
+          if (string-length($collation) gt 0) then map:put($itemsJson, "collation", $collation) else (),
+          map:put($attribJson, "datatype", "array"),
+          map:put($attribJson, "items", $itemsJson)
+        )
+      else (
+        map:put($attribJson, $typeKey, $type),
+        if (string-length($collation) gt 0) then map:put($attribJson, "collation", $collation) else ()
+      ),
+      map:put($attribJson, "description", string($attrib/description))
+
+      return 
+        <Attribute name="{$attribName}" iri="{$attribIRI}" id="{$attribID}" array="{$isArray}" required="{$isRequired}" 
+          type="{$type}" typeIsReference="{$typeIsReference}" relationship="{$relationship}"
+          associationClass="{$associationClass}">
+          <description>{$attribDescription}</description>
+          <exclude>{$exclude}</exclude>
+          <FK>{$FK}</FK>
+          <rangeIndex>{$rangeIndex}</rangeIndex>
+          <pii>{$pii}</pii>
+          <esProperty collation="{normalize-space($esProperty/@collation)}" 
+            mlType="{normalize-space($esProperty/@mlType)}" externalRef="{normalize-space($esProperty/@externalRef)}"/> 
+        </Attribute>
 };
 
 (: Determine the inherited aspects of a class. Used if there are generalizations.
@@ -286,32 +491,12 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
   let $currentAttribs := $class/*:ownedAttribute[string-length(normalize-space(@name)) gt 0]
   let $resolvedAttribs := $descDef/attributes/*:ownedAttribute | 
     ($currentAttribs except $currentAttribs[@name eq $descDef/attributes/*:ownedAttribute/@name])
-  let $resolvedPKs := 
-      for $id in $xmi/*/*:PK[@base_Property eq $resolvedAttribs/@*:id] return
-        <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-  let $resolvedSEMIRIs := 
-      for $id in $xmi/*/*:semIRI[@base_Property eq $resolvedAttribs/@*:id] return 
-        <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-  let $resolvedSEMLabels := 
-      for $id in $xmi/*/*:semLabel[@base_Property eq $resolvedAttribs/@*:id] return
-        <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-  let $resolvedXBizKeys := 
-      for $id in $xmi/*/*:zBizKey[@base_Property eq $resolvedAttribs/@*:id] return
-        <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
-  let $resolvedXURIs := 
-      for $id in $xmi/*/*:xURI[@base_Property eq $resolvedAttribs/@*:id] return 
-        <item>{normalize-space($xmi//ownedAttribute[@*:id eq $id/@base_Property]/@name)}</item>
 
   let $def:= <Definition>
     <xDocument>{$xDoc}</xDocument>
     <semTypes>{$semTypes}</semTypes>
     <semFacts>{$semFacts}</semFacts>
     <attributes>{$resolvedAttribs}</attributes>
-    <pks>{$resolvedPKs}</pks>
-    <semIRIs>{$resolvedSEMIRIs}</semIRIs>
-    <semLabels>{$resolvedSEMLabels}</semLabels>
-    <xBizKeys>{$resolvedXBizKeys}</xBizKeys>
-    <xURIs>{$resolvedXURIs}</xURIs>
     <baseClass>{$baseClass}</baseClass>
   </Definition>
 
@@ -321,81 +506,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
     else xmi2es:determineInheritance($xmi, $problems, $parentClass, $classes, $def)
 };  
 
-(: build the ES definition of an entity, mapping it from UML class :)
-declare function xmi2es:buildClass($xmi as node(), $class as node(), $classes as node()*, 
-  $rootNamespace as node()?, $problems) as node() {
 
-  let $_ := xdmp:log(concat("BUILDCLASS *", $class/@name, "*"), "info")
-
-
-  (: start building the class. NOTE: hints and namespace are NOT inherited. :)
-  let $className := fn:normalize-space($class/@name)
-  let $classID := string($class/@*:id)
-
-  return 
-    if (string-length($className) eq 0) then pt:addProblem($problems, (), $classID, $pt:CLASS-NO-NAME, "")
-    else
-      let $classDescription := string(($class/ownedComment/@body, $class/ownedComment/body)[1])
-      let $xmlNamespace := ($xmi/*/*:xmlNamespace[@base_Class eq $classID], $rootNamespace)[1]
-      let $hints := $xmi/*/*:xImplHints[@base_Class eq $classID]
-      let $exclude := exists($xmi/*/*:exclude[@base_Class eq $classID])
-      let $associationClass := $class/@*:type eq "uml:AssociationClass"
-      let $assocClassEnds := 
-        if ($associationClass eq true()) then
-          let $attribs := $xmi//*:ownedAttribute[@*:association eq $classID]
-          for $a in $attribs return 
-            <end attribute="{normalize-space($a/@name)}" 
-            class="{normalize-space($a/../@name)}" 
-            FK="{exists($xmi/*/*:FK[@base_Property eq $a/@*:id])}"/>
-        else ()
-
-      let $inheritance := xmi2es:determineInheritance($xmi, $problems, $class, $classes, ())
-      let $_ := 
-        if (count($class/generalization) gt 1) then 
-          pt:addProblem($problems, (), concat("*", $className, "*", $classID), 
-            $pt:CLASS-MULTI-INHERIT, count($class/generalization)) 
-        else ()      
-
-      (: Notice pks, semIRIs, etc. These are attribute-level stereotypes, but we are representing them
-         as class-level elements. That's because all of them are really just ways to identify the class - 
-         keys and naming. 
-      :)
-      return 
-        <Class name="{$className}" id="{$classID}" isAssociationClass="{$associationClass}" 
-          baseClass="{string($inheritance/baseClass)}">
-          <associationClass>{
-            for $a in $assocClassEnds return $a
-          }</associationClass>
-          <xmlNamespace> {
-            if (exists($xmlNamespace)) then (
-              attribute {"prefix"} {normalize-space($xmlNamespace/@prefix)}, 
-              attribute {"url"} {normalize-space($xmlNamespace/@url)}
-            )
-            else ()
-          }</xmlNamespace>
-          <xImplHints>{xmi2es:xImplHints(concat("*",$className,"*",$classID), $hints, $problems)}</xImplHints>
-          <xDocument>{$inheritance/xDocument/*}</xDocument>
-          <semTypes>{$inheritance/semTypes/item}</semTypes>
-          <semFacts>{$inheritance/semFacts/factsTtl}</semFacts>
-          <description>{$classDescription}</description>
-          <exclude>{$exclude}</exclude>
-          <pks>{$inheritance/pks/item}</pks>
-          <semIRIs>{$inheritance/semIRIs/item}</semIRIs>
-          <semLabels>{$inheritance/semLabels/item}</semLabels>
-          <xBizKeys>{$inheritance/xBizKeys/item}</xBizKeys>
-          <xURIs>{$inheritance/xURIs/item}</xURIs>
-          <attributes>{(
-            (: Add the attributes. If assoc class, need one attrib for each end. :)
-            for $attrib in $inheritance/attributes/* return 
-              xmi2es:buildAttribute($xmi, $class, $attrib, $problems),
-            for $end in $assocClassEnds return 
-              <Attribute name="{concat("ref", $end/@class)}" type="{$end/@class}" 
-                array="false" required="true" typeIsReference="true">
-                <FK>{string($end/@FK)}</FK>
-              </Attribute> 
-          )}</attributes>
-        </Class>
-};
 
 (:
 Capture ES validation of descriptor. Return empty sequence if valid.
@@ -431,21 +542,56 @@ declare function xmi2es:csvParse($kv as xs:string) as xs:string* {
   else ()
 };
 
-declare function xmi2es:xImplHints($scope, $hints, $problems) as node()* {
+declare function xmi2es:xImplHints($iri as xs:string, $hints, $xes, $problems) as empty-sequence() {
+
   let $reminderHints := $hints/*:reminders
   let $hintTriples := $hints/*:triplesPO
 
   return (
-    <reminders>{
-          for $r in $reminderHints return <item>{normalize-space($r)}</item>
-    }
-    </reminders>,
-    <triplesPO>{
-      for $t in $hintTriples return 
-        let $po := xmi2es:csvParse($t)
-        return 
-          if (count($po) eq 2) then <item predicate="{normalize-space($po[1])}" object="{normalize-space($po[2])}"/>
-          else pt:addProblem($problems, (), $scope, $pt:ILLEGAL-TRIPLE-PO, $po) 
-    }</triplesPO>
+    for $r in $reminderHints return xes:addFact($xes, $iri, $xes:PRED-HAS-REMINDER, $r, false()), 
+    for $t in $hintTriples return 
+      let $po := xmi2es:csvParse($t)
+      return 
+        if (count($po) eq 2) then xes:addFact($xes, $iri, normalize-space($po[1]), normalize-space($po[2]))
+        else pt:addProblem($problems, $iri, (), $pt:ILLEGAL-TRIPLE-PO, $po) 
   )
+};
+
+(:
+Parse and validate extender params. Return map entry for them. Params:
+
+genlang: xqy, sjs
+format: xml, json
+lax: true/false
+notional:  TBD
+
+Currently we ignore them. genlang is assumed to be xqy
+:)
+declare function xmi2es:getParams($param as xs:string?) as map:map {
+  let $nparam := fn:normalize-space($param)
+  let $map := map:new((
+    map:entry("genlang", "xqy"),
+    map:entry("format", "xml"),
+    map:entry("lax", false())
+  ))
+
+  return
+    if (string-length($nparam) eq 0 or $nparam eq "dummy") then $map
+    else 
+      let $json := xdmp:from-json-string($param)
+      let $_ := for $key in map:keys($json) return
+        let $val := map:get($json, $key)
+        return
+          if ($key eq "genlang") then 
+            if ($val eq ("xqy", "sjs")) then map:put($map, "genlang", $val)
+            else fn:error(xs:QName("ERROR"), "illegal", ($key, $val))
+          else if ($key eq "format") then 
+            if ($val eq ("xml", "json")) then map:put($map, "format", $val)
+            else fn:error(xs:QName("ERROR"), "illegal", ($key, $val))
+          else if ($key eq "lax") then 
+            if ($val eq "true" or $val eq true()) then map:put($map, "lax", true())
+            else if ($val eq "false" or $val eq false()) then map:put($map, "lax", false())
+            else fn:error(xs:QName("ERROR"), "illegal", ($key, $val))
+          else fn:error(xs:QName("ERROR"), "Illegal", ($key))
+      return $map
 };

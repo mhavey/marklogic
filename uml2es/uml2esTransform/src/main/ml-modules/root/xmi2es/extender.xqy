@@ -68,6 +68,34 @@ declare function xes:getDescriptor($xes as map:map) as json:object {
 	map:get($xes, "descriptor")
 };
 
+declare function xes:resolveBaseUri($xes, $baseUri as xs:string?) as xs:string {
+	let $problems := map:get($xes, "problems")
+	if (xes:emptyString($baseUri)) then 
+		let $_ := pt:addProblem($problems, (), (), $pt:MODEL-BASE-URI-NOT-FOUND, ())
+		return $DEFAULT-NAMESPACE
+	else $baseUri
+};
+
+declare function xes:resolveVersion($xes, $version as xs:string?) as xs:string {
+	let $problems := map:get($xes, "problems")
+	if (xes:emptyString($version)) then 
+		let $_ := pt:addProblem($problems, (), (), $pt:MODEL-VERSION-NOT-FOUND, ())
+		return $DEFAULT-VERSION
+	else $version
+};
+
+declare function xes:modelIRI($xes, $modelName as xs:string, $baseUri as xs:string?, $version as xs:string?) as xs:string {
+    concat($resolvedURI, "/", $profileForm/@name, "-", $resolvedVersion)
+};
+
+declare function xes:classIRI($xes, $modelIRI as xs:string, $className as xs:string) as xs:string {
+	concat($modelIRI, "/", $className)
+};
+
+declare function xes:attribIRI($xes, $classIRI as xs:string, $attribName as xs:string) as xs:string {
+	concat($classIRI, "/", $attribName)
+};
+
 (:
 Return a turtle serialization of the XES triples. Also return a reasonably useful comment summarizing the extensions.
 The comment can be pasted into your conversion module to help guide you.
@@ -87,7 +115,7 @@ declare function xes:generateModelExtension($xes as map:map) as xs:string* {
 (:
 Set the one and only model 
 :)
-declare function xes:transform($xes as map:map, $profileForm as node()) as empty-sequence() {
+declare function xes:fixAndValidate($xes as map:map, $descriptor as json:object) as json:object {
 	let $problems := map:get($xes, "problems")
 	let $descriptor := map:get($xes, "descriptor")
 
@@ -113,72 +141,12 @@ declare function xes:generateCode($xes as map:map) as xs:string? {
 Private Interface
 :)
 
-declare function xes:transformModel($xes as map:map, $profileForm as node()) as empty-sequence() {
-
-	(:
-	Stereotypes: 
-	- esModel (ES)
-	- xImplHints (XES)
-	- semPrefixes (XES)
-	:)
-
-	let $problems := map:get($xes, "problems")
-	let $descriptor := map:get($xes, "descriptor")
-
-	let $semPrefixes := string($profileForm/semPrefixes/prefixesTtl)
-	let $resolvedVersion := 
-    	if (xes:emptyString($profileForm/esModel/@version)) then 
-    		let $_ := pt:addProblem($problems, (), (), $pt:MODEL-VERSION-NOT-FOUND, ())
-    		return $DEFAULT-VERSION
-    	else $profileForm/esModel/@version
-    let $resolvedURI := 
-    	if (xes:emptyString($profileForm/esModel/@baseUri)) then 
-    		$DEFAULT-NAMESPACE
-    	else $profileForm/esModel/@baseUri
-    let $modelIRI := concat($resolvedURI, "/", $profileForm/@name, "-", $resolvedVersion)
-	let $_ := map:put($xes, "modelIRI", $modelIRI)
-
-    let $modelJson := json:object()
-    let $classesJson := json:object()
-    let $_ := map:put($descriptor, "info", $modelJson)
-	let $_ := (map:put($modelJson, "title", $profileForm/@name),
-    	map:put($modelJson, "version", $resolvedVersion), 
-    	map:put($modelJson, "baseUri", $resolvedURI), 
-    	map:put($modelJson, "description", string($profileForm/description)),
-    	map:put($descriptor, "definitions", $classesJson)
-    )
-	let $_ := (
-		if (string-length($semPrefixes) gt 0) then xes:addFact($xes, $modelIRI, $IRI-SEM-PREFIXES, $semPrefixes, false()) else (),
-		for $r in $profileForm/xImplHints/reminders/item return xes:addFact($xes, $modelIRI, $IRI-REMINDER, $r, false()),
-		for $t in $profileForm/xImplHints/triplesPO/item return xes:addFact($xes, $modelIRI, $t/@predicate, $t/@object, false())
-	)
-	return ()
-};
-
 declare function xes:transformClass($xes as map:map, $profileForm as node(),  
 	$class as node()) as empty-sequence() {
 
-	(:
-	Stereotypes: 
-	- xmlNamespace (ES; package and class)
-	- xImplHints (XES)
-	- exclude (ES with fact)
-	- xDocument (XES)
-	- xHeader
-	- xURI
-	- xCalculated
-	- xBizKey
-	- semType
-	- semFacts
-	- semIRI
-	- semLabel
-	- semProperty 
-	:)
-
-
 	let $problems := map:get($xes, "problems")
 	let $classesJson := map:get(map:get($xes, "descriptor"), "definitions")
-	let $classIRI := concat(map:get($xes, "modelIRI"), "/", $class/@name)
+	let $classIRI := $class/@iri
 
 	(: Gather the info about the class :)
 	let $associationClass := $class/@isAssociationClass eq true()
@@ -186,7 +154,6 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 	let $classJson := json:object()
 	let $allAttribs := $class/attributes/Attribute
 	let $includes := $allAttribs[exclude/text() eq false()]
-	let $xBizKeys := $class/xBizKeys/item/text()
 	let $pks := $class/pks/item/text()[. eq $includes/@name]
 	let $requireds := $includes[@required eq true()]/@name
 	let $paths := $includes[string(rangeIndex) eq "path"]/@name
@@ -196,40 +163,13 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 	let $invalidRangeIndexes := $allAttribs[string-length(rangeIndex/text()) gt 0 
   		and not(rangeIndex/text() eq ("element", "path", "lexicon"))]
 
-	let $semIRIs := $class/semIRIs/item/text()
-	let $semLabels := $class/semLabels/item/text()
-	let $semTypes := $class/semTypes/item
-	let $semFacts := $class/semFacts/factsTtl/text()
-	let $semPredicates := $allAttribs[string-length(semProperty/predicate) gt 0]
-	let $semPredicatesTtl := $allAttribs[string-length(semProperty/predicateTtl) gt 0]
-
-		for $a in $semProperties return (
-			let $isIRI := $a/@typeIsReference eq true()
-			let $fieldSource := 
-				if ($a/exclude/text() eq true()) then concat('map:get($options, "', $a/@name, '")')
-				else concat('$content/', $a/@name)
-			return (
-				xes:addFact($xes, concat($classIRI, "/", $a/@name), $IRI-SEM-PROPERTY, $a/semProperty/text(), $isIRI),
-				json:array-push($semLines, concat('sem:triple(sem:iri($semIRI), sem:iri("', $a/semProperty/text(), '"),',
-					if ($isIRI) then concat('sem:iri(', $fieldSource, '))')
-					else concat($fieldSource, ")"))),
-				json:array-push($semLines, ",")
-			)
-		),
-
-		for $a in $semTypes return xes:addFact($xes, $classIRI, $IRI-SEM-TYPE, $a, false())
-		if (count($semIRIs) eq 0 and count($semLabels) + count($semProperties) + count($semTypes) gt 0) 
-			then pt:addProblem($problems, $classIRI, (), $pt:CLASS-SEM-NO-IRI, "")
-		else (),
-
-
-	(: facts and problems :)
+	(: flag problems :)
 	let $_ := (
 		for $i in $invalidRangeIndexes return 
 			pt:addProblem($problems, concat($classIRI, "/", $i/@name), (), $pt:ATTRIB-ILLEGAL-INDEX, $i/@rangeIndex),
-		for $a in $xBizKeys return xes:addFact($xes, $classIRI, $IRI-BIZ-KEY, concat($classIRI, "/", $a), true()),
-		for $r in $class/xImplHints/reminders/item return xes:addFact($xes, $classIRI, $IRI-REMINDER, $r, false()),
-		for $t in $class/xImplHints/triplesPO/item return xes:addFact($xes, $classIRI, $t/@predicate, $t/@object, false()),
+
+(: TODO - base class :)
+
 		if (string-length($class/@baseClass) gt 0) then 
 			xes:addFact($xes, $classIRI, $IRI-BASE_CLASS, concat(map:get($xes, "modelIRI"), "/", $class/@baseClass), true()) 
 			else ()
@@ -262,8 +202,7 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 declare function xes:transformAttribute($xes as map:map, $profileForm as node(), 
 	$class as node(), $attrib as node(), $attribsJson as json:object) as empty-sequence() {
 	let $problems := map:get($xes, "problems")
-	let $classIRI := concat(map:get($xes, "modelIRI"), "/", $class/@name)
-	let $attribIRI := concat($classIRI, "/", $attrib/@name)
+	let $attribIRI := $attrib/@iri
 	let $attribJson := json:object()
 	let $exclude := $attrib/exclude/text() eq true()
 	let $FK := $attrib/FK/text() eq true()
@@ -281,9 +220,6 @@ declare function xes:transformAttribute($xes as map:map, $profileForm as node(),
 	
 	(: facts and problems :)
 	let $_ := (
-		for $r in $attrib/xImplHints/reminders/item return xes:addFact($xes, $attribIRI, $IRI-REMINDER, $r, false()),
-		for $t in $attrib/xImplHints/triplesPO/item return xes:addFact($xes, $attribIRI, $t/@predicate, $t/@object, false()),
-		if ($FK eq true()) then xes:addFact($xes, $attribIRI, $IRI-FK, "self", false()) else (),
 		if (string-length($header)) then xes:addFact($xes, $attribIRI, $IRI-HEADER, $header, false()) else (), 
 		if (string-length($relationship) gt 0) then xes:addFact($xes, $attribIRI, $IRI-RELATIONSHIP, $relationship, false()) else (),
 		if (string-length($collation) gt 0 and $type ne "string") then
@@ -295,8 +231,7 @@ declare function xes:transformAttribute($xes as map:map, $profileForm as node(),
 	)
 
 	return
-		if ($exclude eq true()) then
-			xes:addFact($xes, $attribIRI, $IRI-EXCLUDE, "self", false())
+		if ($exclude eq true()) then ()
 		else (
 			map:put($attribsJson, $attrib/@name, $attribJson),
 			if ($array eq true()) then 
@@ -358,6 +293,8 @@ declare function xes:emptyString($s) {
 
 (:
 Add a fact to the extended model.
+TODO - get this working with literals of other types;
+TODO - get the qualified one working too..
 :)
 declare function xes:addFact($xes as map:map,
 	$subjectIRI as xs:string, $predicateIRI as xs:string, 

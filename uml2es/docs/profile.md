@@ -11,7 +11,7 @@ Here is a visual representation of the profile:
 
 ## Reference
 Stereotypes are organized into three sections: 
-- **Core model**: These stereotypes (the pale yellow ones above) enhance your UML model with configuration to be included in the Entity Services model descriptor. An example is to designate a **rangeIndex** on a class attribute. If you include that stereotype in your UML model, the transform will include the range index in the Entity Services model descriptor. See [http://docs.marklogic.com/guide/entity-services/models] for a full reference to the descriptor.
+- **Core model**: These stereotypes (the pale yellow ones above) enhance your UML model with configuration to be included in the Entity Services model descriptor. An example is to designate an **elementRangeIndex** on a class attribute. If you include that stereotype in your UML model, the transform will include the range index in the Entity Services model descriptor. See [http://docs.marklogic.com/guide/entity-services/models] for a full reference to the descriptor.
 - **Extended model**: These stereotypes (the blue ones above) enhance your UML model with configuration that **extends** the core model with **additional facts**. For example, the core model does not allow you to associate with a class a set of collections and permissions. But using the **xDocument** stereotype, you can make that association in the extended model. If you include that stereotype in your UML model, the transform will add a fact (expressed as a semantic triple) to the extended model indicating your collections and permissions. See [http://docs.marklogic.com/guide/entity-services/models#id_28304] for more on how facts can extend the model.
 - **Semantics** - These stereotypes (the orange ones above) allow you to add semantic information to your model. Use this feature if you plan to use a multi-model database, consisting of not only documents but also semantic triples. The [HR example](../examples/hr) from this toolkit showcases this feature. In that example, we have Employee and Department documents, but we also use semantic triples to express organizational relationships, such as employee reporting structure and employee membership in departments. The toolkit's transform module generates XQuery or Javascript code that you can use at runtime, as you ingest your source date, to express those relationships as triples. For additional discussion of how the toolkit handles semantics, refer to [semantics.md](semantics.md). 
 
@@ -30,7 +30,9 @@ The following table describes each stereotype:
 |core|Attribute|exclude||Transform will not include entity property corresponding to this attribute.|
 |core|Attribute|PK||The property corresponding to this attribute is the one and only primary key of the entity.|
 |core|Attribute|FK||The attribute refers to another class, but the corresponding property's type will be the corresponding entity's primary key type rather than an internal reference.|
-|core|Attribute|rangeIndex|indexType|The property corresponding to this attribute is added to the list of indexes of the specified type for the entity.|
+|core|Attribute|elementRangeIndex||The property corresponding to this attribute is added to the list of element range indexes for the entity.|
+|core|Attribute|pathRangeIndex||The property corresponding to this attribute is added to the list of path range indexes for the entity.|
+|core|Attribute|wordLexicon||The property corresponding to this attribute is added to the list of word lexicons for the entity.|
 |core|Attribute|esProperty|mlType|The property corresponding to this attribute will have the specified type.|
 |core|Attribute|esProperty|externalRef|The property corresponding to this attribute will be an external reference with the specified value.|
 |core|Attribute|esProperty|collation|The string property corresponding to this attribute will have the specified collation.|
