@@ -29,7 +29,6 @@ declare variable $CLASS-MULTIFIELD-SEM-IRI := "Class has multiple SEM IRI fields
 declare variable $CLASS-MULTIFIELD-SEM-LABEL := "Class has multiple SEM label fields";
 declare variable $CLASS-SEM-NO-IRI := "SEM Class has no IRI";
 declare variable $ATTRIB-NO-NAME := "Attrib has no name";
-declare variable $ATTRIB-ILLEGAL-INDEX := "Illegal index type";
 declare variable $ATTRIB-COLLATION-NONSTRING := "Collation provided for non-string datatype";
 declare variable $ATTRIB-CARDINALITY-ONE := "Cardinality of element should be one";
 declare variable $ATTRIB-CARDINALITY-ZERO-ONE := "Cardinality of element should be zero or one";
