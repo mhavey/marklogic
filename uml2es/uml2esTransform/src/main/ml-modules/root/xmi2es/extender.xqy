@@ -130,9 +130,8 @@ declare function xes:addQualifiedFact($xes as map:map,
 (:
 Parse and validate extender params. Return map entry for them. Params:
 
-genlang: xqy, sjs
-format: xml, json
 lax: true/false
+class: name, subordinates: subNames
 notional:  TBD
 
 Currently we ignore them. genlang is assumed to be xqy
@@ -140,8 +139,6 @@ Currently we ignore them. genlang is assumed to be xqy
 declare function xmi2es:getParams($param as xs:string?) as map:map {
   let $nparam := fn:normalize-space($param)
   let $map := map:new((
-    map:entry("genlang", "xqy"),
-    map:entry("format", "xml"),
     map:entry("lax", false())
   ))
 
@@ -152,13 +149,7 @@ declare function xmi2es:getParams($param as xs:string?) as map:map {
       let $_ := for $key in map:keys($json) return
         let $val := map:get($json, $key)
         return
-          if ($key eq "genlang") then 
-            if ($val eq ("xqy", "sjs")) then map:put($map, "genlang", $val)
-            else fn:error(xs:QName("ERROR"), "illegal", ($key, $val))
-          else if ($key eq "format") then 
-            if ($val eq ("xml", "json")) then map:put($map, "format", $val)
-            else fn:error(xs:QName("ERROR"), "illegal", ($key, $val))
-          else if ($key eq "lax") then 
+          if ($key eq "lax") then 
             if ($val eq "true" or $val eq true()) then map:put($map, "lax", true())
             else if ($val eq "false" or $val eq false()) then map:put($map, "lax", false())
             else fn:error(xs:QName("ERROR"), "illegal", ($key, $val))

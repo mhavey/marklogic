@@ -47,10 +47,10 @@ Notice the following about this model:
 ### xCalculated Concat Rules
 The concat tag is an array of strings. 
 
-- If a string is the array is quoted, the concatentation uses its literal value. 
-- If a string is unquoted but of the form :p, it is treated as IRI prefix p.
-- If a string is unquoted but does NOT have the form :p, it is treated as an attribute name. The concatenation, at runtime, takes the value of that attribute. You can specify the attribute name in the following ways:
+- If a string is quoted, the concatentation uses its literal value. 
+- If a string is unquoted but of the form p:abc, it is treated as IRI abc with prefix p, where p is one of the SEM prefixes.
+- If a string is unquoted but does NOT have the form p:abc, it is treated as an attribute name. The concatenation, at runtime, takes the value of that attribute. You can specify the attribute name in the following ways:
 	- abc: the attribute named abc in the current class.
 	- ${abc}: equivalent to abc
-	- Xyz.abc: the attribute named abc in class Xyz
+	- Xyz.abc: the attribute named abc in class Xyz. 
 	- ${Xyz.abc}: equivalent to Xyz.abc

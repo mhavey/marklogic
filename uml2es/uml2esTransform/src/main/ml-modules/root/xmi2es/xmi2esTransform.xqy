@@ -16,8 +16,8 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
   (:
   We will use a 2-pass approach. Pass 1 is to gather all the stuff we need from the XMI. 
   We produce an xml structure based on the "profile form" of the model. 
-  In pass 2, we transform profile form to ES descriptor, and also derive model extensions 
-  and SEM codegen.
+  In pass 2, we transform profile form to ES descriptor, and also derive model extensions.
+  CodeGen is NOW A SEPARATE FUNCTION.
   :)
 
   (: if there is no model, we're in a bad way :)
@@ -104,7 +104,6 @@ declare function xmi2es:transform(
       map:entry("value", text{ $extensions[2] })
     ))
     else ()
-  let $genMap := if (exists($xmodel)) then xes:generateCode($xmodel, "/xmi2es/gen" || $docName || "/") else ()
 
   return ($content, $modelDescMap, $intermediateMap, $findingsMap, $valMap,
     $extensionTurtleMap, $extensionCommentMap, $genMap) 
