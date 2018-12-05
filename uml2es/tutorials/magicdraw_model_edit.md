@@ -91,7 +91,7 @@ To help map this to Entity Services, we'll add a few stereotypes to our model.
 
 ![Project in MagicDraw - applying PK stereotype](md_project_pk.png)
 
-- We will add a range index on firstName, lastName, and hobbies. For each of these attributes, double-click on the attribute and under Applied Stereotype select rangeIndex and click Apply,
+- We will add a range index on firstName, lastName, and hobbies. For each of these attributes, double-click on the attribute and under Applied Stereotype select elementRangeIndex and click Apply,
 
 ![Project in MagicDraw - applying range indexe](md_project_rangeIndex.png)
 
