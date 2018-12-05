@@ -81,7 +81,7 @@ Then select the node labelled "<Profile>Marklogic Entity Services Profile". From
 
 ![Papyrus profile - define](pap_profile_define.png)
 
-In the dialogic click OK. Done!!
+In the dialog click OK. Done!!
 
 ### Saving the profile
 
