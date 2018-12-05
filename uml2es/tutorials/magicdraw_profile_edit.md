@@ -74,8 +74,8 @@ Also, copy this file to [uml2es/umlProfile/eclipse/MLProfileProject](../umlProfi
 As a result of all this, you just updated the profile in two forms:
 
 - MagicDraw form, to [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml)
-- Generalized XMI form, to [uml2es/umlProfile/MLProfile.xml] (../umlProfile/MLProfile.xml)
-- Generalized XMI form for Eclipse development, to [uml2es/umlProfile/eclipse/MLProfileProject/MLProfile.profile.uml] (../umlProfile/eclipse/MLProfileProject/MLProfile.profile.uml)
+- Generalized XMI form, to [uml2es/umlProfile/MLProfile.xml](../umlProfile/MLProfile.xml)
+- Generalized XMI form for Eclipse development, to [uml2es/umlProfile/eclipse/MLProfileProject/MLProfile.profile.uml](../umlProfile/eclipse/MLProfileProject/MLProfile.profile.uml)
 
 If you run the Papyrus tutorials, you'll need the last of these.
 
