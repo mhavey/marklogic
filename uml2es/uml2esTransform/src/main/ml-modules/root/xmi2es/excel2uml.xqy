@@ -18,7 +18,7 @@ declare variable $VAL-YN := "y";
 declare variable $VAL-INT := "i";
 declare variable $VAL-CARDINALITY := "c";
 
-declare variable $FIRST_PROP_ROW := 20;
+declare variable $FIRST_PROP_ROW := 21;
 
 (:
 Convert attributes in the excel to XMI
@@ -50,19 +50,23 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 				let $attribCardinality:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "D"||$row, $pt, $VAL-CARDINALITY)
 				let $attribPK:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "E"||$row, $pt, $VAL-YN)
 				let $attribFK:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "F"||$row, $pt, $VAL-YN)
-				let $attribExclude:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "G"||$row, $pt, $VAL-YN)
-				let $attribRangeIndex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "H"||$row, $pt, ())
-				let $attribBizKey :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "I"||$row, $pt, $VAL-YN)
-				let $attribURI :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "J"||$row, $pt, $VAL-YN)
-				let $attribSemIRI:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "K"||$row, $pt, $VAL-YN)
-				let $attribSemLabel:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "L"||$row, $pt, $VAL-YN)
-				let $attribSemProperty:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "M"||$row, $pt, ())
-				let $attribCollation:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "N"||$row, $pt, ())
-				let $attribExternalRef:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "O"||$row, $pt, ())
-				let $attribHeader:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "P"||$row, $pt, ())
-				let $attribCalculated:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "Q"||$row, $pt, ())
-				let $attribImpl:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "R"||$row, $pt, ())
-				let $attribPO:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "S"||$row, $pt, ())
+				let $attribPII:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "G"||$row, $pt, $VAL-YN)
+				let $attribExclude:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "H"||$row, $pt, $VAL-YN)
+				let $attribElemRangeIndex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "I"||$row, $pt, $VAL-YN)
+				let $attribPathRangeIndex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "J"||$row, $pt, $VAL-YN)
+				let $attribWordLex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "K"||$row, $pt, $VAL-YN)
+				let $attribBizKey :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "L"||$row, $pt, $VAL-YN)
+				let $attribURI :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "M"||$row, $pt, $VAL-YN)
+				let $attribSemIRI:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "N"||$row, $pt, $VAL-YN)
+				let $attribSemLabel:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "O"||$row, $pt, $VAL-YN)
+				let $attribSemProperty:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "P"||$row, $pt, ())
+				let $attribSemQual:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "Q"||$row, $pt, ())
+				let $attribCollation:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "R"||$row, $pt, ())
+				let $attribExternalRef:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "S"||$row, $pt, ())
+				let $attribHeader:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "T"||$row, $pt, ())
+				let $attribCalculated:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "U"||$row, $pt, ())
+				let $attribImpl:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "V"||$row, $pt, ())
+				let $attribPO:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "W"||$row, $pt, ())
 
 				(: attrib-level stereotypes :)
 				let $attribTypeRef := map:get(map:get($classDetailsPerClassName, $attribType), "classID")
@@ -88,6 +92,10 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:exclude xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
+					if ($attribPII eq "Y") then
+						json:array-push($classAttribStereotypes, 
+							<ml:PII xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+					else (),
 					if ($attribPK eq "Y") then
 						json:array-push($classAttribStereotypes, 
 							<ml:PK xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
@@ -108,17 +116,25 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:semIRI xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
-					if ($attribSemLabel eq "Y") then
+					if ($attribElemRangeIndex eq "Y") then
 						json:array-push($classAttribStereotypes, 
-							<ml:semLabel xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+							<ml:elememtRangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
-					if (string-length($attribRangeIndex) gt 0) then
+					if ($attribPathRangeIndex eq "Y") then
 						json:array-push($classAttribStereotypes, 
-							<ml:rangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" indexType="{$attribRangeIndex}"/>)
+							<ml:pathRangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+					else (),
+					if ($attribWordLex eq "Y") then
+						json:array-push($classAttribStereotypes, 
+							<ml:wordLex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
 					if (string-length($attribSemProperty) gt 0) then
 						json:array-push($classAttribStereotypes, 
-							<ml:semProperty xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" predicate="{$attribSemProperty}"/>)
+							<ml:semProperty xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" predicate="{$attribSemProperty}">{
+								for $q in $attribSemQual return 
+									<qualifiedObject_sPO>{$q}</qualifiedObject_sPO>
+							}
+							</ml:semProperty>)
 					else (),
 					if (string-length($attribHeader) gt 0) then
 						json:array-push($classAttribStereotypes, 
@@ -194,12 +210,13 @@ declare function xlsx:convertClasses($entitySheets as node()*, $stringTable as n
 	  	let $classXMLPrefix:= xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B4", $pt, ())
 	  	let $classXMLURL := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B5", $pt, ())
 		let $classSEMTypes := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B6", $pt, ())
-		let $classQuality := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B7", $pt, $VAL-INT)
-		let $classCollections:= xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B8", $pt, ())
-		let $classPerms := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B9", $pt, ())
-		let $classMetadataKV := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B10", $pt, ())
-		let $classImpl := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B11", $pt, ())
-		let $classPO := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B12", $pt, ())
+		let $classSEMFacts := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B7", $pt, ())
+		let $classQuality := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B8", $pt, $VAL-INT)
+		let $classCollections:= xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B9", $pt, ())
+		let $classPerms := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B10", $pt, ())
+		let $classMetadataKV := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B11", $pt, ())
+		let $classImpl := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B12", $pt, ())
+		let $classPO := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B13", $pt, ())
 					
 		(: class-level stereotypes :)
 		let $_ := (
@@ -225,6 +242,14 @@ declare function xlsx:convertClasses($entitySheets as node()*, $stringTable as n
 						for $type in $classSEMTypes return <types>{$type}</types>
 					}
 					</ml:semType>)
+			else (),
+			if (count($classSEMFacts) gt 0) then
+				json:array-push($classAttribStereotypes, 
+					<ml:semFacts xmi:id="{sem:uuid-string()}" base_Class="{$classID}">
+					{
+						for $f in $classSEMFacts return <facts_sPO>{$f}</facts_sPO>
+					}
+					</ml:semFacts>)
 			else (),
 			if (count($classCollections) gt 0 or count($classPerms) gt 0 or count ($classMetadataKV) gt 0 or string-length($classQuality) gt 0) then
 				json:array-push($classAttribStereotypes, 
@@ -281,6 +306,7 @@ declare function xlsx:convert($excel, $pt) as node() {
   	let $modelXMLURL := xlsx:excelCell($modelSheet, "model", $stringTable, "B6", $pt, ())
   	let $modelImpl:= xlsx:excelCell($modelSheet, "model", $stringTable, "B7", $pt, ()) 
   	let $modelPO:= xlsx:excelCell($modelSheet, "model", $stringTable, "B8", $pt, ()) 
+  	let $modelSemPrefixes:= xlsx:excelCell($modelSheet, "model", $stringTable, "B9", $pt, ()) 
 
   	let $classAttribStereotypes := json:array()
   	let $classModel := xlsx:convertClasses($entitySheets, $stringTable, $classAttribStereotypes, $pt)
@@ -311,6 +337,11 @@ declare function xlsx:convert($excel, $pt) as node() {
 						for $impl in $modelImpl return <reminders>{$impl}</reminders>,
 						for $po in $modelPO return <triplesPO>{$po}</triplesPO>
 					}</ml:xImplHints>
+				else (),
+				if (count($modelSemPrefixes) gt 0) then
+					<ml:semPrefixes xmi:id="{sem:uuid-string()}" base_Package="{$modelID}">{
+						for $p in $modelSemPrefixes return <prefixesPU>{$p}</prefixesPU>
+					}</ml:semPrefixes>
 				else (),
 				for $stereotype in json:array-values($classAttribStereotypes) return $stereotype
 			)}
