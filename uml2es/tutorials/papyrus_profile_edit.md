@@ -11,41 +11,19 @@ The second way is to use the full Papyrus profile diagram editor to graphically 
 
 ## How to edit the profile:
 
-### Create project in Eclipse.
+### Import Eclipse Project.
 
-Open Eclipse. Create a project for the profile by choosing File | New | Project. In the New Project window, select Papyrus Project.
+Open Eclipse. Import into your workspace the ML profile Eclipse project as follows. From the File menu select Import | General | Existing Projects Into Workspace. 
 
-![Choose papyrus project](pap_profile_newproject.png)
+![Import project](pap_profile2_import.png)
 
-Click Next. In the New Papyrus Project window, select Profile:
+Click Next. In the Import Projects dialog, make sure "Select root directory" is selected. Use the Browse button to locate the ML profile Eclipse project in your local copy of the toolkit. It can be found in [uml2es/umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse//MLProfileProject). 
 
-![Papyrus project - profile type](pap_profile_projecttype.png)
+![Import project - profile project](pap_profile2_import2.png)
 
-In the New Papyrus Project window name your project MLProfile.
+Click Finish. You should now see the project in the Project Explorer pane in the upper-right corner of Eclipse.
 
-![Papyrus project create](pap_profile_newproject2.png)
-
-Click Finish. You now see your new project. From Project Explorer, delete the dummy profile that was created. Right-click on model.profile and select Delete.
-
-![New papyrus project](pap_profile_newproj_delete_model.png)
-
-Import into the project the MLProfile.xml file that is in your local clone of the toolkit. The location is [uml2es/umlProfile/MLProfile.xml](../umlProfile/MLProfile.xml). Do NOT use the MagicDraw file at [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml). To import, in Project Explorer right-click on the project name (MLProfile). From the context menu, select Import.
-
-![Papyrus project import](pap_profile_import.png)
-
-From the Import window, choose General | File System.
-
-![Papyrus project import from filesystem](pap_profile_filesystem.png)
-
-Click Next. In the next window, in the text box "From directory", enter the full path of the directory that contains the profile. Then in the right panel, select MLProfile.xml. 
-
-![Papyrus project import profile from toolkit](pap_profile_import2.png)
-
-Click Finish.
-
-Rename the file to MLProfile.profile.uml by right-clicking on the file and selecting Rename.
-
-![Papyrus project rename](pap_profile_rename.png)
+![Imported project - profile project](pap_profile2_import_done.png)
 
 ### Editing the profile
 
