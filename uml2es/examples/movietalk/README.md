@@ -8,7 +8,7 @@ Here is the model, designed in Papyrus:
 
 ![MovieTalk](../umlModels/MovieTalk.png)
 
-The Eclipse project for Papyrus is in data/MovieTalkPapyrus.
+The Eclipse project for Papyrus is in data/MovieTalkPapyrus. If you would like to view/edit it in Eclipse, import both this project and the profile Eclipse project at (../umlProfile/eclipse/MLProfileProject)[../umlProfile/eclipse/MLProfileProject].
 
 ## How to run:
 
