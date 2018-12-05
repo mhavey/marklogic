@@ -5,6 +5,21 @@ This tutorial shows how to create a UML model for MarkLogic in Papyrus. To run t
 
 ## How to create the model:
 
+### Import profile
+To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. The profile is provided in an Eclipse project in your local copy of the toolkit at (../umlProfile/eclipse/MLProfileProject/MLProfile.profile.uml). If you completed, the tutorial [How to edit the profile in Papyrus](papyrus_profile_edit.md), you modified that profile. 
+
+To imrport, from the File menu select Import | General | Existing Projects Into Workspace. 
+
+![Import profile project](pap_profile2_import.png)
+
+Click Next. In the Import Projects dialog, make sure "Select root directory" is selected. Use the Browse button to locate the ML profile Eclipse project in your local copy of the toolkit. It can be found in [uml2es/umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse//MLProfileProject). 
+
+![Import profile project](pap_profile2_import2.png)
+
+Click Finish. You should now see the project in the Project Explorer pane in the upper-right corner of Eclipse.
+
+![Imported project - DONE](pap_profile2_import_done.png)
+
 ### Create a new project
 
 Open Eclipse. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
@@ -25,46 +40,6 @@ In Project Explorer, you will see the new project. Papyrus created a dummy model
 
 ![New project in Papyrus](pap_model_delete.png)
 
-### Add the Profile
-
-To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. You can use the one [provided in the toolkit](../umlProfile/MLProfile.xml), or if you completed the tutorial [How to edit the profile in Papyrus](papyrus_profile_edit.md), you can use its profile!
-
-#### Using the Profile From the Toolkit
-
-Import into the project the MLProfile.xml file that is in your local clone of the toolkit. The location is [uml2es/umlProfile/MLProfile.xml](../umlProfile/MLProfile.xml). Do NOT use the MagicDraw file at [uml2es/umlProfile/magicdraw/MLProfile.xml](../umlProfile/magicdraw/MLProfile.xml). To import, in Project Explorer right-click on the project name. From the context menu, select Import.
-
-![Papyrus project import](pap_model_import.png)
-
-From the Import window, choose General | File System.
-
-![Papyrus project import from filesystem](pap_model_filesystem.png)
-
-Click Next. In the next window, in the text box "From directory", enter the full path of the directory that contains the profile. Then in the right panel, select MLProfile.xml. 
-
-![Papyrus project import profile from toolkit](pap_model_import2.png)
-
-Click Finish.
-
-Rename the file to MLProfile.profile.uml by right-clicking on the file and selecting Rename.
-
-![Papyrus project rename](pap_model_rename.png)
-
-#### Using the Profile From the Tutorial
-
-If you completed the tutorial [How to edit the profile in Papyrus](papyrus_profile_edit.md), you have a modified version of the profile with a new stereotype called semYippee! To use that profile, in Project Explorer right-click on the project name. From the context menu, click Import.
-
-![Papyrus project import](pap_model_import.png)
-
-From the Import window, choose General | File System.
-
-![Papyrus project import from filesystem](pap_model_filesystem.png)
-
-Click Next. In the next window, in the text box "From directory", enter the full path of the Eclipse project you used in the tutorial. Then in the right panel, select MLProfile.profile.uml.
-
-![Papyrus project import profile from toolkit](pap_model_importtut.png)
-
-Click Finish.
-
 ### Building a Simple Model
 
 In Project Explorer, right-click on Model and select New | Other. In the selection wizard screen select "Papyrus Model". 
@@ -79,7 +54,7 @@ Click Next. For filename, enter PapyrusPerson.di
 
 ![Project in Papyrus - new model name](pap_model_name.png)
 
-In the next page, for "Root model element name" type Person. For "Diagram Kind", select Class Diagram. Check "A UML Model With Primitive Types". For "Choose a profile to apply" click Browse Workspace. Select MyPapyrusProject/MLProfile.profile.uml.
+In the next page, for "Root model element name" type Person. For "Diagram Kind", select Class Diagram. Check "A UML Model With Primitive Types". For "Choose a profile to apply" click Browse Workspace. Select MLProfileProject/MLProfile.profile.uml.
 
 ![Project in Papyrus - new model UML](pap_model_options.png)
 
@@ -117,7 +92,7 @@ Click OK. The class now looks like this.
 
 ![Project in Papyrus - person with id PK](pap_model_person3.png)
 
-Using a similar approach, add the rangeIndex attribute to firstName, lastName, and hobbies. Your class now looks like this:
+Using a similar approach, add the elementRangeIndex stereotype to firstName, lastName, and hobbies. Your class now looks like this:
 
 ![Project in Papyrus - remaining attributes with range index](pap_model_person4.png)
 

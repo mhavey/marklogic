@@ -11,7 +11,7 @@ The second way is to use the full Papyrus profile diagram editor to graphically 
 
 ## How to edit the profile:
 
-### Import Eclipse Project.
+### Importing Eclipse Project
 
 Open Eclipse. Import into your workspace the ML profile Eclipse project as follows. From the File menu select Import | General | Existing Projects Into Workspace. 
 
