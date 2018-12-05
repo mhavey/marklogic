@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:style="http://www.eclipse.org/papyrus/infra/viewpoints/policy/style" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_Yhu9oPi-EeivcqBGczvSpg" type="PapyrusUMLClassDiagram" name="Class Diagram" measurementUnit="Pixel">
+  <children xmi:type="notation:Shape" xmi:id="_pP6LIPi-EeivcqBGczvSpg" type="Class_Shape">
+    <children xmi:type="notation:DecorationNode" xmi:id="_pQFKQPi-EeivcqBGczvSpg" type="Class_NameLabel"/>
+    <children xmi:type="notation:DecorationNode" xmi:id="_pQFKQfi-EeivcqBGczvSpg" type="Class_FloatingNameLabel">
+      <layoutConstraint xmi:type="notation:Location" xmi:id="_pQFKQvi-EeivcqBGczvSpg" y="5"/>
+    </children>
+    <children xmi:type="notation:BasicCompartment" xmi:id="_pQI0oPi-EeivcqBGczvSpg" type="Class_AttributeCompartment">
+      <children xmi:type="notation:Shape" xmi:id="_3GhVoPi-EeivcqBGczvSpg" type="Property_ClassAttributeLabel">
+        <element xmi:type="uml:Property" href="PapyrusPerson.uml#_3GXkoPi-EeivcqBGczvSpg"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_3GhVofi-EeivcqBGczvSpg"/>
+      </children>
+      <children xmi:type="notation:Shape" xmi:id="_4Bnr8Pi-EeivcqBGczvSpg" type="Property_ClassAttributeLabel">
+        <element xmi:type="uml:Property" href="PapyrusPerson.uml#_4BhlUPi-EeivcqBGczvSpg"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_4Bnr8fi-EeivcqBGczvSpg"/>
+      </children>
+      <children xmi:type="notation:Shape" xmi:id="_4b0UoPi-EeivcqBGczvSpg" type="Property_ClassAttributeLabel">
+        <element xmi:type="uml:Property" href="PapyrusPerson.uml#_4bu1EPi-EeivcqBGczvSpg"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_4b0Uofi-EeivcqBGczvSpg"/>
+      </children>
+      <children xmi:type="notation:Shape" xmi:id="_46U1kPi-EeivcqBGczvSpg" type="Property_ClassAttributeLabel">
+        <element xmi:type="uml:Property" href="PapyrusPerson.uml#_46Ou8Pi-EeivcqBGczvSpg"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_46U1kfi-EeivcqBGczvSpg"/>
+      </children>
+      <styles xmi:type="notation:TitleStyle" xmi:id="_pQI0ofi-EeivcqBGczvSpg"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_pQI0ovi-EeivcqBGczvSpg"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_pQI0o_i-EeivcqBGczvSpg"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_pQI0pPi-EeivcqBGczvSpg"/>
+    </children>
+    <children xmi:type="notation:BasicCompartment" xmi:id="_pQI0pfi-EeivcqBGczvSpg" type="Class_OperationCompartment">
+      <styles xmi:type="notation:TitleStyle" xmi:id="_pQI0pvi-EeivcqBGczvSpg"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_pQI0p_i-EeivcqBGczvSpg"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_pQI0qPi-EeivcqBGczvSpg"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_pQI0qfi-EeivcqBGczvSpg"/>
+    </children>
+    <children xmi:type="notation:BasicCompartment" xmi:id="_pQI0qvi-EeivcqBGczvSpg" type="Class_NestedClassifierCompartment">
+      <styles xmi:type="notation:TitleStyle" xmi:id="_pQI0q_i-EeivcqBGczvSpg"/>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_pQI0rPi-EeivcqBGczvSpg"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_pQI0rfi-EeivcqBGczvSpg"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_pQI0rvi-EeivcqBGczvSpg"/>
+    </children>
+    <element xmi:type="uml:Class" href="PapyrusPerson.uml#_pPwaIPi-EeivcqBGczvSpg"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_pP6LIfi-EeivcqBGczvSpg" x="74" y="49"/>
+  </children>
+  <styles xmi:type="notation:StringValueStyle" xmi:id="_Yhu9ofi-EeivcqBGczvSpg" name="diagram_compatibility_version" stringValue="1.2.0"/>
+  <styles xmi:type="notation:DiagramStyle" xmi:id="_Yhu9ovi-EeivcqBGczvSpg"/>
+  <styles xmi:type="style:PapyrusViewStyle" xmi:id="_Yhu9o_i-EeivcqBGczvSpg">
+    <owner xmi:type="uml:Model" href="PapyrusPerson.uml#_Yg7sYPi-EeivcqBGczvSpg"/>
+  </styles>
+  <element xmi:type="uml:Model" href="PapyrusPerson.uml#_Yg7sYPi-EeivcqBGczvSpg"/>
+</notation:Diagram>
