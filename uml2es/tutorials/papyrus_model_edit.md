@@ -8,7 +8,7 @@ This tutorial shows how to create a UML model for MarkLogic in Papyrus. To run t
 ### Import profile
 To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. The profile is provided in an Eclipse project in your local copy of the toolkit at (../umlProfile/eclipse/MLProfileProject/MLProfile.profile.uml). If you completed, the tutorial [How to edit the profile in Papyrus](papyrus_profile_edit.md), you modified that profile. 
 
-To imrport, from the File menu select Import | General | Existing Projects Into Workspace. 
+To import, from the File menu select Import | General | Existing Projects Into Workspace. 
 
 ![Import profile project](pap_profile2_import.png)
 
