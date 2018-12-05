@@ -10,6 +10,8 @@ Here is the model, designed in Papyrus:
 
 The Eclipse project for Papyrus is in data/MovieTalkPapyrus. If you would like to view/edit it in Eclipse, import both this project and the profile Eclipse project at [../umlProfile/eclipse/MLProfileProject](../../umlProfile/eclipse/MLProfileProject).
 
+The Eclipse project is in data/DeclarativeCity. If you would like to view/edit it in Eclipse, import both this project and the profile Eclipse project at [../umlProfile/eclipse/MLProfileProject](../../umlProfile/eclipse/MLProfileProject).
+
 ## How to run:
 
 Our project uses gradle. Before running, view the settings in gradle.properties. Create a file called gradle-local.properties and in this file override any of the properties from gradle.properties.
