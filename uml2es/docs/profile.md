@@ -17,29 +17,30 @@ Stereotypes are organized into three sections:
 
 The following table describes each stereotype:
 
-|Section|Level|Stereotype|Tag|Mapping To Entity Services|
-|---|---|---|---|---|
-|core|Model|esModel|version|Entity Services model version|
-|core|Model|esModel|baseURI|Entity Services model base URI|
-|core|Model|xmlNamespace|prefix|Entity Services XML namespace prefix for all entities|
-|core|Model|xmlNamespace|url|Entity Services XML namespace URL for all entities|
-|core|Class|xmlNamespace|prefix|Entity Services XML namespace prefix for that entity. Overrides package-level.|
-|core|Class|xmlNamespace|url|Entity Services XML namespace URL for that entity. Overrides package-level.|
-|core|Class|exclude||Transform will not include entity corresponding to this class.|
-|core|Attribute|PII||Mark this attribute as personally identifiable information.|
-|core|Attribute|exclude||Transform will not include entity property corresponding to this attribute.|
-|core|Attribute|PK||The property corresponding to this attribute is the one and only primary key of the entity.|
-|core|Attribute|FK||The attribute refers to another class, but the corresponding property's type will be the corresponding entity's primary key type rather than an internal reference.|
-|core|Attribute|elementRangeIndex||The property corresponding to this attribute is added to the list of element range indexes for the entity.|
-|core|Attribute|pathRangeIndex||The property corresponding to this attribute is added to the list of path range indexes for the entity.|
-|core|Attribute|wordLexicon||The property corresponding to this attribute is added to the list of word lexicons for the entity.|
-|core|Attribute|esProperty|mlType|The property corresponding to this attribute will have the specified type.|
-|core|Attribute|esProperty|externalRef|The property corresponding to this attribute will be an external reference with the specified value.|
-|core|Attribute|esProperty|collation|The string property corresponding to this attribute will have the specified collation.|
+|Section|Level|Stereotype|Tag|"Music" Type|Cardinality|Mapping To Entity Services|
+|---|---|---|---|---|---|---|
+|core|Model|esModel|version|string|1|Entity Services model version|
+|core|Model|esModel|baseURI|string|0..1|Entity Services model base URI. If omitted, transform uses default.|
+|core|Model|xmlNamespace|prefix|string|1|Entity Services XML namespace prefix for all entities|
+|core|Model|xmlNamespace|url|string|1|Entity Services XML namespace URL for all entities|
+|core|Class|xmlNamespace|prefix|string|1|Entity Services XML namespace prefix for that entity. Overrides package-level.|
+|core|Class|xmlNamespace|url|string|1|Entity Services XML namespace URL for that entity. Overrides package-level.|
+|core|Class|exclude||||Transform will not include entity corresponding to this class.|
+|core|Attribute|PII||||Mark this attribute as personally identifiable information.|
+|core|Attribute|exclude||||Transform will not include entity property corresponding to this attribute.|
+|core|Attribute|PK||||The property corresponding to this attribute is the one and only primary key of the entity.|
+|core|Attribute|FK||||The attribute refers to another class, but the corresponding property's type will be the corresponding entity's primary key type rather than an internal reference.|
+|core|Attribute|elementRangeIndex||||The property corresponding to this attribute is added to the list of element range indexes for the entity.|
+|core|Attribute|pathRangeIndex||||The property corresponding to this attribute is added to the list of path range indexes for the entity.|
+|core|Attribute|wordLexicon||||The property corresponding to this attribute is added to the list of word lexicons for the entity.|
+|core|Attribute|esProperty|mlType|string|0..1|The property corresponding to this attribute will have the specified type. This overrides the UML type.|
+|core|Attribute|esProperty|externalRef|string|0..1|The property corresponding to this attribute will be an external reference with the specified value. Use the ES ref format.|
+|core|Attribute|esProperty|collation|string|0..1|The string property corresponding to this attribute will have the specified collation.|
+
 |extended|Model|xImplHints|reminders|Transform will, in the *extended model*, transform will associate the model with the specified reminders.|
-|extended|Model|xImplHints|triplesPO|Transform will, in the *extended model*, associate the model with the specified predicate-object combination. This is your way to add more facts about the model to the extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the model that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI without prefix or angled brackets. The object is a string literal. Example: "http://xyz.org/usesUMLTool,Payrus".|
+|extended|Model|xImplHints|triplesPO|Transform will, in the *extended model*, associate the model with the specified predicate-object combinations. The tag allows you to add to the extended semantic model  TODO ...  ascribe to the model additional factsyour way to add more facts about the model to the extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the model that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI without prefix or angled brackets. The object is a string literal. Example: "http://xyz.org/usesUMLTool,Payrus".  Predicate is a music predicate, object is a music object. Music allows different types of exrepssions. Music = markogic UML semantic impl concat language   |
 |extended|Class|xImplHints|reminders|Transform will, in the *extended model*, associate the class with the specified reminders.|
-|extended|Class|xImplHints|triplesPO|Transform will, in the *extended model*, associate the class with the specified predicate-object combination. This is your way to add more facts about the class to the ES extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the class that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI without prefix or angled brackets. The object is a string literal. Example: "http://xyz.org/mainframeData,true".|
+|extended|Class|xImplHints|triplesPO|Transform will, in the *extended model*, associate the class with the specified predicate-object combination. This is your way to add explicit facts about the class to the ES extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the class that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI. The object can be either a literal or an IRI. See "Muscle Language Reference" below for more on formatting.|
 |extended|Class|xDocument|collections|Transform will, in the *extended model*, associate the class with the specified collections.|
 |extended|Class|xDocument|permsCR|Transform will, in the *extended model*, associate the class with the specified permissions (expressed as capability,role).|
 |extended|Class|xDocument|quality|Transform will, in the *extended model*, associate the class with the specified quality.|
@@ -54,7 +55,7 @@ object is a literal
 |
 |extended|Attribute|xURI||Transform will, in the *extended model*, identify the attribute as the one whose value is the entity's URI.|
 |extended|Attribute|xBizKey||Transform will, in the *extended model*, identify the attribute as one of the business keys of the entity.|
-|extended|Attribute|xHeader||Transform will, in the *extended model*, identify the attribute as one an envelope header field.|
+|extended|Attribute|xHeader|field|Transform will, in the *extended model*, identify the attribute as one an envelope header field. The "field" tag gives the names of the field. Its value is the value of the attribute.|
 |semantic|Model|semPrefixes|prefixesPU|Here you define prefixes of IRIs that you refer to in the other semantic stereotypes. In the tag prefixesPU, you write each prefix as a comma-separated string of prefix and URL. You can define multiple prefixes. You don't need to define common prefixes like owl, rdf, foaf; for a complete list of pre-defined prefixes, see <http://docs.marklogic.com/sem:prefixes>. or examples, see [semantics.md](semantics.md).|
 |semantic|Class|semType|types|Here you specify the RDF types that document instances of the class belong to. The types tag is a String array. For each value in the array, the transform adds a triple indicating that the document instance has as rdf:type the value specified. The document instance is identified by its IRI; you must designate one attribute of the class as semIRI. Each value in the types array is understood to be the IRI of a class. You can use a prefix to specify the IRI; you may also specify a fully-qualified IRI (with or without angled brackets). For examples, see [semantics.md](semantics.md).|
 |semantic|Class|semFacts|factsTtl|Here you can specify any triples you like that pertain to document instances of the class. You write the triples as Turtle code in the factsTtl tag. For examples, see [semantics.md](semantics.md).|
@@ -87,4 +88,4 @@ The following table summarizes how the transform resolves class stereotype inher
 |extended|xImplHints|Not inherited. Hints are part of the extended model and used only in comment blocks and by code generators. Whoever's watching can apply the hints to subclasses if it deems appropriate.|Your code/code generator.|
 |extended|xDocument|Inherited. If subclass also defines this stereotype it is ADDING. To have the subclass REPLACE/OVERRIDE rather than ADD, it should drop a hint.|DHF code generator. Your code generator or code.|
 |sem|semTypes|Inherited. If subclass also defines this stereotype it is ADDING. To have the subclass REPLACE/OVERRIDE rather than ADD, it should drop a hint.|DHF code generator. Your code generator or code.|
-|sem|semFacts|Inherited. If the subclass also defines this stereotype, it is REPLACING.|DHF code generator. Your code generator or code.|
+|sem|semFacts|Inherited. If the subclass also defines this stereotype, it is ADDING.|DHF code generator. Your code generator or code.|
