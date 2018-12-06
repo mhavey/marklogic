@@ -102,9 +102,13 @@ For CSVs, use CSV escape rules if any term contains a comma.
 IMPORTANT NOTE: $xqy() and $sjs() are NOT supported currently. This is future functionality.
 
 ## Static vs Dynamic Tags
-- every tag in the ES stereotypes must be static - this content must be finalized at the time of generating the ES model.
-- for XES, every PREDICATE must be static - we must finalize the predicates to generate the XES facts
-- for XES, an OBJECT can be dynamic unless it's an IRI. If it's an IRI, we must resolve the IRI prior to generating the XES fact. If the object is intended as a literal evaluated dynmically, in the XES fact the object contains the EXPRESSION; the object is, semantically, a string literal. At runtime, any code you have that wants to use the fact can compute the value of the object based on that expression. The toolkit's built-in code generator does this, for example.
+The stereotype's tags allow
+
+- Every tag in a core model stereotype must be static. This content must be finalized at the time of generating the ES model.
+- In the extended model stereotypes, every PREDICATE must be static. The content must be finalized at the time of generated the extended ES facts.
+- In the extended model stereotypes, an OBJECT can be dynamic unless it's an IRI. If it's an IRI, the tranform must resolve the IRI prior to generating the extended fact. 
+- In the semantic stereotypes, semTypes and semProperty.predicate are static. If you need dynamic types and properties, use semFacts instead.
+- In the semantic stereotypes, the semIRI and semLabel are dynamic.
 
 ## Inheritance of Stereotypes
 One issue in which we need to clearly set the rules is the inheritance of stereotypes from a superclass to a subclass. If class B refers to class A using a generalization relationship, B inherits the attributes of A. But does B also inherit the stereotypes of those attributes? And what of the class-level stereotypes? Does B inherit the class-level stereotypes of A?
