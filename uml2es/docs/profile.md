@@ -17,14 +17,14 @@ Stereotypes are organized into three sections:
 
 The following table describes each stereotype:
 
-|Section|Level|Stereotype|Tag|"Music" Type|Cardinality|Mapping To Entity Services|
+|Section|Level|Stereotype|Tag|"Musical" Type|Cardinality|Mapping To Entity Services|
 |---|---|---|---|---|---|---|
 |core|Model|esModel|version|string|1|Entity Services model version|
 |core|Model|esModel|baseURI|string|0..1|Entity Services model base URI. If omitted, transform uses default.|
 |core|Model|xmlNamespace|prefix|string|1|Entity Services XML namespace prefix for all entities|
 |core|Model|xmlNamespace|url|string|1|Entity Services XML namespace URL for all entities|
-|core|Class|xmlNamespace|prefix|string|1|Entity Services XML namespace prefix for that entity. Overrides package-level.|
-|core|Class|xmlNamespace|url|string|1|Entity Services XML namespace URL for that entity. Overrides package-level.|
+|core|Class|xmlNamespace|prefix|string|1|Entity Services XML namespace prefix for that entity. Overrides model-level.|
+|core|Class|xmlNamespace|url|string|1|Entity Services XML namespace URL for that entity. Overrides model-level.|
 |core|Class|exclude||||Transform will not include entity corresponding to this class.|
 |core|Attribute|PII||||Mark this attribute as personally identifiable information.|
 |core|Attribute|exclude||||Transform will not include entity property corresponding to this attribute.|
@@ -36,33 +36,63 @@ The following table describes each stereotype:
 |core|Attribute|esProperty|mlType|string|0..1|The property corresponding to this attribute will have the specified type. This overrides the UML type.|
 |core|Attribute|esProperty|externalRef|string|0..1|The property corresponding to this attribute will be an external reference with the specified value. Use the ES ref format.|
 |core|Attribute|esProperty|collation|string|0..1|The string property corresponding to this attribute will have the specified collation.|
+|extended|Model|xImplHints|reminders|string|0..*|This adds a reminder fact indicating that your model has the specified reminders. The reminder is the object of the semantic fact and is recorded in the fact as a string literal. The contents of the reminder can be just text (a "note to self") or can contain embedded code that you can evaluate at runtime. The contents are up to you.|
+|extended|Model|xImplHints|triplesPO|CSV iri,istring|0..*|This adds a fact about your model. What is that fact? Well, you get to decide what the predicate and object are. You specify them in tags. You can specify multiple triplePO values; for each the transform creates a fact indicating that the model for the specified predicate has the specified object. In "triplePO", P means predicate, O means object. You specify PO as a CSV string. P is a fully-qualified or prefixed IRI known at design time. O can be either an IRI (fully-qualified or prefixed) or a string literal. If it is an IRI, it must be known at design time. If it is a string literal, it's like the reminder hint: it can be loose text or executable code.|
+|extended|Class|xImplHints|reminders|string|0..*|This adds a reminder fact indicating that your class has the specified reminders. The reminder is the object of the semantic fact and is recorded in the fact as a string literal. The contents of the reminder can be just text (a "note to self") or can contain embedded code that you can evaluate at runtime. The contents are up to you.|
+|extended|Class|xImplHints|triplesPO|CSV iri,istring|0..*|This adds a fact about your class. What is that fact? Well, you get to decide what the predicate and object are. You specify them in tags. You can specify multiple triplePO values; for each the transform creates a fact indicating that the class for the specified predicate has the specified object. In "triplePO", P means predicate, O means object. You specify PO as a CSV string. P is a fully-qualified or prefixed IRI known at design time. O can be either an IRI (fully-qualified or prefixed) or a string literal. If it is an IRI, it must be known at design time. If it is a string literal, it's like the reminder hint: it can be loose text or executable code.|
+|extended|Class|xDocument|collections|xstring|0..*|This adds a fact indicating that the class contains the specified collections. The tag type is xstring, which means you specify the collections statically (as a fixed string) or dynamically (as the value of an attribute or even code). The transform's code generator uses this fact during generation of the writer module.|
+|extended|Class|xDocument|permsCR|CSV string,string|0..*|This adds a fact indicating that the class contains the specified capability-role permissions. Currently these values must be fixed strings; they can't be dynamic.  The transform's code generator uses this fact during generation of the writer module.|
+|extended|Class|xDocument|quality|int|0..1|This adds a fact indicating that the class has, for scoring purposes, the specified quality. Currently this value must be a static integer; it can't be dynamic. The transform's code generator uses this fact during generation of the writer module.|
+|extended|Class|xDocument|metadataKV|string|0..*|This adds a fact indicating that the class contains the specified key-vlaue metadata pairs. Currently these values must be fixed strings; they can't be dynamic.  The transform's code generator uses this fact during generation of the writer module.|
+|extended|Attribute|xImplHints|reminders|string|0..*|This adds a reminder fact indicating that your attribute has the specified reminders. The reminder is the object of the semantic fact and is recorded in the fact as a string literal. The contents of the reminder can be just text (a "note to self") or can contain embedded code that you can evaluate at runtime. The contents are up to you.|
+|extended|Attribute|xImplHints|triplesPO|CSV iri,istring|0..*|This adds a fact about your attribute. What is that fact? Well, you get to decide what the predicate and object are. You specify them in tags. You can specify multiple triplePO values; for each the transform creates a fact indicating that the attribute for the specified predicate has the specified object. In "triplePO", P means predicate, O means object. You specify PO as a CSV string. P is a fully-qualified or prefixed IRI known at design time. O can be either an IRI (fully-qualified or prefixed) or a string literal. If it is an IRI, it must be known at design time. If it is a string literal, it's like the reminder hint: it can be loose text or executable code.|
+|extended|Attribute|xCalculated|concat|xstring|0..*|This adds a fact indicating that the value of your attribute is the concatenation of the values indicated in the concat tag. Your attribute's type should be either string or IRI; if it is IRI, the concat should evaluate to a valid IRI. Each term in the concat can be either a static or dyanmic string.|
+|extended|Attribute|xURI||||This adds a fact indicating that value of the attribute functions as the URI of an instance of the class. This stereotype has no tag. If you wish to specify how the URI is constructed, stereotype the same attribute as concat and build the URI that way. The transform's code generator uses this fact during generation of the writer module.|
+|extended|Attribute|xBizKey||||This adds a fact indicating that the attribute is a business key of the class.|
+|extended|Attribute|xHeader|field|xstring|1|This adds a fact indicating that this attribute should be added to the envelope header. The name of the header field is given by the tag "field", which can be a static name or dynamically evaluated. The value of the header field is the value of the attribute. The transform's code generator uses this fact during generation of the headers module.|
 
-|extended|Model|xImplHints|reminders|Transform will, in the *extended model*, transform will associate the model with the specified reminders.|
-|extended|Model|xImplHints|triplesPO|Transform will, in the *extended model*, associate the model with the specified predicate-object combinations. The tag allows you to add to the extended semantic model  TODO ...  ascribe to the model additional factsyour way to add more facts about the model to the extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the model that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI without prefix or angled brackets. The object is a string literal. Example: "http://xyz.org/usesUMLTool,Payrus".  Predicate is a music predicate, object is a music object. Music allows different types of exrepssions. Music = markogic UML semantic impl concat language   |
-|extended|Class|xImplHints|reminders|Transform will, in the *extended model*, associate the class with the specified reminders.|
-|extended|Class|xImplHints|triplesPO|Transform will, in the *extended model*, associate the class with the specified predicate-object combination. This is your way to add explicit facts about the class to the ES extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the class that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI. The object can be either a literal or an IRI. See "Muscle Language Reference" below for more on formatting.|
-|extended|Class|xDocument|collections|Transform will, in the *extended model*, associate the class with the specified collections.|
-|extended|Class|xDocument|permsCR|Transform will, in the *extended model*, associate the class with the specified permissions (expressed as capability,role).|
-|extended|Class|xDocument|quality|Transform will, in the *extended model*, associate the class with the specified quality.|
-|extended|Class|xDocument|metadataKV|Transform will, in the *extended model*, associate the class with the metadata properties, expressed as (key, value).|
-|extended|Attribute|xImplHints|reminders|Transform will, in the *extended model*, associate the attribute with the specified reminders.|
-|extended|Attribute|xImplHints|triplesPO|Transform will, in the *extended model*, associate the property with the specified predicate-object combination. This is your way to add more facts about the attribute to the extended model. The facts are expressed as triples. You do not specify a subject; the subject refers to the attribute that you are stereotyping. You specify the predicate and object as a comma-separated string: "predicate,object". You can specify many such strings, one for each fact. The predicate is an IRI without prefix or angled brackets. The object is a string literal. Example: "http://xyz.org/hasSpellingDictionary,/spelling/name.xml". |
-|extended|Attribute|xCalculated|concat|Transform will, in the *extended model*, associate the attribute with the specified concatenation of values. ........... TODO ......... you should be able to use prefixes for the predicate ... ...    
 
-The way this should be is:
-predicate can use prefix. If it doesn't work without a prefix, we assume it is fully-qualified IRI
-object is a literal
-|
-|extended|Attribute|xURI||Transform will, in the *extended model*, identify the attribute as the one whose value is the entity's URI.|
-|extended|Attribute|xBizKey||Transform will, in the *extended model*, identify the attribute as one of the business keys of the entity.|
-|extended|Attribute|xHeader|field|Transform will, in the *extended model*, identify the attribute as one an envelope header field. The "field" tag gives the names of the field. Its value is the value of the attribute.|
+
 |semantic|Model|semPrefixes|prefixesPU|Here you define prefixes of IRIs that you refer to in the other semantic stereotypes. In the tag prefixesPU, you write each prefix as a comma-separated string of prefix and URL. You can define multiple prefixes. You don't need to define common prefixes like owl, rdf, foaf; for a complete list of pre-defined prefixes, see <http://docs.marklogic.com/sem:prefixes>. or examples, see [semantics.md](semantics.md).|
+
+
+
 |semantic|Class|semType|types|Here you specify the RDF types that document instances of the class belong to. The types tag is a String array. For each value in the array, the transform adds a triple indicating that the document instance has as rdf:type the value specified. The document instance is identified by its IRI; you must designate one attribute of the class as semIRI. Each value in the types array is understood to be the IRI of a class. You can use a prefix to specify the IRI; you may also specify a fully-qualified IRI (with or without angled brackets). For examples, see [semantics.md](semantics.md).|
 |semantic|Class|semFacts|factsTtl|Here you can specify any triples you like that pertain to document instances of the class. You write the triples as Turtle code in the factsTtl tag. For examples, see [semantics.md](semantics.md).|
 |semantic|Attribute|semIRI||Here you specify the IRI of a document instance of this class. This attribute can have either a string or an IRI type. Typically the IRI is dynamic, dependent on other attributes in the class. You can use the xCalculated stereotype to build the IRI dynamically. You can use a prefix to specify the IRI; you may also specify a fully-qualified IRI (with or without angled brackets). For examples, see [semantics.md](semantics.md).|
 |semantic|Attribute|semLabel||Transform will record as the English RDFS label of a document of this class the value of this attribute. If you need more flexibility in labelling (e.g, French RDFS label, SKOS labels), use semFacts. For examples, see [semantics.md](semantics.md).|
 |semantic|Attribute|semProperty|predicate|Here you specify a semantic property of the document instance of your class. The subject of the property is the IRI of your document instance; you must designate one of the attributes as semIRI. As for the predicate of the property, you specify that in the predicate tag. It is an IRI that you can define using a prefix or fully-qualified (with or without angled brackets). The object of the property is the value of the attribute. It is either a literal or an IRI. The transform determines the value as literal unless its type is IRI or String. If the type is String, the transform determines the value is a String literal unless it uses a prefix or angled brackets. For examples, see [semantics.md](semantics.md).|
 |semantic|Attribute|semProperty|predicateTtl|The predicateTtl tag is an alternate way to specify a semantic property. You write the predicate as Turtle code. This is useful for writing a *qualified* predicate. For examples, see [semantics.md](semantics.md).|
+
+## Musical Types
+The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic UML Stereotype Impl Concat language. Here are the types:
+
+- string - An unquoted string literal whose value is fixed at design time. 
+- int - An integer (unquoted)
+- iri - An unquoted string designating a semantic IRI. You can write it in two forms: fully-qualified IRI (http://xmlns.com/foaf/0.1/Person) or prefixed IRI (foaf:Person). If your prefix is not well-known, you should declare it using the semPrefixes stereotype. For a list of well-known prefixes, refer to <http://docs.marklogic.com/sem.prefixes>.
+- istring - An IRI or a string. If it is unquoted, it is considered an IRI and must follow the Musical iri type syntax. If it is quoted, it is considered a string; the transform will remove the outer quotes.
+- xstring: A static or dynamic string. Accepted forms:
+	- @attribute(A)
+	- @xqy(xquery code)
+	- @sjs(server-side javascript code)
+	- any unquoted string
+	- any quoted string (the transform will preserve the quotes)
+
+
+xiri - dyn IRI
+xany - dyn string, int, boolean, IRI
+
+xint - Literal int, $attribute(...), $xqy(...), $sjs(...)
+
+For CSVs, use CSV escape rules if any term contains a comma.
+
+IMPORTANT NOTE: $xqy() and $sjs() are NOT supported currently. This is future functionality.
+
+## Static vs Dynamic Tags
+- every tag in the ES stereotypes must be static - this content must be finalized at the time of generating the ES model.
+- for XES, every PREDICATE must be static - we must finalize the predicates to generate the XES facts
+- for XES, an OBJECT can be dynamic unless it's an IRI. If it's an IRI, we must resolve the IRI prior to generating the XES fact. If the object is intended as a literal evaluated dynmically, in the XES fact the object contains the EXPRESSION; the object is, semantically, a string literal. At runtime, any code you have that wants to use the fact can compute the value of the object based on that expression. The toolkit's built-in code generator does this, for example.
+
 
 ## Inheritance of Stereotypes
 One issue in which we need to clearly set the rules is the inheritance of stereotypes from a superclass to a subclass. If class B refers to class A using a generalization relationship, B inherits the attributes of A. But does B also inherit the stereotypes of those attributes? And what of the class-level stereotypes? Does B inherit the class-level stereotypes of A?
