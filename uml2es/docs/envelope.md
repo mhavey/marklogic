@@ -18,6 +18,7 @@ The toolkit's code generation feature builds code that persists your business da
 
 (If you're curious about the stereotypes mentioned above, read the profile reference [here](profile.md).)
 
-The following diagram shows this works:
+The following diagram shows how this works:
 
+TODO - refresh the diagram
 ![Envelope](envelope.png)
