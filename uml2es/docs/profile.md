@@ -90,6 +90,7 @@ The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic
 	- @sjs(server-side javascript code) - The value resulting from execution of the code. 
 	- @iri - The IRI of the source instance
 	- @iri(I) - A fixed IRI in fully-qualified or prefixed form
+	- $value - The value of the relationship's attribute.
 	- unquoted string that converts to an integer - integer
 	- unquoted string that converts to a boolean - boolean
 	- unquoted string that converts to a real - real
