@@ -38,6 +38,9 @@ declare variable $ILLEGAL-TRIPLE-PO := "Illegal triple PO in hint";
 declare variable $ILLEGAL-PERM := "Illegal perm kev-value pair";
 declare variable $ILLEGAL-METADATA := "Illegal metadata kev-value pair";
 declare variable $ILLEGAL-XES-TRIPLE := "Illegal XES triple";
+declare variable $ILLEGAL-SEM-PREFIX := "Illegal sem prefix";
+declare variable $ILLEGAL-SEM-FACT := "Illegal sem fact";
+declare variable $ILLEGAL-SEM-QUAL := "Illegal sem qual";
 
 (:
 initialize the problem tracker

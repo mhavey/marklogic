@@ -59,7 +59,7 @@ The following table describes each stereotype:
 |semantic|Attribute|semProperty|qualifiedObject_sPO|CSV xipany?,xipany,xpiany|0..*|If you define this tag, the object of the semantic property is a qualified object, or a set of triples that describes the complex structure of the object. Use this when your property needs a qualified relation pattern. The way it works is as follows: the transform's code generator assigns as the object of the property a blank node. In your tag, you specify one or more predicate/object combinations for that blank node. THe blank node itself is just a placeholder; what the stereotype is stating is that the document instance of the class has a property whose object is a thing that can be described with the specified predicates and objects. The tag is qualifiedObject_sPO. It is a CSV of predicate-object. You can also specified subject-object-predicate if your subject is something other than the blank node. The [JokeBook example](../examples/jokeBook) shows the use of this stereotype.|
 
 ## Musical Types
-The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic UML Stereotype Impl Concat language. Here are the types:
+The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic UML Stereotype IRI and Concat language. Here are the types:
 
 - string - An unquoted string literal whose value is fixed at design time. 
 - int - An integer (unquoted)

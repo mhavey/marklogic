@@ -59,13 +59,18 @@ declare variable $PRED-HEADER := $IRI-PREFIX || "header";
 declare variable $PRED-BASE_CLASS := $IRI-PREFIX || "baseClass";
 
 declare variable $PRED-IS-SEM-LABEL := $IRI-PREFIX || "isSemLabel";
-declare variable $PRED-SEM-PREDICATE := $IRI-PREFIX || "semPredicate";
-declare variable $PRED-SEM-PREDICATE-TTL := $IRI-PREFIX || "semPredicateTtl";
 declare variable $PRED-SEM-PREFIXES := $IRI-PREFIX || "semPrefixes";
+declare variable $PRED-SEM-PREFIX := $IRI-PREFIX || "semPrefix";
+declare variable $PRED-SEM-REFERENCE := $IRI-PREFIX || "semReference";
 declare variable $PRED-IS-SEM-IRI := $IRI-PREFIX || "isSemIRI";
-declare variable $PRED-SEM-TYPES := $IRI-PREFIX || "semTypes";
-declare variable $PRED-SEM-FACTS := $IRI-PREFIX || "semFacts";
- 
+declare variable $PRED-SEM-TYPE:= $IRI-PREFIX || "semType";
+declare variable $PRED-SEM-FACT := $IRI-PREFIX || "semFact";
+declare variable $PRED-SEM-S:= $IRI-PREFIX || "semS";
+declare variable $PRED-SEM-P := $IRI-PREFIX || "semP";
+declare variable $PRED-SEM-O := $IRI-PREFIX || "semO";
+declare variable $PRED-SEM-PREDICATE := $IRI-PREFIX || "semPredicate";
+declare variable $PRED-SEM-PREDICATE-QUAL := $IRI-PREFIX || "semPredicateQualifiedObject";
+
 (:
 PUBLIC Interface
 :)
@@ -82,6 +87,14 @@ declare function xes:init($problems, $param as xs:string?) as map:map {
 
 declare function xes:getDescriptor($xes as map:map) as json:object {
 	map:get($xes, "descriptor")
+};
+
+declare function xes:setPrefixes($xes as map:map, $prefixes as map:map) as empty-sequence() {
+	let $_ := map:put($xes, "rdfBuilder", rdf:builder(map:new((sem:prefixes(), $prefixes))))
+	for $p in map:keys($prefixes) return
+	    xes:addQualifiedFact($xes, $modelIRI, $PRED-SEM-PREFIXES, map:new((
+	   		map:entry($PRED-SEM-PREFIX, $p),
+	    	map:entry($PRED-SEM-REFERENCE,map:get($prefixes, $p)))))
 };
 
 (:
@@ -101,11 +114,16 @@ declare function xes:addFact($xes as map:map,
 				if (xes:emptyString($object)) then
 					pt:addProblem($problems, $subjectIRI, (), $pt:ILLEGAL-XES-TRIPLE, "no object") 
 				else
-					let $triple := sem:triple(sem:iri($subjectIRI), sem:iri($predicateIRI), 
+					let $triple := map:get($xes, "rdfBuilder")($subjectIRI, $predicateIRI, 
 						if ($objectIsIRI eq true()) then sem:iri($object) else $object)
 					return 
 						json:array-push($triples, $triple)
 };
+
+(:
+TODO - the object part is hard because if its fully qual, it needs sem:iri() but if it's prefixed it doesn
+also semtypes, sem predicate, triple PO all need object as iri or literal handling 
+:)
 
 (:
 Add qualified fact to the extended model.

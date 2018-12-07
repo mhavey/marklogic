@@ -126,14 +126,18 @@ declare function buildModel($xmi as node(), $xes, $problems) as node()? {
       let $description := string(($model/ownedComment/@body, $model/ownedComment/body)[1])
       let $rootNamespace := $xmi/*/*:xmlNamespace[@base_Package eq $model/@*:id]
       let $hints := $xmi/*/*:xImplHints[@base_Package eq $model/@*:id]
-      let $semPrefixes :=  string($xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/@*:prefixesTtl)
+      let $semPrefixes :=  xmi2es:csvParse($xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/@*:prefixesPU)
       let $modelIRI := xes:modelIRI($xes, $modelName, $baseUri, $version)
 
       (: Model-level facts :)
-      let $_ := (
-        xes:addFact($xes, $modelIRI, $xes:PRED-SEM-PREFIXES, $semPrefixes, false()),
-        xmi2es:xImplHints($modelIRI, $hints, $xes, $problems)
-      )
+      let $prefixMap := map:new((
+        for $semPrefix in $semPrefixes return 
+          if (count($semPrefix) eq 2) then map:entry(normalize-space($semPrefix[1]), normalize-space($semPrefix[2]))
+          else pt:addProblem($problems, $modelIRI, (), $pt:ILLEGAL-SEM-PREFIX, $semPrefix)
+        ))
+      let $_ := xes:setPrefixes($xes, $prefixMap)
+      let $_ := xmi2es:xImplHints($modelIRI, $hints, $xes, $problems)
+      
       return
         <Model>
           <iri>{$modelIRI}</iri>
@@ -195,14 +199,20 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as xs:string,
           for $perm in $inheritance/xDocument/permsCR/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, map:new((
               map:entry($xes:PRED-CAPABILITY, $perm/@capability),
-              map:entry(xes:PRED-ROLE,pred/@role)))),
+              map:entry($xes:PRED-ROLE,pred/@role)))),
           xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, $inheritance/xDocument/quality, false()),
           for $md in $inheritance/xDocument/metadataKV/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-METADATA, map:new((
               map:entry($xes:PRED-KEY, $md/@key),
               map:entry($xes:PRED-VALUE, md/@value)))), 
-          xes:addFact($xes, $classIRI, $xes:PRED-SEM-TYPES,$inheritance/semTypes/item, false()),
-          xes:addFact($xes, $classIRI, $xes:PRED-SEM-FACTS,$inheritance/semFacts/factsTtl, false()),
+          xes:addFact($xes, $classIRI, $xes:PRED-SEM-TYPE,$inheritance/semTypes/item, true()),
+          for $semFact in $inheritance/semFacts/item return 
+            let $count := count($semFact/term)
+            return 
+              xes:addQualifiedFact($xes, $classIRI, $xes:PRED-SEM-FACT, map:new((
+                if ($count eq 3) then map:entry($xes:PRED-SEM-S, $semFact/term[1]/text()) else (),
+                map:entry($xes:PRED-SEM-P, $semFact/term[position() eq last() -1]/text()),
+                map:entry($xes:PRED-SEM-O, $semFact/term[position() eq last()]/text())))),
           xes:addFact($xes, $classIRI, $xes:PRED-BASE-CLASS, string($inheritance/baseClass), false()), 
           xes:addFact($xes, $classIRI, $xes:PRED-ASSOCIATION-CLASS, $associationClass, false()), 
           for $end in $assocClassEnds return 
@@ -269,7 +279,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $classIRI as xs:string, $
       let $xHeader := normalize-space($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field)
       let $semProperty := $xmi/*/*:semProperty[@base_Property eq $attribID]
       let $semPropertyPredicate := normalize-space($semProperty/@predicate)
-      let $semPropertyPredicateTtl := normalize-space($semProperty/@predicateTtl)
+      let $semPropertyPredicateQual:= $semProperty/*:qualifiedObject_sPO
       let $semIRI :=  exists($xmi/*/*:semIRI[@base_Property eq $attribID])
       let $semLabel :=  exists($xmi/*/*:semLabel[@base_Property eq $attribID])
       let $isArray := count($attrib/upperValue[@value="*"]) eq 1
@@ -296,8 +306,17 @@ declare function xmi2es:buildAttribute($xmi as node(), $classIRI as xs:string, $
         xes:addFact($xes, $attribIRI, $xes:PRED-HEADER, $xHeader, false()),
         xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-IRI, $semIRI, false()),
         xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-LABEL, $semLabel, false()),
-        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE, $semPropertyPredicate, false()),
-        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE-TTL, $semPropertyPredicateTtl, false())
+        xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE, $semPropertyPredicate, true()),
+        for $qual in $semPropertyPredicateQual return
+          let $kv := xmi2es:csvParse(normalize-space($qual/text()))
+          let $count := count($kv)
+          return 
+            if ($count eq 2 or $count eq 3) then 
+              xes:addQualifiedFact($xes, $attribIRI, $xes:PRED-SEM-QUAL, map:new((
+                if ($count eq 3) then map:entry($xes:PRED-SEM-S, normalize-space($kv[1])) else (),
+                map:entry($xes:PRED-SEM-P, normalize-space($kv[position() eq last() -1])),
+                map:entry($xes:PRED-SEM-O, normalize-space($kv[position() eq last()])))))
+            else pt:addProblem($problems, $attribIRI, (), $pt:ILLEGAL-SEM-QUAL, $kv)
       )
 
       (: cardinality checks :)
@@ -395,13 +414,20 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
   (:
   SEM Facts
   :)
+  let $currentSEMFacts := $xmi/*/*:semFact[@base_Class eq $class/@*:id]/*:facts_sPO
+  let $descSEMTypes := $descDef/semFacts/item
   let $semFacts := 
-    if (count($descDef/semFacts/factsTtl) gt 0) then $descDef/semFacts
+    if (count($descSEMFacts) eq 0 and count($currentSEMFacts) eq 0) then ()
     else 
-      let $currentSEMFacts := $xmi/*/*:semFacts[@base_Class eq $class/@*:id]/*:factsTtl/text()
-      return 
-        if (string-length($currentSEMFacts) eq 0) then ()
-        else <semFacts><factsTtl>{$currentSEMFacts}</factsTtl></semFacts>
+        ($descSEMFacts, 
+         for $c in $currentSEMFacts return 
+            let $kv := xmi2es:csvParse(normalize-space($c/text()))
+            return 
+              if (count($kv) eq 2 or count($kv) eq 3) then 
+                <item>{
+                  for $term in $kv return <term>{normalize-space($term)}</term>
+                }</item>
+              else pt:addProblem($problems, (), concat("*",$class/@name,"*",$class/@id), $pt:ILLEGAL-SEM-FACT, $kv)) 
 
   (:
   Attributes
@@ -468,7 +494,9 @@ declare function xmi2es:xImplHints($iri as xs:string, $hints, $xes, $problems) a
     for $t in $hintTriples return 
       let $po := xmi2es:csvParse($t)
       return 
-        if (count($po) eq 2) then xes:addFact($xes, $iri, normalize-space($po[1]), normalize-space($po[2]))
+        if (count($po) eq 2) then 
+          let $obj := normalize-space($po[2])
+          return xes:addFact($xes, $iri, normalize-space($po[1]), $obj, xes:checkIsIRI($xes, $obj))
         else pt:addProblem($problems, $iri, (), $pt:ILLEGAL-TRIPLE-PO, $po) 
   )
 };
