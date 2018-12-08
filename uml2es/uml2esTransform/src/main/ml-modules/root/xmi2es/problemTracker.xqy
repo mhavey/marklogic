@@ -20,6 +20,7 @@ Examples:
 declare variable $MODEL-NO-NAME := "Model has no name";
 declare variable $MODEL-INVALID:= "!!!Model fails ES validation!!!";
 declare variable $MODEL-NOT-FOUND := "Model not found";
+declare variable $MODEL-BASE-URI-NOT-FOUND := "Model base URI not found";
 declare variable $MODEL-VERSION-NOT-FOUND := "Model version not found";
 declare variable $MODEL-DUPLICATE-CLASSES := "Model has duplicate class names";
 declare variable $CLASS-NO-NAME := "Class has no name";
@@ -50,7 +51,7 @@ declare function pt:init() as json:array {
 };
 
 declare function pt:addProblem($problems as json:array, 
-	$subjectIRI as xs:string?, $subjectAlt as xs:string?, 
+	$subjectIRI as sem:iri?, $subjectAlt as xs:string?, 
 	$problemType as xs:string, $param) {
 	let $problem := map:new((
 		if (exists($subjectIRI)) then map:entry("subjectIRI", $subjectIRI) else(),

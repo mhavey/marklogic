@@ -1,4 +1,15 @@
-;
+function generateCode(inputSpec, output) {
+	/*
+	inputSpec - (class, subordinate classes*)*
+	code lang
+	doc format
+    naming?
+    notional data
+    mapping data...
+	*/
+}
+
+
 
 /*
 

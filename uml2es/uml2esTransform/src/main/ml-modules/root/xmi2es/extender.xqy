@@ -2,18 +2,6 @@
 This module builds an "Extended" ES model, which consists of:
 - Descriptor (JSON)
 - Semantic triples describing additional aspects of the model, which are NOT captured in the descriptor. 
-Here we leverage the ES extension mechanism - define your own triples
-:)
-
-(:
-TODO - concat can use a prefix like :org. If it's ":org", use that string, but if it''s not quoted, it's the prefix;
-if name clash, use the prefix and throw a warning
-
-sem:rdf-builder looks promising..
-
-Can xCalculated refer to attributes in other classes?
-Definitely xCalculated can refer to prefixes
-
 :)
 
 xquery version "1.0-ml";
@@ -29,47 +17,47 @@ declare variable $DEFAULT-VERSION := "0.0.1";
 
 declare variable $IRI-PREFIX := "http://marklogic.com/xmi2es/xes/";
 
-declare variable $PRED-REMINDER := $IRI-PREFIX || "reminder";
+declare variable $PRED-REMINDER := sem:iri($IRI-PREFIX || "reminder");
 
-declare variable $PRED-COLLECTIONS := $IRI-PREFIX || "collections";
-declare variable $PRED-PERM := $IRI-PREFIX || "perm";
-declare variable $PRED-CAPABILITY := $IRI-PREFIX || "capability";
-declare variable $PRED-ROLE := $IRI-PREFIX || "role";
-declare variable $PRED-QUALITY := $IRI-PREFIX || "quality";
-declare variable $PRED-METADATA := $IRI-PREFIX || "metadata";
-declare variable $PRED-KEY := $IRI-PREFIX || "key";
-declare variable $PRED-VALUE := $IRI-PREFIX || "value";
+declare variable $PRED-COLLECTIONS := sem:iri($IRI-PREFIX || "collections");
+declare variable $PRED-PERM := sem:iri($IRI-PREFIX || "perm");
+declare variable $PRED-CAPABILITY := sem:iri($IRI-PREFIX || "capability");
+declare variable $PRED-ROLE := sem:iri($IRI-PREFIX || "role");
+declare variable $PRED-QUALITY := sem:iri($IRI-PREFIX || "quality");
+declare variable $PRED-METADATA := sem:iri($IRI-PREFIX || "metadata");
+declare variable $PRED-KEY := sem:iri($IRI-PREFIX || "key");
+declare variable $PRED-VALUE := sem:iri($IRI-PREFIX || "value");
 
-declare variable $PRED-IS-EXCLUDED := $IRI-PREFIX || "isExcluded";
-declare variable $PRED-RELATIONSHIP := $IRI-PREFIX || "relationship";
-declare variable $PRED-TYPE-IS-REFERENCE := $IRI-PREFIX || "typeIsReference";
-declare variable $PRED-TYPE-REFERENCE := $IRI-PREFIX || "reference";
-declare variable $PRED-ASSOCIATION-CLASS := $IRI-PREFIX || "associationClass";
-declare variable $PRED-IS-ASSOCIATION-CLASS := $IRI-PREFIX || "isAssociationClass";
-declare variable $PRED-IS-FK := $IRI-PREFIX || "isFK";
-declare variable $PRED-HAS-ASSOC-CLASS-END := $IRI-PREFIX || "hasAssociationClassEnd";
-declare variable $PRED-ASSOC-CLASS-END-ATTRIB := $IRI-PREFIX || "associationClassEndAttribute";
-declare variable $PRED-ASSOC-CLASS-END-CLASS := $IRI-PREFIX || "associationClassEndClass";
-declare variable $PRED-ASSOC-CLASS-END-FK := $IRI-PREFIX || "associationClassEndFK";
+declare variable $PRED-IS-EXCLUDED := sem:iri($IRI-PREFIX || "isExcluded");
+declare variable $PRED-RELATIONSHIP := sem:iri($IRI-PREFIX || "relationship");
+declare variable $PRED-TYPE-IS-REFERENCE := sem:iri($IRI-PREFIX || "typeIsReference");
+declare variable $PRED-TYPE-REFERENCE := sem:iri($IRI-PREFIX || "reference");
+declare variable $PRED-ASSOCIATION-CLASS := sem:iri($IRI-PREFIX || "associationClass");
+declare variable $PRED-IS-ASSOCIATION-CLASS := sem:iri($IRI-PREFIX || "isAssociationClass");
+declare variable $PRED-IS-FK := sem:iri($IRI-PREFIX || "isFK");
+declare variable $PRED-HAS-ASSOC-CLASS-END := sem:iri($IRI-PREFIX || "hasAssociationClassEnd");
+declare variable $PRED-ASSOC-CLASS-END-ATTRIB := sem:iri($IRI-PREFIX || "associationClassEndAttribute");
+declare variable $PRED-ASSOC-CLASS-END-CLASS := sem:iri($IRI-PREFIX || "associationClassEndClass");
+declare variable $PRED-ASSOC-CLASS-END-FK := sem:iri($IRI-PREFIX || "associationClassEndFK");
 
-declare variable $PRED-IS-BIZ-KEY := $IRI-PREFIX || "isBizKey";
-declare variable $PRED-IS_URI := $IRI-PREFIX || "isURI";
-declare variable $PRED-CALCULATION := $IRI-PREFIX || "calculation";
-declare variable $PRED-HEADER := $IRI-PREFIX || "header";
-declare variable $PRED-BASE_CLASS := $IRI-PREFIX || "baseClass";
+declare variable $PRED-IS-BIZ-KEY := sem:iri($IRI-PREFIX || "isBizKey");
+declare variable $PRED-IS-URI := sem:iri($IRI-PREFIX || "isURI");
+declare variable $PRED-CALCULATION := sem:iri($IRI-PREFIX || "calculation");
+declare variable $PRED-HEADER := sem:iri($IRI-PREFIX || "header");
+declare variable $PRED-BASE-CLASS := sem:iri($IRI-PREFIX || "baseClass");
 
-declare variable $PRED-IS-SEM-LABEL := $IRI-PREFIX || "isSemLabel";
-declare variable $PRED-SEM-PREFIXES := $IRI-PREFIX || "semPrefixes";
-declare variable $PRED-SEM-PREFIX := $IRI-PREFIX || "semPrefix";
-declare variable $PRED-SEM-REFERENCE := $IRI-PREFIX || "semReference";
-declare variable $PRED-IS-SEM-IRI := $IRI-PREFIX || "isSemIRI";
-declare variable $PRED-SEM-TYPE:= $IRI-PREFIX || "semType";
-declare variable $PRED-SEM-FACT := $IRI-PREFIX || "semFact";
-declare variable $PRED-SEM-S:= $IRI-PREFIX || "semS";
-declare variable $PRED-SEM-P := $IRI-PREFIX || "semP";
-declare variable $PRED-SEM-O := $IRI-PREFIX || "semO";
-declare variable $PRED-SEM-PREDICATE := $IRI-PREFIX || "semPredicate";
-declare variable $PRED-SEM-PREDICATE-QUAL := $IRI-PREFIX || "semPredicateQualifiedObject";
+declare variable $PRED-IS-SEM-LABEL := sem:iri($IRI-PREFIX || "isSemLabel");
+declare variable $PRED-SEM-PREFIXES := sem:iri($IRI-PREFIX || "semPrefixes");
+declare variable $PRED-SEM-PREFIX := sem:iri($IRI-PREFIX || "semPrefix");
+declare variable $PRED-SEM-REFERENCE := sem:iri($IRI-PREFIX || "semReference");
+declare variable $PRED-IS-SEM-IRI := sem:iri($IRI-PREFIX || "isSemIRI");
+declare variable $PRED-SEM-TYPE:= sem:iri($IRI-PREFIX || "semType");
+declare variable $PRED-SEM-FACT := sem:iri($IRI-PREFIX || "semFact");
+declare variable $PRED-SEM-S:= sem:iri($IRI-PREFIX || "semS");
+declare variable $PRED-SEM-P := sem:iri($IRI-PREFIX || "semP");
+declare variable $PRED-SEM-O := sem:iri($IRI-PREFIX || "semO");
+declare variable $PRED-SEM-PREDICATE := sem:iri($IRI-PREFIX || "semPredicate");
+declare variable $PRED-SEM-QUAL := sem:iri($IRI-PREFIX || "semPredicateQualifiedObject");
 
 (:
 PUBLIC Interface
@@ -89,60 +77,68 @@ declare function xes:getDescriptor($xes as map:map) as json:object {
 	map:get($xes, "descriptor")
 };
 
-declare function xes:setPrefixes($xes as map:map, $prefixes as map:map) as empty-sequence() {
-	let $_ := map:put($xes, "rdfBuilder", rdf:builder(map:new((sem:prefixes(), $prefixes))))
+declare function xes:setPrefixes($xes as map:map, $modelIRI as sem:iri, $prefixes as map:map) as empty-sequence() {
+	let $fullPrefixes := map:new((sem:prefixes(), $prefixes))
+	let $_ := map:put($xes, "prefixes", $fullPrefixes)
+	let $_ := map:put($xes, "rdfBuilder", sem:rdf-builder($fullPrefixes))
 	for $p in map:keys($prefixes) return
 	    xes:addQualifiedFact($xes, $modelIRI, $PRED-SEM-PREFIXES, map:new((
 	   		map:entry($PRED-SEM-PREFIX, $p),
 	    	map:entry($PRED-SEM-REFERENCE,map:get($prefixes, $p)))))
 };
 
+(: Take fully-qualified or curie IRI and convert to sem:iri :)
+declare function xes:resolveIRI($xes as map:map, $vals as xs:string*, 
+	$subjectOfProblem as sem:iri, $contextOfProblem) as sem:iri* {
+
+	for $val in $vals return
+		try {
+		  sem:curie-expand($val, map:get($xes, "prefixes"))
+		}
+		catch($e) {
+		  sem:iri($val)
+		}
+};
+
+(: Take string that is fully-qualified or curie IRI and or string literal convert to either sem:iri or string literal quotes removed :)
+declare function xes:resolveIString($xes as map:map, $vals as xs:string*,
+	$subjectOfProblem as sem:iri, $contextOfProblem) as xs:anyAtomicType* {
+
+	for $val in $vals return
+		if (fn:starts-with($val, '"') and fn:ends-with($val, '"')) then fn:substring($val, 2, string-length($val) - 2)
+		else xes:resolveIRI($xes, $val, $subjectOfProblem, $contextOfProblem)
+};
+
 (:
 Add a fact to the extended model.
 :)
 declare function xes:addFact($xes as map:map,
-	$subjectIRI as xs:string, $predicateIRI as xs:string, 
-	$objects as xs:anyAtomicType+, $objectIsIRI as xs:boolean) as empty-sequence() {
+	$subjectIRI as sem:iri, $predicateIRI as sem:iri, 
+	$objects as xs:anyAtomicType*) as empty-sequence() {
 
 	let $triples := map:get($xes, "triples")
 	let $problems := map:get($xes,  "problems")
 	return 
-		if (xes:emptyString($predicateIRI)) then
+		if (not($subjectIRI)) then
+			pt:addProblem($problems, $subjectIRI, (), $pt:ILLEGAL-XES-TRIPLE, "no subject") 
+		else if (not($predicateIRI)) then
 			pt:addProblem($problems, $subjectIRI, (), $pt:ILLEGAL-XES-TRIPLE, "no predicate") 
 		else
-			for $object in $objects return 
-				if (xes:emptyString($object)) then
-					pt:addProblem($problems, $subjectIRI, (), $pt:ILLEGAL-XES-TRIPLE, "no object") 
-				else
-					let $triple := map:get($xes, "rdfBuilder")($subjectIRI, $predicateIRI, 
-						if ($objectIsIRI eq true()) then sem:iri($object) else $object)
-					return 
-						json:array-push($triples, $triple)
+			for $object in $objects return
+				json:array-push($triples, map:get($xes, "rdfBuilder")($subjectIRI, $predicateIRI, $object))
 };
-
-(:
-TODO - the object part is hard because if its fully qual, it needs sem:iri() but if it's prefixed it doesn
-also semtypes, sem predicate, triple PO all need object as iri or literal handling 
-:)
 
 (:
 Add qualified fact to the extended model.
 :)
 declare function xes:addQualifiedFact($xes as map:map,
-	$subjectIRI as xs:string, $predicateIRI as xs:string, $qualifiedMap as map:map) 
+	$subjectIRI as sem:iri, $predicateIRI as sem:iri, $qualifiedMap as map:map) 
 	as empty-sequence() {
 
-	let $triples := map:get($xes, "triples")
-	let $problems := map:get($xes,  "problems")
-	return 
-		if (xes:emptyString($predicateIRI)) then
-			pt:addProblem($problems, $subjectIRI, (), $pt:ILLEGAL-XES-TRIPLE, "no predicate") 
-		else
-			let $bnode := sem:bnode()
-			return (
-				json:array-push(sem:triple(sem:iri($subjectIRI), sem:iri($predicateIRI), $bnode))),
-				for $pred in map:keys($qualifiedMap) return 
-					json:array-push(sem:triple($bnode, sem:iri($pred), map:get($qualifiedMap, $pred)))
+	let $qobj := sem:bnode()
+	let $_ := xes:addFact($xes, $subjectIRI, $predicateIRI, $qobj)
+	for $pred in map:keys($qualifiedMap) return 
+		xes:addFact($xes, $qobj, $pred, map:get($qualifiedMap, $pred))
 };
 
 (:
@@ -154,7 +150,7 @@ notional:  TBD
 
 Currently we ignore them. genlang is assumed to be xqy
 :)
-declare function xmi2es:getParams($param as xs:string?) as map:map {
+declare function xes:getParams($param as xs:string?) as map:map {
   let $nparam := fn:normalize-space($param)
   let $map := map:new((
     map:entry("lax", false())
@@ -175,13 +171,13 @@ declare function xmi2es:getParams($param as xs:string?) as map:map {
       return $map
 };
 
-declare function xes:resolveBaseUri($xes, $baseUri as xs:string?) as xs:string {
+declare function xes:resolveBaseURI($xes, $baseURI as xs:string?) as xs:string {
 	let $problems := map:get($xes, "problems")
 	return 
-		if (xes:emptyString($baseUri)) then 
+		if (xes:emptyString($baseURI)) then 
 			let $_ := pt:addProblem($problems, (), (), $pt:MODEL-BASE-URI-NOT-FOUND, ())
 			return $DEFAULT-NAMESPACE
-		else $baseUri
+		else $baseURI
 };
 
 declare function xes:resolveVersion($xes, $version as xs:string?) as xs:string {
@@ -193,16 +189,16 @@ declare function xes:resolveVersion($xes, $version as xs:string?) as xs:string {
 		else $version
 };
 
-declare function xes:modelIRI($xes, $modelName as xs:string, $baseUri as xs:string?, $version as xs:string?) as xs:string {
-    concat($resolvedURI, "/", $profileForm/@name, "-", $resolvedVersion)
+declare function xes:modelIRI($xes, $modelName as xs:string, $baseURI as xs:string?, $version as xs:string?) as sem:iri {
+    sem:iri(concat($baseURI, "/", $modelName, "-", $version))
 };
 
-declare function xes:classIRI($xes, $modelIRI as xs:string, $className as xs:string) as xs:string {
-	concat($modelIRI, "/", $className)
+declare function xes:classIRI($xes, $modelIRI as xs:string, $className as xs:string) as sem:iri {
+	sem:iri(concat($modelIRI, "/", $className))
 };
 
-declare function xes:attribIRI($xes, $classIRI as xs:string, $attribName as xs:string) as xs:string {
-	concat($classIRI, "/", $attribName)
+declare function xes:attribIRI($xes, $classIRI as xs:string, $attribName as xs:string) as sem:iri {
+	sem:iri(concat($classIRI, "/", $attribName))
 };
 
 (:
@@ -219,20 +215,6 @@ declare function xes:generateModelExtension($xes as map:map) as xs:string* {
 				"Your model has the following extended facts. These facts are also saved as triples in your content DB:",
 				$turtle)
 			return ($turtle, $comment)
-};
-
-(:
-Returns MLCP-style map. Each contains: uri and value. 
-uri is $dir/moduleName.[xqy|sjs]
-value is the content of the module
-:)
-declare function xes:generateCode($xes as map:map, $dir as xs:string) as map:map* {
-  let $genMap := if (count($genCode) eq 1) then map:new((
-      map:entry("uri", concat("/xmi2es/gen/", $docName, ".txt")),
-      map:entry("value", text { $genCode } )
-    ))
-    else ()
-	"hi"
 };
 
 (:
@@ -254,9 +236,6 @@ declare function xes:transform($xes as map:map, $profileForm as node()) as empty
 		else ()
 	let $_ := for $class in $profileForm/classes/Class return 
 		xes:transformClass($xes, $profileForm, $class)
-
-	(: we have all the triples we need; create an in-mem store for queries :)
-	let $_ := map:put("store", sem:in-memory-store(json:array-values(map:get($xes, "triples"))))
 	return ()
 };
 
@@ -265,6 +244,7 @@ Private Interface
 :)
 
 declare function xes:transformModel($xes as map:map, $profileForm as node()) as empty-sequence() {
+let $_:= xdmp:log("GOT TO MODEL", "info")
 	let $problems := map:get($xes, "problems")
 	let $descriptor := map:get($xes, "descriptor")
 
@@ -274,7 +254,7 @@ declare function xes:transformModel($xes as map:map, $profileForm as node()) as 
 	return (
 		map:put($modelJson, "title", string($profileForm/name)),
     	map:put($modelJson, "version", string($profileForm/version)), 
-    	map:put($modelJson, "baseUri", string($profileForm/baseUri)), 
+    	map:put($modelJson, "baseUri", string($profileForm/baseURI)), 
     	map:put($modelJson, "description", string($profileForm/description)),
     	map:put($descriptor, "definitions", $classesJson))
 };
@@ -284,19 +264,19 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 
 	let $problems := map:get($xes, "problems")
 	let $classesJson := map:get(map:get($xes, "descriptor"), "definitions")
-	let $classIRI := string($class/iri)
+	let $classIRI := $class/IRI
 
 	(: Gather the info about the class :)
 	let $attribsJson := json:object()
 	let $classJson := json:object()
 	let $allAttribs := $class/attributes/Attribute
 	let $includes := $allAttribs[exclude/text() eq false()]
-	let $pks := string($includes[PK/text() eq true()]/name)
-	let $requireds := string($includes[required/text() eq true()]/name)
-	let $paths := string($includes[pathRangeIndex/text() eq true()]/name)
-	let $elements :=string($includes[elementRangeIndex/text() eq true()]/name)
-	let $lexicons := string($includes[wordLexicon/text() eq true()]/name)
-	let $piis := string($includes[pii/text() eq true()]/name)
+	let $pks := $includes[PK/text() eq true()]/name/text()
+	let $requireds := $includes[required/text() eq true()]/name/text()
+	let $paths := $includes[pathRangeIndex/text() eq true()]/name/text()
+	let $elements :=$includes[elementRangeIndex/text() eq true()]/name/text()
+	let $lexicons := $includes[wordLexicon/text() eq true()]/name/text()
+	let $piis := $includes[pii/text() eq true()]/name/text()
 
 	(: Build the ES descriptor for the class :)
 	return
@@ -323,8 +303,9 @@ declare function xes:transformClass($xes as map:map, $profileForm as node(),
 
 declare function xes:transformAttribute($xes as map:map, $profileForm as node(), 
 	$class as node(), $attrib as node(), $attribsJson as json:object) as empty-sequence() {
+let $_ := xdmp:log("GOT TO ATTRIB", "info")
 	let $problems := map:get($xes, "problems")
-	let $attribIRI := string($attrib/iri)
+	let $attribIRI := $attrib/IRI
 	let $attribJson := json:object()
 	let $exclude := $attrib/exclude/text() eq true()
 	let $FK := $attrib/FK/text() eq true()
@@ -337,6 +318,7 @@ declare function xes:transformAttribute($xes as map:map, $profileForm as node(),
 	let $resolveTypeResult := xes:resolveType($xes, $profileForm, $class, $attrib)
 	let $type := $resolveTypeResult[1]
 	let $typeKey := $resolveTypeResult[2]
+let $_ := xdmp:log("*" || $type || "*" || $typeKey || "*")
 	
 	(: facts and problems :)
 	let $_ := (
@@ -351,7 +333,8 @@ declare function xes:transformAttribute($xes as map:map, $profileForm as node(),
 	return
 		if ($exclude eq true()) then ()
 		else (
-			map:put($attribsJson, $attrib/@name, $attribJson),
+xdmp:log("NONEXCLUDE"),
+			map:put($attribsJson, $attrib/name/text(), $attribJson),
 			if ($array eq true()) then 
 				let $itemsJson := json:object()
 				return (
@@ -374,7 +357,7 @@ Determine the ES model descriptor type of the attribute.
 declare function xes:resolveType($xes as map:map, $profileForm as node(), 
 	$class as node(), $attrib as node()) as xs:string+ {
 
-	let $attribIRI := string($attrib/iri)
+	let $attribIRI := $attrib/IRI
 	let $type := string($attrib/type)
 	return 
 		if (string-length($attrib/esProperty/@mlType) gt 0) then (attrib/esProperty/@mlType, "datatype")
