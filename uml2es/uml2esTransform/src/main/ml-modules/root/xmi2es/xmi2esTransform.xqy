@@ -126,14 +126,17 @@ declare function buildModel($xmi as node(), $xes, $problems) as node()? {
       let $description := string(($model/ownedComment/@body, $model/ownedComment/body)[1])
       let $rootNamespace := $xmi/*/*:xmlNamespace[@base_Package eq $model/@*:id]
       let $hints := $xmi/*/*:xImplHints[@base_Package eq $model/@*:id]
-      let $semPrefixes :=  xmi2es:csvParse($xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/@*:prefixesPU)
+      let $semPrefixes :=  $xmi/*/*:semPrefixes[@base_Package eq $model/@*:id]/*:prefixesPU/text()
       let $modelIRI := xes:modelIRI($xes, $modelName, $baseURI, $version)
 
       (: Model-level facts :)
       let $prefixMap := map:new((
-        for $semPrefix in $semPrefixes return 
-          if (count($semPrefix) eq 2) then map:entry(normalize-space($semPrefix[1]), normalize-space($semPrefix[2]))
-          else pt:addProblem($problems, $modelIRI, (), $pt:ILLEGAL-SEM-PREFIX, $semPrefix)
+        for $semPrefixCSV in $semPrefixes return 
+let $_ := xdmp:log("SEM *" || $semPrefixCSV || "*")
+          let $semPrefix := xmi2es:csvParse($semPrefixCSV)
+          return 
+            if (count($semPrefix) eq 2) then map:entry(normalize-space($semPrefix[1]), normalize-space($semPrefix[2]))
+            else pt:addProblem($problems, $modelIRI, (), $pt:ILLEGAL-SEM-PREFIX, $semPrefixCSV)
         ))
       let $_ := xes:setPrefixes($xes, $modelIRI, $prefixMap)
       let $_ := xmi2es:xImplHints($modelIRI, $hints, $xes, $problems)

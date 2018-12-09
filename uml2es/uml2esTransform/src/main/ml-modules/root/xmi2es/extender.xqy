@@ -82,6 +82,8 @@ declare function xes:setPrefixes($xes as map:map, $modelIRI as sem:iri, $prefixe
 	let $_ := map:put($xes, "prefixes", $fullPrefixes)
 	let $_ := map:put($xes, "rdfBuilder", sem:rdf-builder($fullPrefixes))
 	for $p in map:keys($prefixes) return
+let $_ := xdmp:log("ADDING *" || $p || "*")
+return
 	    xes:addQualifiedFact($xes, $modelIRI, $PRED-SEM-PREFIXES, map:new((
 	   		map:entry($PRED-SEM-PREFIX, $p),
 	    	map:entry($PRED-SEM-REFERENCE,map:get($prefixes, $p)))))
@@ -115,6 +117,7 @@ Add a fact to the extended model.
 declare function xes:addFact($xes as map:map,
 	$subjectIRI as sem:iri, $predicateIRI as sem:iri, 
 	$objects as xs:anyAtomicType*) as empty-sequence() {
+let $_ := xdmp:log("ADDING FACT")
 
 	let $triples := map:get($xes, "triples")
 	let $problems := map:get($xes,  "problems")
@@ -138,7 +141,7 @@ declare function xes:addQualifiedFact($xes as map:map,
 	let $qobj := sem:bnode()
 	let $_ := xes:addFact($xes, $subjectIRI, $predicateIRI, $qobj)
 	for $pred in map:keys($qualifiedMap) return 
-		xes:addFact($xes, $qobj, $pred, map:get($qualifiedMap, $pred))
+		xes:addFact($xes, $qobj, sem:iri($pred), map:get($qualifiedMap, $pred))
 };
 
 (:
