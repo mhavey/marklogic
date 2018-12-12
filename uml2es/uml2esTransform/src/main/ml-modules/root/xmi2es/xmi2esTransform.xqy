@@ -61,12 +61,13 @@ declare function xmi2es:transform(
   let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".xml")
   let $param := map:get($context, "transform_param")
   let $transformResult := xmi2es:xmi2es($xmi, $param)
+  let $esModel := map:get($transformResult, "descriptor")
 
   let $modelDescMap := 
     if (map:contains($transformResult, "descriptor")) then
       map:new((
         map:entry("uri", concat("/xmi2es/es/", $docName, ".json")),
-        map:entry("value", xdmp:to-json(map:get($transformResult, "descriptor")))
+        map:entry("value", xdmp:to-json($esModel))
       ))
     else ()
   let $intermediateMap := 
@@ -104,7 +105,12 @@ declare function xmi2es:transform(
       map:entry("value", text{ $extensions[2] })
     ))
     else ()
-
+  let $genMap := xes:generateCode($xmodel)
+  let $genModuleName := for $moduleName in map:keys($genMap) return 
+    map:new((
+      map:entry("uri", concat("/xmi2es/gen/", $docName, "/", $genModuleName)),
+      map:entry("value", text { map:get($genMap, $genModuleName) } )
+    ))
   return ($content, $modelDescMap, $intermediateMap, $findingsMap, $valMap,
     $extensionTurtleMap, $extensionCommentMap) 
 };
@@ -132,7 +138,6 @@ declare function buildModel($xmi as node(), $xes, $problems) as node()? {
       (: Model-level facts :)
       let $prefixMap := map:new((
         for $semPrefixCSV in $semPrefixes return 
-let $_ := xdmp:log("SEM *" || $semPrefixCSV || "*")
           let $semPrefix := xmi2es:csvParse($semPrefixCSV)
           return 
             if (count($semPrefix) eq 2) then map:entry(normalize-space($semPrefix[1]), normalize-space($semPrefix[2]))
@@ -169,7 +174,7 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
   let $_ := xdmp:log(concat("BUILDCLASS *", $class/@name, "*"), "info")
 
   (: start building the class. NOTE: hints and namespace are NOT inherited. :)
-  let $className := fn:normalize-space($class/@name)
+  let $className := fn:normalize-space(string($class/@name))
   let $classID := string($class/@*:id)
 
   return 
@@ -190,20 +195,26 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
         if ($associationClass eq true()) then
           let $attribs := $xmi//*:ownedAttribute[@*:association eq $classID]
           for $a in $attribs return 
-            <end attribute="{normalize-space($a/@name)}" 
-            class="{normalize-space($a/../@name)}" 
+            <end attribute="{normalize-space(string($a/@name))}" 
+            class="{normalize-space(string($a/../@name))}" 
             FK="{exists($xmi/*/*:FK[@base_Property eq $a/@*:id])}"/>
         else ()
 
       let $_ := (
           xmi2es:xImplHints($classIRI, $hints, $xes, $problems),
-          if ($exclude eq true()) then xes:addFact($xes, $classIRI, $xes:PRED-IS-EXCLUDED,$exclude) else (),
+          if ($exclude eq true()) then 
+            (
+              xes:addFact($xes, $modelIRI, $xes:PRED-EXCLUDES,$classIRI),
+              xes:addFact($xes, $modelIRI, sem:iri("http://marklogic.com/entity-services#definitions"), $classIRI),
+              xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#title"), $className)
+            ) 
+          else (),
           xes:addFact($xes, $classIRI, $xes:PRED-COLLECTIONS, $inheritance/xDocument/collections/item),
           for $perm in $inheritance/xDocument/permsCR/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, map:new((
               map:entry($xes:PRED-CAPABILITY, $perm/@capability),
               map:entry($xes:PRED-ROLE,pred/@role)))),
-          xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, $inheritance/xDocument/quality),
+          if (string-length($inheritance/xDocument/quality) gt 0) then xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, xs:integer($inheritance/xDocument/quality)) else (),
           for $md in $inheritance/xDocument/metadataKV/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-METADATA, map:new((
               map:entry($xes:PRED-KEY, $md/@key),
@@ -216,13 +227,16 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
                 if ($count eq 3) then map:entry($xes:PRED-SEM-S, $semFact/term[1]/text()) else (),
                 map:entry($xes:PRED-SEM-P, $semFact/term[position() eq last() -1]/text()),
                 map:entry($xes:PRED-SEM-O, $semFact/term[position() eq last()]/text())))),
-          xes:addFact($xes, $classIRI, $xes:PRED-BASE-CLASS, string($inheritance/baseClass)), 
-          if ($associationClass eq true()) then xes:addFact($xes, $classIRI, $xes:PRED-ASSOCIATION-CLASS, $associationClass) else (), 
+          if (string-length($inheritance/baseClass) gt 0) then 
+            xes:addFact($xes, $classIRI, $xes:PRED-BASE-CLASS, xes:classIRI($xes, $modelIRI, string($inheritance/baseClass)))
+          else (), 
+          if ($associationClass eq true()) then xes:addFact($xes, $classIRI, $xes:PRED-IS-ASSOCIATION-CLASS, $associationClass) else (), 
           for $end in $assocClassEnds return 
-            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-ASSOC-CLASS-END, map:new((
-              map:entry($xes:PRED-ASSOC-CLASS-END-ATTRIB, $end/@attribute),
-              map:entry($xes:PRED-ASSOC-CLASS-END-CLASS, $end/@class),
-              map:entry($xes:PRED-ASSOC-CLASS-END-FK, $end/@FK))))
+            let $endClassIRI := xes:classIRI($xes, $modelIRI, string($end/@class))
+            return xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-ASSOC-CLASS-END, map:new((
+              map:entry($xes:PRED-ASSOC-CLASS-END-ATTRIB, xes:attribIRI($xes, $endClassIRI, string($end/@attribute))),
+              map:entry($xes:PRED-ASSOC-CLASS-END-CLASS, $endClassIRI),
+              map:entry($xes:PRED-ASSOC-CLASS-END-FK, $end/@FK eq true()))))
       )
       let $classProfileForm := 
         <Class>
@@ -242,11 +256,11 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
           <attributes>{(
             (: Add the attributes. If assoc class, need one attrib for each end. :)
             for $attrib in $inheritance/attributes/* return 
-              xmi2es:buildAttribute($xmi, $classIRI, $class, $attrib, $xes, $problems),
+              xmi2es:buildAttribute($xmi, $modelIRI, $classIRI, $class, $attrib, $xes, $problems),
             for $end in $assocClassEnds return 
               <Attribute>
                 <name>{concat("ref", $end/@class)}</name>
-                <type>{$end/@class}</type> 
+                <type>{string($end/@class)}</type> 
                 <array>false</array>
                 <required>true</required>
                 <typeIsReference>true</typeIsReference>
@@ -261,18 +275,19 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
       let $semPropCount := count($classProfileForm//multifieldTracker[@semProperty eq "true"])
       let $semTypeCount := count($inheritance/semTypes/item)
       let $_ := (
-        if ($semIRICount gt 0) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-SEM-IRI, "")else (),
-        if ($semLabelCount gt 0) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-SEM-LABEL, "")else (),
-        if (count($classProfileForm//multifieldTracker[@xURI eq "true"]) gt 0) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-URI, "")else (),
-        if ($semIRICount eq 0 and $semLabelCount + $semPropCount + $semTypeCount gt 0) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-SEM-NO-IRI, "") else () 
+        if ($semIRICount gt 1) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-SEM-IRI, "")else (),
+        if ($semLabelCount gt 1) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-SEM-LABEL, "")else (),
+        if (count($classProfileForm//multifieldTracker[@xURI eq "true"]) gt 1) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTIFIELD-URI, "")else (),
+        if ($semIRICount eq 0 and $semLabelCount + $semPropCount + $semTypeCount gt 1) then pt:addProblem($problems, $classIRI, (), $pt:CLASS-SEM-NO-IRI, "") else () 
       )
       return $classProfileForm
 };
 
 (: obtain "profile form" of attrib :)
-declare function xmi2es:buildAttribute($xmi as node(), $classIRI as sem:iri, $class as node(), $attrib as node(), $xes, $problems) as node()? {
+declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $classIRI as sem:iri, 
+  $class as node(), $attrib as node(), $xes, $problems) as node()? {
 
-  let $attribName := fn:normalize-space($attrib/@name)
+  let $attribName := fn:normalize-space(string($attrib/@name))
   let $attribID := string($attrib/@*:id)
 
   return 
@@ -292,9 +307,9 @@ declare function xmi2es:buildAttribute($xmi as node(), $classIRI as sem:iri, $cl
       let $xBizKey :=  exists($xmi/*/*:xBizKey[@base_Property eq $attribID])
       let $hints := $xmi/*/*:xImplHints[@base_Property eq $attribID]      
       let $xCalculated := $xmi/*/*:xCalculated[@base_Property eq $attrib/@*:id]/concat
-      let $xHeader := normalize-space($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field)
+      let $xHeader := normalize-space(string($xmi/*/*:xHeader[@base_Property eq $attrib/@*:id]/@field))
       let $semProperty := $xmi/*/*:semProperty[@base_Property eq $attribID]
-      let $semPropertyPredicate := normalize-space($semProperty/@predicate)
+      let $semPropertyPredicate := normalize-space(string($semProperty/@predicate))
       let $semPropertyPredicateQual:= $semProperty/*:qualifiedObject_sPO
       let $semIRI :=  exists($xmi/*/*:semIRI[@base_Property eq $attribID])
       let $semLabel :=  exists($xmi/*/*:semLabel[@base_Property eq $attribID])
@@ -302,22 +317,33 @@ declare function xmi2es:buildAttribute($xmi as node(), $classIRI as sem:iri, $cl
       let $isRequired := not(exists($attrib/lowerValue))
       let $relationship := ($attrib/@*:aggregation, if (exists($attrib/@*:association)) then "association" else ())[1]
       let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
-      let $associationClass := $xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name  
-      let $type := (string($attrib/*:type/@href), 
+      let $associationClass := string($xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name) 
+      let $type := string(($attrib/*:type/@href, 
         string($xmi//*:packagedElement[@*:id eq $attrib/@type]/@name), 
-        string($xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name))[1]
+        string($xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name))[1])
 
       (: attrib-level facts :)
       let $_ := (
         xmi2es:xImplHints($attribIRI, $hints, $xes, $problems),
-        xes:addFact($xes, $attribIRI, $xes:PRED-RELATIONSHIP,$relationship),
+        if (string-length($relationship) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-RELATIONSHIP,string($relationship)) else (),
         if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-IS-REFERENCE,$typeIsReference) else (),
-        if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-REFERENCE,$type) else (),
-        if ($associationClass eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-ASSOCIATION-CLASS,$associationClass) else (),
-        if ($exclude eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-EXCLUDED,$exclude) else (),
+        if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-REFERENCE,xes:classIRI($xes, $modelIRI, $type)) else (),
+        if (string-length($associationClass) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-ASSOCIATION-CLASS,xes:classIRI($xes, $modelIRI, $associationClass)) else (),
+
+        if ($exclude eq true()) then 
+          (
+            xes:addFact($xes, $classIRI, $xes:PRED-EXCLUDES,$attribIRI),
+            xes:addFact($xes, $classIRI, sem:iri("Class http://marklogic.com/entity-services#property"), $attribIRI),
+            xes:addFact($xes, $attribIRI, sem:iri("http://marklogic.com/entity-services#title"), $attribName)
+            (: TODO - do we need to capture type and cardinality? :)
+          ) 
+        else (),
+
         if ($xBizKey eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-BIZ-KEY, $xBizKey) else (),
         if ($xURI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-URI, $xURI) else (),
-        xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, for $c in $xCalculated return normalize-space($c)),
+
+        xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, json:to-array(for $c in $xCalculated return normalize-space($c))),
+
         if (string-length($xHeader) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-HEADER, $xHeader) else (),
         if ($semIRI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-IRI, $semIRI) else (),
         if ($semLabel eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-LABEL, $semLabel) else (),
@@ -329,8 +355,8 @@ declare function xmi2es:buildAttribute($xmi as node(), $classIRI as sem:iri, $cl
             if ($count eq 2 or $count eq 3) then 
               xes:addQualifiedFact($xes, $attribIRI, $xes:PRED-SEM-QUAL, map:new((
                 if ($count eq 3) then map:entry($xes:PRED-SEM-S, normalize-space($kv[1])) else (),
-                map:entry($xes:PRED-SEM-P, normalize-space($kv[position() eq last() -1])),
-                map:entry($xes:PRED-SEM-O, normalize-space($kv[position() eq last()])))))
+                map:entry($xes:PRED-SEM-P, normalize-space(string($kv[position() eq last() -1]))),
+                map:entry($xes:PRED-SEM-O, normalize-space(string($kv[position() eq last()]))))))
             else pt:addProblem($problems, $attribIRI, (), $pt:ILLEGAL-SEM-QUAL, $kv)
       )
 
@@ -403,8 +429,8 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
               else pt:addProblem($problems, (), concat("*",$class/@name,"*",$class/@id), $pt:ILLEGAL-PERM, $kv) 
         )}</permsCR>,
         <quality>{
-          if (count($descXDoc/quality) gt 0) then $descXDoc/quality
-          else normalize-space($currentXDoc/*:quality)
+          if (count($descXDoc/quality) gt 0) then string($descXDoc/quality)
+          else normalize-space(string($currentXDoc/*:quality))
         }</quality>,
         <metadataKV>{(
           $descXDoc/metadataKV/item,
@@ -430,7 +456,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
   (:
   SEM Facts
   :)
-  let $currentSEMFacts := $xmi/*/*:semFact[@base_Class eq $class/@*:id]/*:facts_sPO
+  let $currentSEMFacts := $xmi/*/*:semFacts[@base_Class eq $class/@*:id]/*:facts_sPO
   let $descSEMFacts := $descDef/semFacts/item
   let $semFacts := 
     if (count($descSEMFacts) eq 0 and count($currentSEMFacts) eq 0) then ()
@@ -506,7 +532,7 @@ declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as 
   let $hintTriples := $hints/*:triplesPO
 
   return (
-    for $r in $reminderHints return xes:addFact($xes, $iri, $xes:PRED-REMINDER, $r), 
+    for $r in $reminderHints return xes:addFact($xes, $iri, $xes:PRED-REMINDER, string($r)), 
     for $t in $hintTriples return 
       let $po := xmi2es:csvParse($t)
       return 

@@ -56,7 +56,7 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = xmiDir + "/MovieTalk.xml"
+  input_file_path = xmiDir + "/JokeBook.xml"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
@@ -67,5 +67,5 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
-  transform_param = '{"lax": "true"}'
+  transform_param = 'dummy'
 }

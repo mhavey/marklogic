@@ -56,7 +56,7 @@ The following table describes each stereotype:
 |semantic|Attribute|semIRI||||Here you specify the IRI of a document instance of this class. This attribute can have either a string or an IRI type. The IRI is the value of this attribute.  Typically the IRI is dynamic, dependent on other attributes in the class. You can use the xCalculated stereotype to build the IRI dynamically. The transform's semantic code generator uses the semIRI value to build triples at runtime.|
 |semantic|Attribute|semLabel||||Here you specify the English RDFS label of a document instance of this class. The label is the value of this attribute. This attribute's type should be string. If you need more flexibility in labelling (e.g, French RDFS label, SKOS labels), use semFacts.|
 |semantic|Attribute|semProperty|predicate|iri|1|Here you specify a semantic property of the document instance of your class. The transform's code generator adds a triple, expressing this property, to the document envelope. The subject of the property is the semIRI of your document instance; you must designate one of the attributes as semIRI. As for the predicate of the property, you specify that in the predicate tag. The object of the property is the value of the attribute unless you define qualifiedObject_sPO. Assuming you don't define qualifiedObject_sPO, the value is either a literal or an IRI. It is an IRI if the attribute's type is IRI or if the attribute is a reference to another object; if it is a reference to another object, that object's class must have a semIRI.  If the attribute's type is string, boolean, real, or integer, the object of the triple is a literal of that type.|
-|semantic|Attribute|semProperty|qualifiedObject_sPO|CSV xipany?,xipany,xpiany|0..*|If you define this tag, the object of the semantic property is a qualified object, or a set of triples that describes the complex structure of the object. Use this when your property needs a qualified relation pattern. The way it works is as follows: the transform's code generator assigns as the object of the property a blank node. In your tag, you specify one or more predicate/object combinations for that blank node. THe blank node itself is just a placeholder; what the stereotype is stating is that the document instance of the class has a property whose object is a thing that can be described with the specified predicates and objects. The tag is qualifiedObject_sPO. It is a CSV of predicate-object. You can also specified subject-object-predicate if your subject is something other than the blank node. The [JokeBook example](../examples/jokeBook) shows the use of this stereotype.|
+|semantic|Attribute|semProperty|qualifiedObject_sPO|CSV xipany?,xipany,xipany|0..*|If you define this tag, the object of the semantic property is a qualified object, or a set of triples that describes the complex structure of the object. Use this when your property needs a qualified relation pattern. The way it works is as follows: the transform's code generator assigns as the object of the property a blank node. In your tag, you specify one or more predicate/object combinations for that blank node. THe blank node itself is just a placeholder; what the stereotype is stating is that the document instance of the class has a property whose object is a thing that can be described with the specified predicates and objects. The tag is qualifiedObject_sPO. It is a CSV of predicate-object. You can also specified subject-object-predicate if your subject is something other than the blank node. The [JokeBook example](../examples/jokeBook) shows the use of this stereotype.|
 
 ## Musical Types
 The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic UML Stereotype IRI and Concat language. Here are the types:
@@ -66,17 +66,17 @@ The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic
 - iri - An unquoted string designating a semantic IRI whose value is fixed at design time. You can write it in two forms: fully-qualified IRI (http://xmlns.com/foaf/0.1/Person) or prefixed IRI (foaf:Person). If your prefix is not well-known, you should declare it using the semPrefixes stereotype. For a list of well-known prefixes, refer to <http://docs.marklogic.com/sem.prefixes>.
 - istring - An IRI or a string. If it is unquoted, it is considered an IRI and must follow the Musical iri type syntax. If it is quoted, it is considered a string; the transform will remove the outer quotes.
 - xstring: A static or dynamic string. Accepted forms:
-	- @attribute(A) - The value of attribute A from the same class.
-	- @xqy(xquery code) - The value resulting from execution of the code.
-	- @sjs(server-side javascript code) - The value resulting from execution of the code. 
+	- $attribute(A) - The value of attribute A from the same class.
+	- $xqy(xquery code) - The value resulting from execution of the code.
+	- $sjs(server-side javascript code) - The value resulting from execution of the code. 
 	- any unquoted string - resulting in a string
 	- any quoted string - resulting in a string with the outer quotes preserved
 - xiany - A static or dynamic IRI, string, integer, or boolean. Accepted forms:
-	- @attribute(A) - The value of attribute A from the same class.
-	- @xqy(xquery code) - The value resulting from execution of the code.
-	- @sjs(server-side javascript code) - The value resulting from execution of the code. 
-	- @iri - The IRI of the instance
-	- @iri(I) - A fixed IRI in fully-qualified or prefixed form
+	- $attribute(A) - The value of attribute A from the same class.
+	- $xqy(xquery code) - The value resulting from execution of the code.
+	- $sjs(server-side javascript code) - The value resulting from execution of the code. 
+	- $iri - The IRI of the instance
+	- $iri(I) - A fixed IRI in fully-qualified or prefixed form
 	- unquoted string that converts to an integer - integer
 	- unquoted string that converts to a boolean - boolean
 	- unquoted string that converts to a real - real
@@ -84,12 +84,12 @@ The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic
 	- unquoted string that is NOT in the form of the above - will treat like an IRI
 	- quoted string - string with outer quotes removed
 - xipany - A static or dynamic IRI, string, integer, or boolean used for semantics involving relationships between classes. Accepted forms:
-	- @sattribute(A) - The value of attribute A from the source class.
-	- @tattribute(A) - The value of attribute A from the target class.
-	- @xqy(xquery code) - The value resulting from execution of the code.
-	- @sjs(server-side javascript code) - The value resulting from execution of the code. 
-	- @iri - The IRI of the source instance
-	- @iri(I) - A fixed IRI in fully-qualified or prefixed form
+	- $sattribute(A) - The value of attribute A from the source class.
+	- $tattribute(A) - The value of attribute A from the target class.
+	- $xqy(xquery code) - The value resulting from execution of the code.
+	- $sjs(server-side javascript code) - The value resulting from execution of the code. 
+	- $iri - The IRI of the source instance
+	- $iri(I) - A fixed IRI in fully-qualified or prefixed form
 	- $value - The value of the relationship's attribute.
 	- unquoted string that converts to an integer - integer
 	- unquoted string that converts to a boolean - boolean

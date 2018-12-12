@@ -1,3 +1,24 @@
+function generateXQY(prefix, ns) {
+	return `
+xquery version "1.0-ml";
+
+module namespace ${prefix} = "${ns}";
+declare option xdmp:mapping "false";
+
+}`
+
+function generateSJS(ns, exports) {
+	return `
+const helper = require("/lacare.org/lib/ppg-helper.sjs");
+
+module.exports = {
+	${exports}
+};`
+}
+
+function 
+
+
 function generateCode(inputSpec, output) {
 	/*
 	inputSpec - (class, subordinate classes*)*

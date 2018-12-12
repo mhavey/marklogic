@@ -36,31 +36,12 @@ configurations {
     }
 }
 
-/**
- * ML 8.0-5 and 7.0-6 introduced a single mlcp dependency - see http://developer.marklogic.com/maven2/com/marklogic/mlcp/.
- * The 8.0-5 mlcp may very well work on ML versions prior to 8.0-5. If it doesn't, try the mlcp-Hadoop2
- * and marklogic-mapreduce2 dependencies that are commented out by default instead of the mlcp dependency.
- *
- * Note that at least with version 8.0-5 of mlcp, mlcp will complain on Windows that it cannot find
- * bin/winutils.exe. This does not appear to have any impact on mlcp behavior though.
- */
 dependencies {
-
-
-  mlcp "com.marklogic:mlcp:8.0.6.3"
-
-  /**
-   * If you need to import delimited text, be sure to include this dependency as well.
-   */
+  mlcp "com.marklogic:mlcp:9.0.6"
   mlcp "org.apache.commons:commons-csv:1.2"
-
-  /**
-   * mlcp uses Log4j for logging, and if Log4j can't find a configuration file, it will complain and you'll
-   * get none of mlcp's usually-useful logging. It is recommended then that your Gradle configuration for
-   * mlcp include a directory or some other resource that provides a log4j.properties file.
-   */
   mlcp files("lib")
 }
+
 
 task ingestMovieData
   ["role", "bio", "movieDoc", "company","person", "movie"].toList().each { entityType ->

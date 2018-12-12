@@ -1,1 +1,8 @@
-{"database-name":"%%DATABASE%%", "schema-database":"%%SCHEMAS_DATABASE%%", "path-namespace":[{"prefix":"es", "namespace-uri":"http://marklogic.com/entity-services"}], "range-element-index":[{"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"docType", "namespace-uri":null, "range-value-positions":false, "scalar-type":"string"}, {"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"docSubType", "namespace-uri":null, "range-value-positions":false, "scalar-type":"string"}, {"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"seriesType", "namespace-uri":null, "range-value-positions":false, "scalar-type":"string"}, {"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"releaseYear", "namespace-uri":null, "range-value-positions":false, "scalar-type":"int"}, {"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"genres", "namespace-uri":null, "range-value-positions":false, "scalar-type":"string"}, {"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"runningTime", "namespace-uri":null, "range-value-positions":false, "scalar-type":"int"}, {"collation":"http://marklogic.com/collation/en", "invalid-values":"reject", "localname":"imdbUserRating", "namespace-uri":null, "range-value-positions":false, "scalar-type":"float"}], "triple-index":true, "collection-lexicon":true}
+{
+	"database-name":"%%DATABASE%%", 
+	"schema-database":"%%SCHEMAS_DATABASE%%", 
+	"path-namespace":[{"prefix":"es", "namespace-uri":"http://marklogic.com/entity-services"}], 
+	"range-element-index":[],
+	"triple-index":true, 
+	"collection-lexicon":true
+}
