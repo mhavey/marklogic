@@ -42,6 +42,7 @@ declare variable $ILLEGAL-XES-TRIPLE := "Illegal XES triple";
 declare variable $ILLEGAL-SEM-PREFIX := "Illegal sem prefix";
 declare variable $ILLEGAL-SEM-FACT := "Illegal sem fact";
 declare variable $ILLEGAL-SEM-QUAL := "Illegal sem qual";
+declare variable $ILLEGAL-MUSICAL := "Illegal musical expression";
 
 (:
 initialize the problem tracker

@@ -17,7 +17,6 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
   We will use a 2-pass approach. Pass 1 is to gather all the stuff we need from the XMI. 
   We produce an xml structure based on the "profile form" of the model. 
   In pass 2, we transform profile form to ES descriptor, and also derive model extensions.
-  CodeGen is NOW A SEPARATE FUNCTION.
   :)
 
   (: if there is no model, we're in a bad way :)
@@ -26,6 +25,7 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
       if(exists($problems)) then map:entry("problems", pt:dumpProblems($problems)) else ()
     ))
     else
+      (: obtain the ES model (and XES along the way) and validate :)
       let $_ := xes:transform($xmodel, $profileForm)
       let $descriptor := xes:getDescriptor($xmodel)
       let $val := xmi2es:isEsValid($descriptor)
@@ -33,10 +33,14 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
         if (count($val) eq 1) then pt:addProblem($problems, (), (), $pt:MODEL-INVALID, ())
         else()
 
+      (: do the code gen :)
+      let $genMap := xes:generateCode($xmodel)
+
       (: return the descriptor,findings, ES validation status :)
       return map:new((
         if(exists($descriptor)) then map:entry("descriptor", $descriptor) else (),
         if(exists($xmodel)) then map:entry("xmodel", $xmodel) else (),
+        if(exists($genMap)) then map:entry("genMap", $genMap) else (),
         if(exists($profileForm)) then map:entry("profileForm", $profileForm) else (),
         if(exists($problems)) then map:entry("problems", pt:dumpProblems($problems)) else (),
         if(exists($val)) then map:entry("esval", $val) else ()
@@ -105,14 +109,18 @@ declare function xmi2es:transform(
       map:entry("value", text{ $extensions[2] })
     ))
     else ()
-  let $genMap := xes:generateCode($xmodel)
-  let $genModuleName := for $moduleName in map:keys($genMap) return 
-    map:new((
-      map:entry("uri", concat("/xmi2es/gen/", $docName, "/", $genModuleName)),
-      map:entry("value", text { map:get($genMap, $genModuleName) } )
-    ))
+  let $genMaps := 
+    if (map:contains($transformResult, "genMap")) then
+      let $genMap := map:get($transformResult, "genMap")
+      for $genModuleName in map:keys($genMap) return 
+        map:new((
+          map:entry("uri", concat("/xmi2es/gen/", $docName, "/", $genModuleName)),
+          map:entry("value", text { map:get($genMap, $genModuleName) } )
+        ))
+    else ()
+
   return ($content, $modelDescMap, $intermediateMap, $findingsMap, $valMap,
-    $extensionTurtleMap, $extensionCommentMap) 
+    $extensionTurtleMap, $extensionCommentMap, $genMaps) 
 };
 
 declare function buildModel($xmi as node(), $xes, $problems) as node()? {

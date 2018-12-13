@@ -65,7 +65,7 @@ declare variable $LIB-XQY := "lib.xqy";
 declare variable $NEWLINE := "&#10;";
 declare variable $INDENT := "  ";
 
-declare variable $LIB-PREFIX := "umles";
+declare variable $NS-PREFIX := "umles";
 
 (:
 PUBLIC Interface
@@ -110,6 +110,9 @@ declare function xes:setPrefixes($xes as map:map, $modelIRI as sem:iri, $prefixe
 	    xes:addQualifiedFact($xes, $modelIRI, $PRED-SEM-PREFIXES, map:new((
 	   		map:entry($PRED-SEM-PREFIX, $p),
 	    	map:entry($PRED-SEM-REFERENCE,map:get($prefixes, $p)))))
+
+
+	    (:TODO - batch bad iris , like haha :)
 };
 
 (: Take fully-qualified or curie IRI and convert to sem:iri :)
@@ -431,208 +434,313 @@ declare function xes:resolveType($xes as map:map, $profileForm as node(),
 };
 
 declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	let $descriptor := map:get($xes, "descriptor")
 	let $ns := 	map:get($xes, "ns")
-	let $_ := map:put($codeMap, $LIB-XQY, concat('xquery version "1.0-ml";', $NEWLINE, 
-		'module namespace ', $NS-PREFIX, ' = "', $ns, '"', $NEWLINE, $NEWLINE))
-	let $_ := map:put($codeMap, $LIB-SJS, json:array())
+
+	let $sjs := map:get($codeMap, $LIB-SJS)
+	let $xqy := map:get($codeMap, $LIB-XQY)
+
+	let $_  := (
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat('const sem = require("/MarkLogic/semantics.xqy");', $NEWLINE, $NEWLINE)),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat('xquery version "1.0-ml";', $NEWLINE, $NEWLINE)),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'module namespace ', $NS-PREFIX, ' = "', $ns, '";')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '
+			import module namespace sem = "http://marklogic.com/semantics" at "/MarkLogic/semantics.xqy";', 
+			$NEWLINE, $NEWLINE)))
+
+	let $_ := map:put($xes, $LIB-SJS, json:array()) (: here is where we keep list of exported sjs functions :)
 	return ()
 };
 
 declare function xes:generateModuleTrailer($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	let $descriptor := map:get($xes, "descriptor")
-	let $ns := 	map:get($xes, "ns")
+	let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'module.exports = {'))
 	let $functions := if (map:contains($xes, $LIB-SJS)) then json:array-values(map:get($xes, $LIB-SJS)) else ()
-	let $_ := map:put($codeMap, $LIB-SJS, concat($NEWLINE, $NEWLINE, 'module.exports = {', $NEWLINE, 
-		for $f at $pos in $functions return 
-			concat($NEWLINE, $INDENT, $f, ":", $f, if ($pos lt count($functions)) then "," else ""),
-		$NEWLINE, '};', $NEWLINE))
-	return ()
+	let $_ :=  for $f at $pos in $functions return
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $f, ":", $f, 
+			if ($pos lt count($functions)) then "," else ""))
+	return (
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, '};')),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '}'))
+	)
 };
 
 declare function xes:generateHeaders($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	let $descriptor := map:get($xes, "descriptor")
-	let $sjs := map:get($codeMap, $LIB-SJS)
-	let $xqy := map:get($codeMap, $LIB-XQY)
-
-	let $sems := <triples>{json:array-values(map:get($xes, "triples"))}</triples>
-	let $semHeader := $sems/sem:triple[sem:predicate eq string($PRED-HEADER)]
-	let $headerClasses := fn:distinct-values(for $t in $semHeader/sem:subject/text() return fn:tokenize($t, "/")[last()-1])
-	for $className in $headerClasses
+	let $triples := <triples>{json:array-values(map:get($xes, "triples"))}</triples>
+	let $tHeader := $triples/sem:triple[sem:predicate eq string($PRED-HEADER)]
+	let $headerClasses := fn:distinct-values(for $t in $tHeader/sem:subject/text() return fn:tokenize($t, "/")[last()-1])
+	for $className in $headerClasses return
 		let $sjsFunction := concat("setHeaders", $className)
 		let $_ := map:put($xes, $LIB-SJS, json:array-push(map:get($xes, $LIB-SJS), $sjsFunction))
-		let $sjs := concat($sjs, 'function ', $sjsFunction, '(id, content, options, lang) {', $NEWLINE)
-		let $xqy := concat($xqy, 'declare function ', $LIB-PREFIX, ':setHeaders', string($class/name), 
-			'($id as xs:string, $content as item()?, $options as map:map, $lang as xs:string) as node()* {', $NEWLINE)
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, options, lang) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':setHeaders', $className, 
+			'($id as xs:string, $content as item()?, $options as map:map, $lang as xs:string) as node()* {'))
 
 		(: TODO - If this class has an attribute that refers to another class, bring in that class's headers too :)
 
+		(: Determine population of header fields from UML model :)
 		let $jBody := ""
 		let $xxBody := ""
 		let $xjBody := ""
-
-		let $headersInClass := $semHeader[contains(sem:subject/text(), $className)]
+		let $headersInClass := $tHeader[contains(sem:subject/text(), $className)]
 		let $_ := for $triple at $pos in $headersInClass return
+			let $moreToCome := $pos lt count($headersInClass)
 			let $attribIRI := $triple/sem:subject/text()
 			let $attribName := fn:tokenize($attribIRI, "/")[last()]
-			let $field := xes:resolveXString(string($triple/sem:object))
-			let $val := if (exists($sems/sem:triple[sem:object/text() eq $attribIRI and 
-				sem:predicate/text() eq string($PRED-EXCLUDES)])) then
-				( concat('options[', $attribName, ']'), concat('map:get($options, "', $attribName, '")') )
-				else ( concat('content[', $attribName, ']') , concat('$content/', $attribName) )
-
-			let $jBody := concat($jBody, $NEWLINE, $INDENT, $INDENT, 'ret[', $field, '] = ', $val[1], ';')
-			let $xxBody := concat($jBody, $NEWLINE, $INDENT, $INDENT, '<', $attribName, '>{', $val[2], '}</', $attribName, '>')
-			let $xjBody := concat($jBody, $NEWLINE, $INDENT, $INDENT, '"', $attribName, '" : ', $val[2], 
-				if ($pos lt count($headersInClass)) then " , " else "")
+			let $val := xes:getAttribForModule($triples, $attribIRI)
+			let $field := 
+				let $p := xes:parseXString($xes, $attribIRI, string($triple/sem:object))
+				return
+					if ($p[1] eq "attribute") then xes:getAttribForModule($triples, $p[2])
+					else (concat('"', $p[2], '"'), concat('"', $p[2], '"'))
+			let $_ := xdmp:set($jBody, concat($jBody, $NEWLINE, $INDENT, 'ret[', $field[1], '] = ', $val[1], ';'))
+			let $_ := xdmp:set($xxBody, concat($xxBody, $NEWLINE, $INDENT, $INDENT, 'element {', $field[2], '} {', $val[2], '}',
+				if ($moreToCome) then ',' else ""))
+			let $_ := xdmp:set($xjBody, concat($xjBody, $NEWLINE, $INDENT, $INDENT, '{', $field[2], '}" : ', $val[2], 
+				if ($moreToCome) then " , " else ""))
 			return ()
 
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, "var ret = {")
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, $INDENT, 'lastHarmonizeTS: new Date(),')
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, $INDENT, 'entityType: "', $className, '",')
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, $INDENT, 'sourceDocument: id')
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, "};")
-		let $sjs := concat($sjs, $jBody)
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, "return ret;")
-		let $sjs := concat($sjs, $NEWLINE, "}")
+		return (
+			(: SJS headers :)
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, "var ret = {};")),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'ret.lastHarmonizeTS = new Date();')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'ret.entityType = "', $className, '";')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'ret.sourceDocument= id;')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, $jBody),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'return ret;')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '}')),
 
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, 'if ($lang eq "xml") then <Header>')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, $INDENT, '<lastHarmonizeTS>{fn:current-dateTime()}</lastHarmonizeTS>')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, $INDENT, '<entityType>', $className, '</entityType>')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, $INDENT, '<sourceDocument>{$id}</sourceDocument>')
-		let $xqy := concat($xqy, $xxBody)
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, "</Header>")
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, 'else if ($lang eq "json") then object-node { ')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, $INDENT, '"lastHarmonizeTS" : fn:current-dateTime() ,')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, $INDENT, '"entityType" : "', $className, '" ,')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, $INDENT, '"sourceDocument": $id ,')
-		let $xqy := concat($xqy, $xjBody)
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, "}")
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, 'else fn:error(xq.QName("ERROR"), "illegal lang *" || $lang || "*")')
-		let $xqy := concat($xqy, $NEWLINE, '};')
-
-		return (map:put($codeMap, $LIB-SJS, $sjs), map:put($codeMap, $LIB-XQY, $xqy))
+			(: XQY headers - XML, JSON:)
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'if ($lang eq "xml") then element { "Header" } { ')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"lastHarmonizeTS"} {fn:current-dateTime()},')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"entityType" {"', $className, '"},')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"sourceDocument"} {$id},')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, $xxBody),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, "}")),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'else if ($lang eq "json") then object-node { ')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, '"lastHarmonizeTS" : fn:current-dateTime() ,')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, '"entityType" : "', $className, '" ,')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, '"sourceDocument": $id ,')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, $xjBody),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, "}")),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'else fn:error(xq.QName("ERROR"), "illegal lang *" || $lang || "*")')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, '};')
+		)
 };
 
 declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	let $descriptor := map:get($xes, "descriptor")
-	let $sjs := map:get($codeMap, $LIB-SJS)
-	let $xqy := map:get($codeMap, $LIB-XQY)
-
-	let $sems := <triples>{json:array-values(map:get($xes, "triples"))}</triples>
-	let $semXDoc := $sems/sem:triple[
-		sem:predicate eq string($PRED-COLLECTIONS) or
-		sem:predicate eq string($PRED-PERM) or
-		sem:predicate eq string($PRED-QUALITY) or
-		sem:predicate eq string($PRED-METADATA)]
-	let $semXURI :=$sems/sem:triple[sem:predicate eq string($PRED-IS-URI)]
-	let $writerClasses := fn:distinct-values(
-		for $t in $semXDoc/sem:subject/text() return fn:tokenize($t, "/")[last()],
-		for $t in $semXURI/sem:subject/text() return fn:tokenize($t, "/")[last() - 1])
-	for $className in $writerClasses
+	let $triples:= <triples>{json:array-values(map:get($xes, "triples"))}</triples>
+	let $tClassCollections := $triples/sem:triple[sem:predicate eq string($PRED-COLLECTIONS)]
+	let $tClassPerms := $triples/sem:triple[sem:predicate eq string($PRED-PERM)]
+	let $tClassQuality := $triples/sem:triple[sem:predicate eq string($PRED-QUALITY)]
+	let $tClassMetadata := $triples/sem:triple[sem:predicate eq string($PRED-METADATA)]
+	let $tAttribURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI)]
+	let $writerClasses := fn:distinct-values((
+		for $t in $tClassCollections/sem:subject/text() return $t,
+		for $t in $tClassPerms/sem:subject/text() return $t,
+		for $t in $tClassQuality/sem:subject/text() return $t,
+		for $t in $tClassMetadata/sem:subject/text() return $t,
+		for $t in $tAttribURI/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/")))
+	for $classIRI in $writerClasses
+		let $className := fn:tokenize($classIRI, "/")[last()]
 		let $sjsFunction := concat("runWriter", $className)
 		let $_ := map:put($xes, $LIB-SJS, json:array-push(map:get($xes, $LIB-SJS), $sjsFunction))
-		let $sjs := concat($sjs, 'function ', $sjsFunction, '(id, envelope, options) {', $NEWLINE)
-		let $xqy := concat($xqy, 'declare function ', $LIB-PREFIX, ':runWriter', string($class/name), 
-			'($id as xs:string, $envelope as item(), $options as map:map) as empty-sequence() {', $NEWLINE)
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, options) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':runWriter', $className, 
+			'($id as xs:string, $envelope as item(), $options as map:map) as empty-sequence() {'))
+
+		(: URI :)
+		let $tXURI := $tAttribURI/sem:triple[contains(sem:subject/text(), $classIRI)]
 		let $xuriVal :=
-			if (count($semXURI) ne 1) then ("id", "$id")
+			if (count($tXURI) ne 1) then ("id", "$id")
 			else 
-				let $attribName := fn:tokenize($semXURI/sem:subject/text(), "/")[last()]
-				return 
-					if (exists($sems/sem:triple[sem:object/text() eq $semXURI/sem:subject and 
-						sem:predicate/text() eq string($PRED-EXCLUDES)])) then 
-						(concat('options[', $attribName, ']'), concat('map:get($options, "', $attribName, '")'))
-					else (concat('content[', $attribName, ']'), concat('content/', $attribName))
+				let $attribName := fn:tokenize($tXURI/sem:subject/text(), "/")[last()]
+				return xes:getAttribForModule($triples, $tXURI/sem:subject/text())
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var uri = ', $xuriVal[1], ';'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $uri := ', $xuriVal[2]))
 
-		let $classDocs := $sems/sem:triple[
-			sem:subject/text() eq $className and 
-			(sem:predicate eq string($PRED-COLLECTIONS) or
-			sem:predicate eq string($PRED-PERM) or
-			sem:predicate eq string($PRED-QUALITY) or
-			sem:predicate eq string($PRED-METADATA))]
+		(: options :)
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var dioptions = {};'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $dioptions := map:map()'))
 
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, 'var uri = ', $xuriVal[1])
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $uri := ', $xuriVal[2])
-
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, 'var dioptions = {};')
-		let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $dioptions := map:map()')
-
-		let $colls := $classDocs/sem:triple[sem:predicate eq string($PRED-COLLECTIONS)]
+		(: collections :)
+		let $colls := $tClassCollections/sem:triple[sem:subject/text() eq $classIRI]
 		let $_ := 
 			if (count($colls) gt 0) then
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'var collections = [];')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $collections := json:array()')
+				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var collections = [];'))
+				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $collections := json:array()'))
 				let $_ := for $coll in $colls/sem:triple/sem:object/text()
-					let $field := xes:resolveXString($coll)
-					let $val := if (exists($sems/sem:triple[sem:object/text() eq $attribIRI and 
-						sem:predicate/text() eq string($PRED-EXCLUDES)])) then
-						( concat('options[', $attribName, ']'), concat('map:get($options, "', $attribName, '")') )
-						else ( concat('content[', $attribName, ']') , concat('$content/', $attribName) )
-					let $sjs := concat($sjs, $NEWLINE, $INDENT, 'collections.push(', $val[1], '];')
-					let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := json:array-push($collections, ', $val[2], ')')
-					return ()
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'dioptions.collections = collections;')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", json:array-values($collections))')
-				return ()
-			else
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'dioptions.collections = options.entity;')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", map:get($options, "entity"))')
-				return()
+					let $field := xes:parseXString($xes, $classIRI, $coll)
+					let $val := 
+						if ($field[1] eq "attribute") then xes:getAttribForModule($triples, $field[2])
+						else (concat('"', $field[2], '"'), concat('"', $field[2], '"'))
+					return (
+						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'collections.push(', $val[1], ');')),
+						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := json:array-push($collections, ', $val[2], ')'))
+					)
+				return (
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.collections = collections;')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", json:array-values($collections))'))
+				)
+			else (
+				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.collections = options.entity;')),
+				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", map:get($options, "entity"))'))
+			)
 
-		let $perms := $classDocs/sem:triple[sem:predicate eq string($PRED-PERM)]
+		(: perms :)
+		let $perms := $tClassPerms/sem:triple[sem:subject/text() eq $classIRI]
 		let $_ := 
 			if (count($perms) gt 0) then
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'var perms = [];')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $perms := json:array()')
+				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var perms = [];'))
+				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $perms := json:array()'))
 				let $_ := for $perm in $perms/sem:triple/sem:object/text()
-					let $role := $sems/sem:triple[sem:subject/text() eq $perm and sem:predicate/text() eq string($PRED-ROLE)]/sem:object/text()
-					let $capability := $sems/sem:triple[sem:subject/text() eq $perm  and sem:predicate/text() eq string($PRED-CAPABILITY)]/sem:object/text()
-					let $sjs := concat($sjs, $NEWLINE, $INDENT, 'perms.push(xdmp.permission("', $role, '","', $capability, '"));')
-					let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := json:array-push($perms, xdmp:permission("', $role, '","', $capability, '"))')
-					return ()
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'dioptions.permissions = perms;')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "permissions", json:array-values($perms))')
-				return ()
-			else 
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'dioptions.permissions = xdmp.defaultPermissions();')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "permissions", xdmp:default-permissions())')
-				return ()
+					let $role := $triples/sem:triple[sem:subject/text() eq $perm and sem:predicate/text() eq string($PRED-ROLE)]/sem:object/text()
+					let $capability := $triples/sem:triple[sem:subject/text() eq $perm  and sem:predicate/text() eq string($PRED-CAPABILITY)]/sem:object/text()
+					return (
+						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'perms.push(xdmp.permission("', $role, '","', $capability, '"));')),
+						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := json:array-push($perms, xdmp:permission("', $role, '","', $capability, '"))'))
+					)
+				return (
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.permissions = perms;')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "permissions", json:array-values($perms))'))
+				)
+			else (
+				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.permissions = xdmp.defaultPermissions();')),
+				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "permissions", xdmp:default-permissions())'))
+			)
 
-		let $mds := $classDocs/sem:triple[sem:predicate eq string($PRED-METADATA)]
+		(: metadata :)
+		let $mds := $tClassMetadata/sem:triple[sem:predicate eq string($PRED-METADATA)]
 		let $_ := 
 			if (count($mds) gt 0) then
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'var mds = {};')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $mds := map:map()')
-				let $_ := for $md in $perms/sem:triple/sem:object/text()
-					let $k := $sems/sem:triple[sem:subject/text() eq $mds and sem:predicate/text() eq string($PRED-KEY)]/sem:object/text()
-					let $v := $sems/sem:triple[sem:subject/text() eq $mds  and sem:predicate/text() eq string($PRED-VALUE)]/sem:object/text()
-					let $sjs := concat($sjs, $NEWLINE, $INDENT, 'mds["', $k, '"] = "', $v, '";')
-					let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($mds, "', $k, '", "', $v, '")')
-					return ()
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'dioptions.metadata = mds;')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "metadata", $mds)')
-				return ()
+				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var mds = {};'))
+				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $perms := map:map()'))
+				let $_ := for $md in $mds/sem:triple/sem:object/text()
+					let $k := $triples/sem:triple[sem:subject/text() eq $mds and sem:predicate/text() eq string($PRED-KEY)]/sem:object/text()
+					let $v := $triples/sem:triple[sem:subject/text() eq $mds  and sem:predicate/text() eq string($PRED-VALUE)]/sem:object/text()
+					return (
+						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'mds["', $k, '"] = "', $v, '";')),
+						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($mds, "', $k, '", "', $v, '")'))
+					)
+				return (
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.metadata = mds;')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "metadata", $mds)'))
+				)
 			else ()
 
-		let $qual := $classDocs/sem:triple[sem:predicate eq string($PRED-QUALITY)]
+		(:quality:)
+		let $qual := $tClassQuality/sem:triple[sem:predicate eq string($PRED-QUALITY)]
 		let $_ := 
 			if (count($qual) eq 1) then
 				let $val := $qual/sem:triple/sem:object/text()
-				let $sjs := concat($sjs, $NEWLINE, $INDENT, 'dioptions.quality = ', $val, ';')
-				let $xqy := concat($xqy, $NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "quality", ', $val, ')')
-				return ()
+				return (
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.quality = ', $val, ';')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "quality", ', $val, ')'))
+				)
 			else ()
 
-		let $sjs := concat($sjs, $NEWLINE, $INDENT, 'xdmp.documentInsert(uri, envelope, dioptions);')
-		let $xqy := concat($sjs, $NEWLINE, $INDENT, 'return xdmp:document-insert($uri, $envelope, $dioptions)')
-		let $sjs := concat($sjs, $NEWLINE, '}')
-		let $xqy := concat($sjs, $NEWLINE, '};')
-		return (map:put($codeMap, $LIB-SJS, $sjs), map:put($codeMap, $LIB-XQY, $xqy))
+		(: insert and close :)
+		return (
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'xdmp.documentInsert(uri, envelope, dioptions);')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'return xdmp:document-insert($uri, $envelope, $dioptions)')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '}')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '};'))
+		)
 };
 
 declare function xes:generateTriples($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	""
+
+(: TODO - bring in subordinates :)
+
+	let $triples:= <triples>{json:array-values(map:get($xes, "triples"))}</triples>
+	let $tClassSemTypes := $triples/sem:triple[sem:predicate eq string($PRED-SEM-TYPE)]
+	let $tClassSemFacts := $triples/sem:triple[sem:predicate eq string($PRED-SEM-FACT)]
+	let $tAttribSemIRIs := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI)]
+	let $tAttribSemLabels := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-LABEL)]
+	let $tAttribSemPredicates := $triples/sem:triple[sem:predicate eq string($PRED-SEM-PREDICATE)]
+	let $tAttribSemQPredicates := $triples/sem:triple[sem:predicate eq string($PRED-SEM-QUAL)]
+	let $semClasses := fn:distinct-values((
+		for $t in $tClassSemTypes/sem:subject/text() return $t,
+		for $t in $tClassSemFacts/sem:subject/text() return $t,
+		for $t in $tAttribSemIRIs/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"),
+		for $t in $tAttribSemLabels/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"),
+		for $t in $tAttribSemPredicates/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"),
+		for $t in $tAttribSemQPredicates/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/")))
+	for $classIRI in $semClasses
+		let $className := fn:tokenize($classIRI, "/")[last()]
+		let $sjsFunction := concat("setTriples", $className)
+		let $_ := map:put($xes, $LIB-SJS, json:array-push(map:get($xes, $LIB-SJS), $sjsFunction))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat('function ', $sjsFunction, '(id, content, headers, options) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat('declare function ', $NS-PREFIX, ':setTriples', $className, 
+			'($id as xs:string, $content as item()?, $headers as item()*, $options as map:map) as sem:triple* {'))
+
+		(: IRI :)
+		let $tSemIRI := $tAttribSemIRIs/sem:triple[contains(sem:subject/text(), $classIRI)]
+		let $iriVal :=
+			if (count($tSemIRI) ne 1) then ('"unknown"', '"unknown"')
+			else  xes:getAttribForModule($triples, $tSemIRI/sem:triple/sem:subject/text())
+		let $_ := (
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var iri = ', $iriVal[1], ';')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ret = [];')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $iri := ', $iriVal[2])),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $ret := json:array()'))
+		)
+
+		(: Label :)
+		let $tSemLabel := $tAttribSemLabels/sem:triple[contains(sem:subject/text(), $classIRI)]
+		let $_ := 
+			if (count($tSemLabel) ne 1) then ()
+			else 
+				let $label :=xes:getAttribForModule($triples, $tSemLabel/sem:triple/sem:subject/text())
+				return (
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+						'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/2000/01/rdf-schema#label"), ', $label[1], '));')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
+						'json:array-push($ret, sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/2000/01/rdf-schema#label"), ', $label[2], '))'))
+				)
+
+		(: Types :)
+		let $tSemTypes := $tClassSemTypes/sem:triple[sem:subject/text() eq $classIRI]
+		let $_ := for $tt in $tSemTypes return (
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+				'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem.iri("', 
+				$tt/sem:triple/sem:object/text(), '")));')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+				'json:array-push(sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
+				$tt/sem:triple/sem:object/text(), '")))'))
+			)
+
+		(: Facts :)
+		(:
+		let $tSemFacts := $tClassSemFacts/sem:triple[sem:subject/text() eq $classIRI]
+		let $_ := for $tt in $tSemTypes return (
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+				'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem.iri("', 
+				$tt/sem:triple/sem:object/text(), '")));')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+				'json:array-push(sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
+				$tt/sem:triple/sem:object/text(), '")))'))
+			)
+			:)
+
+		(: Predicates :)
+		(:
+		let $tSemPreds := $tAttribSemPred/sem:triple[contains(sem:subject/text(), $classIRI)]
+		let $_ := for $tt in $tSemTypes return (
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+				'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem.iri("', 
+				$tt/sem:triple/sem:object/text(), '")));')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+				'json:array-push(sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
+				$tt/sem:triple/sem:object/text(), '")))'))
+			)
+			:)
+
+		(: close :)
+		return (
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'return ret;')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'return json:array-values($ret)')),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '}')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '};'))
+		)
 };
 
 declare function xes:generateContent($xes as map:map, $codeMap as map:map) as empty-sequence() {
@@ -642,5 +750,71 @@ declare function xes:generateContent($xes as map:map, $codeMap as map:map) as em
 declare function xes:emptyString($s) {
 	not($s) or string-length($s) eq 0
 };
+
+declare function xes:parseXString($xes, $sourceIRI as xs:string?, $s as xs:string) as xs:string* {
+	let $problems := map:get($xes,  "problems")	
+	return 
+		if (starts-with($s, "$attribute")) then xes:parseDollar($xes, "$attribute", $s)
+		else if (starts-with($s, "$xqy") or starts-with($s, "$sjs")) then 
+			let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "dynamic sjs/xqy not supported") 
+			return ("junk", $s)
+		else ("literal", $s)
+};
+
+(:
+declare function xes:parseXiany($xes, $sourceIRI as xs:string?, $s as xs:string) as xs:string* {
+	let $problems := map:get($xes,  "problems")	
+	
+	let $xi := parseXString($xes, $sourceIRI, $s)
+	return 
+		if ($xi[1] eq "literal") then
+			if ($xi[2] eq "$iri") then "iri"
+			else if (starts-with($xi[2], "$iri")) then xes:parseDollar($xes, "$iri", $xi[2])
+			else 
+				let $type := xdmp:type($xi[2])
+				if ($type eq "string") then
+				else 
+		else $xi
+
+unquoted string that converts to an integer - integer
+unquoted string that converts to a boolean - boolean
+unquoted string that converts to a real - real
+unquoted string in the form of a prefixed IRI - IRI
+unquoted string that is NOT in the form of the above - will treat like an IRI
+quoted string - string with outer quotes removed
+
+
+		if (starts-with($s, "$attribute")) then xes:parseDollar($xes, "$attribute", $s)
+		else if (starts-with($s, "$xqy") or starts-with($s, "$sjs")) then 
+			let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "dynamic sjs/xqy not supported") 
+			return ("junk", $s)
+		else ("literal", $s)
+};
+:)
+
+declare function xes:parseDollar($xes, $function, $dollar as xs:string?) as xs:string? {
+	let $attempt := normalize-space(fn:tokenize(fn:tokenize(fn:substring-after($a, $function), "\(")[2], "\)")[1])
+	return 
+		if (string-length($attempt) eq 0) then $dollar (: bad parse - send the garbage up, it will blemish the gen code :)
+		else $attempt 
+};
+
+declare function xes:appendSourceLine($codeMap, $key, $line) as empty-sequence() {
+	let $code := map:get($codeMap, $key)
+	return map:put($codeMap, $key, concat($code, $line))
+};
+
+(:
+We want an attribute from either content or options. If the attribute it excluded it comes from options,
+otherwise it's from content. Return both sjs and xqy expression.
+:)
+declare function xes:getAttribForModule($triples, $attribIRI)  as xs:string+ {
+	if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
+		sem:predicate/text() eq string($PRED-EXCLUDES)])) then
+		( concat('options[', $attribName, ']'), concat('map:get($options, "', $attribName, '")') )
+	else ( concat('content[', $attribName, ']') , concat('$content/', $attribName) )
+};
+
+
 
 
