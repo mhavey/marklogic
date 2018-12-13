@@ -26,6 +26,7 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
     ))
     else
       (: obtain the ES model (and XES along the way) and validate :)
+let $_ := xdmp:log("JUST BEFORE TRANSFORM")
       let $_ := xes:transform($xmodel, $profileForm)
       let $descriptor := xes:getDescriptor($xmodel)
       let $val := xmi2es:isEsValid($descriptor)
@@ -34,6 +35,7 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
         else()
 
       (: do the code gen :)
+let $_ := xdmp:log("JUST BEFORE GENERATE")
       let $genMap := xes:generateCode($xmodel)
 
       (: return the descriptor,findings, ES validation status :)
@@ -60,6 +62,7 @@ declare function xmi2es:transform(
   $content as map:map,
   $context as map:map
 ) as map:map* {
+let $_ := xdmp:log("IN THE TRANSFORM", "error")
   let $xmiURI := map:get($content, "uri")
   let $xmi := map:get($content, "value")
   let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".xml")
@@ -217,24 +220,24 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
               xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#title"), $className)
             ) 
           else (),
-          xes:addFact($xes, $classIRI, $xes:PRED-COLLECTIONS, $inheritance/xDocument/collections/item),
+          for $coll in $inheritance/xDocument/collections/item return xes:addFact($xes, $classIRI, $xes:PRED-COLLECTIONS, string($coll)),
           for $perm in $inheritance/xDocument/permsCR/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, map:new((
-              map:entry($xes:PRED-CAPABILITY, $perm/@capability),
-              map:entry($xes:PRED-ROLE,pred/@role)))),
+              map:entry($xes:PRED-CAPABILITY, string($perm/@capability)),
+              map:entry($xes:PRED-ROLE,string(pred/@role))))),
           if (string-length($inheritance/xDocument/quality) gt 0) then xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, xs:integer($inheritance/xDocument/quality)) else (),
           for $md in $inheritance/xDocument/metadataKV/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-METADATA, map:new((
-              map:entry($xes:PRED-KEY, $md/@key),
-              map:entry($xes:PRED-VALUE, md/@value)))), 
+              map:entry($xes:PRED-KEY, string($md/@key)),
+              map:entry($xes:PRED-VALUE, string(md/@value))))), 
           xes:addFact($xes, $classIRI, $xes:PRED-SEM-TYPE, xes:resolveIRI($xes, $inheritance/semTypes/item, $classIRI, ())),
           for $semFact in $inheritance/semFacts/item return 
             let $count := count($semFact/term)
             return 
               xes:addQualifiedFact($xes, $classIRI, $xes:PRED-SEM-FACT, map:new((
-                if ($count eq 3) then map:entry($xes:PRED-SEM-S, $semFact/term[1]/text()) else (),
-                map:entry($xes:PRED-SEM-P, $semFact/term[position() eq last() -1]/text()),
-                map:entry($xes:PRED-SEM-O, $semFact/term[position() eq last()]/text())))),
+                if ($count eq 3) then map:entry($xes:PRED-SEM-S, string($semFact/term[1]/text())) else (),
+                map:entry($xes:PRED-SEM-P, string($semFact/term[position() eq last() -1]/text())),
+                map:entry($xes:PRED-SEM-O, string($semFact/term[position() eq last()]/text()))))),
           if (string-length($inheritance/baseClass) gt 0) then 
             xes:addFact($xes, $classIRI, $xes:PRED-BASE-CLASS, xes:classIRI($xes, $modelIRI, string($inheritance/baseClass)))
           else (), 
@@ -341,7 +344,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
         if ($exclude eq true()) then 
           (
             xes:addFact($xes, $classIRI, $xes:PRED-EXCLUDES,$attribIRI),
-            xes:addFact($xes, $classIRI, sem:iri("Class http://marklogic.com/entity-services#property"), $attribIRI),
+            xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#property"), $attribIRI),
             xes:addFact($xes, $attribIRI, sem:iri("http://marklogic.com/entity-services#title"), $attribName)
             (: TODO - do we need to capture type and cardinality? :)
           ) 
@@ -362,7 +365,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
           return 
             if ($count eq 2 or $count eq 3) then 
               xes:addQualifiedFact($xes, $attribIRI, $xes:PRED-SEM-QUAL, map:new((
-                if ($count eq 3) then map:entry($xes:PRED-SEM-S, normalize-space($kv[1])) else (),
+                if ($count eq 3) then map:entry($xes:PRED-SEM-S, normalize-space(string($kv[1]))) else (),
                 map:entry($xes:PRED-SEM-P, normalize-space(string($kv[position() eq last() -1]))),
                 map:entry($xes:PRED-SEM-O, normalize-space(string($kv[position() eq last()]))))))
             else pt:addProblem($problems, $attribIRI, (), $pt:ILLEGAL-SEM-QUAL, $kv)

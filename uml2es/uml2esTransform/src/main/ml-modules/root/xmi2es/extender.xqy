@@ -11,6 +11,8 @@ module namespace xes = "http://marklogic.com/xmi2es/extender";
 import module namespace sem = "http://marklogic.com/semantics" at "/MarkLogic/semantics.xqy";
 import module namespace pt = "http://marklogic.com/xmi2es/problemTracker" at "/xmi2es/problemTracker.xqy";
 
+declare namespace error = "http://marklogic.com/xdmp/error";
+
 declare variable $DEFAULT-NAMESPACE := "http://example.org/Example-1.0.0";
 declare variable $DEFAULT-MODEL := "zzz";
 declare variable $DEFAULT-VERSION := "0.0.1";
@@ -87,7 +89,7 @@ declare function xes:generateCode($xes as map:map) as map:map {
 		map:entry($LIB-XQY, ""),
 		map:entry($LIB-SJS, "")
 	))
-
+(:
 	let $_ := (
 		xes:generateModuleHeader($xes, $codeMap),
 		xes:generateWriter($xes, $codeMap),
@@ -95,6 +97,7 @@ declare function xes:generateCode($xes as map:map) as map:map {
 		xes:generateTriples($xes, $codeMap),
 		xes:generateContent($xes, $codeMap),	
 		xes:generateModuleTrailer($xes, $codeMap))
+:)
 	return $codeMap
 };
 
@@ -112,7 +115,7 @@ declare function xes:setPrefixes($xes as map:map, $modelIRI as sem:iri, $prefixe
 	    	map:entry($PRED-SEM-REFERENCE,map:get($prefixes, $p)))))
 
 
-	    (:TODO - batch bad iris , like haha :)
+	    (:TODO - catch bad iris , like haha :)
 };
 
 (: Take fully-qualified or curie IRI and convert to sem:iri :)
@@ -152,7 +155,7 @@ declare function xes:addFact($xes as map:map,
 		else if (not($predicateIRI)) then
 			pt:addProblem($problems, $subjectIRI, (), $pt:ILLEGAL-XES-TRIPLE, "no predicate") 
 		else
-			if (xdmp:type($objects) eq "array") then
+			if (count($objects) eq 1 and string(xdmp:type($objects)) eq "array") then
 				let $list := sem:bnode()
 				let $_ := json:array-push($triples, map:get($xes, "rdfBuilder")($subjectIRI, $predicateIRI, $list))
 				let $json-values := json:array-values($objects)
@@ -264,6 +267,8 @@ declare function xes:transform($xes as map:map, $profileForm as node()) as empty
 	let $problems := map:get($xes, "problems")
 	let $descriptor := map:get($xes, "descriptor")
 
+	let $_ := map:put($xes, "profileForm", $profileForm) (: keep for later :)
+
 	(: start with the model :)	
 	let $_ := transformModel($xes, $profileForm)
 
@@ -291,7 +296,7 @@ declare function xes:transformModel($xes as map:map, $profileForm as node()) as 
     let $classesJson := json:object()
     let $_ := map:put($descriptor, "info", $modelJson)
 	return (
-		map:put($xes, "ns", string($profileForm/modelIRI)),
+		map:put($xes, "ns", string($profileForm/IRI)),
 		map:put($modelJson, "title", string($profileForm/name)),
     	map:put($modelJson, "version", string($profileForm/version)), 
     	map:put($modelJson, "baseUri", string($profileForm/baseURI)), 
@@ -433,43 +438,51 @@ declare function xes:resolveType($xes as map:map, $profileForm as node(),
 			else (string($type), "datatype") (: whatever it is, use it. problem get rejected by ES val :)
 };
 
+(:
+HERE IS THE CODEGEN PART.
+This part is based on extended model, so it's all triples.
+Should use SPARQL, but we are missing a portion of the model, namely the part ES generates automatically.
+We don't get that part until we actually deploy the model. So we're too early. 
+Unfortunately that extra part includes the crucial predicate that says a class contains an attribute 
+(the "http://marklogic.com/entity-services#property" predicate). We need that to figure out class/attrib
+relationships during codegen. 
+
+Solution: Just wrap the triples we do have in an XML root and do XPath to find what we need.
+For class/attrib rel, cheat and use starts-with. An attribute's IRI starts with the class's IRI.
+:)
+
 declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) as empty-sequence() {
 	let $ns := 	map:get($xes, "ns")
-
-	let $sjs := map:get($codeMap, $LIB-SJS)
-	let $xqy := map:get($codeMap, $LIB-XQY)
-
 	let $_  := (
-		xes:appendSourceLine($codeMap, $LIB-SJS, concat('const sem = require("/MarkLogic/semantics.xqy");', $NEWLINE, $NEWLINE)),
-		xes:appendSourceLine($codeMap, $LIB-XQY, concat('xquery version "1.0-ml";', $NEWLINE, $NEWLINE)),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat('const sem = require("/MarkLogic/semantics.xqy");', $NEWLINE)),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat('xquery version "1.0-ml";', $NEWLINE)),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'module namespace ', $NS-PREFIX, ' = "', $ns, '";')),
-		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '
-			import module namespace sem = "http://marklogic.com/semantics" at "/MarkLogic/semantics.xqy";', 
-			$NEWLINE, $NEWLINE)))
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 
+			'import module namespace sem = "http://marklogic.com/semantics" at "/MarkLogic/semantics.xqy";', 
+			$NEWLINE))
+	)
 
-	let $_ := map:put($xes, $LIB-SJS, json:array()) (: here is where we keep list of exported sjs functions :)
-	return ()
+	return  map:put($xes, $LIB-SJS, json:array()) (: here is where we keep list of exported sjs functions :)
 };
 
 declare function xes:generateModuleTrailer($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'module.exports = {'))
+	let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'module.exports = {'))
 	let $functions := if (map:contains($xes, $LIB-SJS)) then json:array-values(map:get($xes, $LIB-SJS)) else ()
 	let $_ :=  for $f at $pos in $functions return
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $f, ":", $f, 
 			if ($pos lt count($functions)) then "," else ""))
-	return (
-		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, '};')),
-		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '}'))
-	)
+	return xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '};'))
 };
 
 declare function xes:generateHeaders($xes as map:map, $codeMap as map:map) as empty-sequence() {
 	let $triples := <triples>{json:array-values(map:get($xes, "triples"))}</triples>
-	let $tHeader := $triples/sem:triple[sem:predicate eq string($PRED-HEADER)]
-	let $headerClasses := fn:distinct-values(for $t in $tHeader/sem:subject/text() return fn:tokenize($t, "/")[last()-1])
-	for $className in $headerClasses return
+	let $attribTriples := $triples/sem:triple[sem:predicate eq string($PRED-HEADER)]
+	let $headerClasses := fn:distinct-values(for $t in $attribTriples/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"))
+	for $classIRI in $headerClasses
+		let $className := fn:tokenize($classIRI, "/")[last()]
+		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat("setHeaders", $className)
-		let $_ := map:put($xes, $LIB-SJS, json:array-push(map:get($xes, $LIB-SJS), $sjsFunction))
+		let $_ := xes:addSJSFunction($xes, $sjsFunction)
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, options, lang) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':setHeaders', $className, 
 			'($id as xs:string, $content as item()?, $options as map:map, $lang as xs:string) as node()* {'))
@@ -480,7 +493,7 @@ declare function xes:generateHeaders($xes as map:map, $codeMap as map:map) as em
 		let $jBody := ""
 		let $xxBody := ""
 		let $xjBody := ""
-		let $headersInClass := $tHeader[contains(sem:subject/text(), $className)]
+		let $headersInClass:= $triples/sem:triple[sem:predicate eq string($PRED-HEADER) and starts-with(sem:subject, $classIRIx)]
 		let $_ := for $triple at $pos in $headersInClass return
 			let $moreToCome := $pos lt count($headersInClass)
 			let $attribIRI := $triple/sem:subject/text()
@@ -511,7 +524,7 @@ declare function xes:generateHeaders($xes as map:map, $codeMap as map:map) as em
 			(: XQY headers - XML, JSON:)
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'if ($lang eq "xml") then element { "Header" } { ')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"lastHarmonizeTS"} {fn:current-dateTime()},')),
-			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"entityType" {"', $className, '"},')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"entityType"} {"', $className, '"},')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $INDENT, 'element {"sourceDocument"} {$id},')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, $xxBody),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, "}")),
@@ -522,33 +535,31 @@ declare function xes:generateHeaders($xes as map:map, $codeMap as map:map) as em
 			xes:appendSourceLine($codeMap, $LIB-XQY, $xjBody),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, "}")),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'else fn:error(xq.QName("ERROR"), "illegal lang *" || $lang || "*")')),
-			xes:appendSourceLine($codeMap, $LIB-XQY, '};')
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '};'))
 		)
 };
 
 declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as empty-sequence() {
 	let $triples:= <triples>{json:array-values(map:get($xes, "triples"))}</triples>
-	let $tClassCollections := $triples/sem:triple[sem:predicate eq string($PRED-COLLECTIONS)]
-	let $tClassPerms := $triples/sem:triple[sem:predicate eq string($PRED-PERM)]
-	let $tClassQuality := $triples/sem:triple[sem:predicate eq string($PRED-QUALITY)]
-	let $tClassMetadata := $triples/sem:triple[sem:predicate eq string($PRED-METADATA)]
-	let $tAttribURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI)]
+
+	let $classTriples := $triples/sem:triple[
+		sem:predicate eq string($PRED-COLLECTIONS) or sem:predicate eq string($PRED-PERM) or 
+		sem:predicate eq string($PRED-QUALITY) or sem:predicate eq string($PRED-METADATA)]
+	let $attribTriples := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI)]
 	let $writerClasses := fn:distinct-values((
-		for $t in $tClassCollections/sem:subject/text() return $t,
-		for $t in $tClassPerms/sem:subject/text() return $t,
-		for $t in $tClassQuality/sem:subject/text() return $t,
-		for $t in $tClassMetadata/sem:subject/text() return $t,
-		for $t in $tAttribURI/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/")))
+		for $t in $classTriples/sem:subject/text() return $t,
+		for $t in $attribTriples/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/")))
 	for $classIRI in $writerClasses
 		let $className := fn:tokenize($classIRI, "/")[last()]
+		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat("runWriter", $className)
-		let $_ := map:put($xes, $LIB-SJS, json:array-push(map:get($xes, $LIB-SJS), $sjsFunction))
+		let $_ := xes:addSJSFunction($xes, $sjsFunction)
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, options) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':runWriter', $className, 
 			'($id as xs:string, $envelope as item(), $options as map:map) as empty-sequence() {'))
 
 		(: URI :)
-		let $tXURI := $tAttribURI/sem:triple[contains(sem:subject/text(), $classIRI)]
+		let $tXURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI) and contains(sem:subject/text(), $classIRI)]
 		let $xuriVal :=
 			if (count($tXURI) ne 1) then ("id", "$id")
 			else 
@@ -562,12 +573,12 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $dioptions := map:map()'))
 
 		(: collections :)
-		let $colls := $tClassCollections/sem:triple[sem:subject/text() eq $classIRI]
+		let $colls := $triples/sem:triple[sem:predicate eq string($PRED-COLLECTIONS) and sem:subject/text() eq $classIRI]
 		let $_ := 
 			if (count($colls) gt 0) then
 				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var collections = [];'))
 				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $collections := json:array()'))
-				let $_ := for $coll in $colls/sem:triple/sem:object/text()
+				let $_ := for $coll in $colls/sem:object/text()
 					let $field := xes:parseXString($xes, $classIRI, $coll)
 					let $val := 
 						if ($field[1] eq "attribute") then xes:getAttribForModule($triples, $field[2])
@@ -586,12 +597,12 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 			)
 
 		(: perms :)
-		let $perms := $tClassPerms/sem:triple[sem:subject/text() eq $classIRI]
+		let $perms := $triples/sem:triple[sem:predicate eq string($PRED-PERM) and sem:subject/text() eq $classIRI]
 		let $_ := 
 			if (count($perms) gt 0) then
 				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var perms = [];'))
 				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $perms := json:array()'))
-				let $_ := for $perm in $perms/sem:triple/sem:object/text()
+				let $_ := for $perm in $perms/sem:object/text()
 					let $role := $triples/sem:triple[sem:subject/text() eq $perm and sem:predicate/text() eq string($PRED-ROLE)]/sem:object/text()
 					let $capability := $triples/sem:triple[sem:subject/text() eq $perm  and sem:predicate/text() eq string($PRED-CAPABILITY)]/sem:object/text()
 					return (
@@ -608,12 +619,12 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 			)
 
 		(: metadata :)
-		let $mds := $tClassMetadata/sem:triple[sem:predicate eq string($PRED-METADATA)]
+		let $mds := $triples/sem:triple[sem:predicate eq string($PRED-METADATA) and sem:subject/text() eq $classIRI]
 		let $_ := 
 			if (count($mds) gt 0) then
 				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var mds = {};'))
 				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $perms := map:map()'))
-				let $_ := for $md in $mds/sem:triple/sem:object/text()
+				let $_ := for $md in $mds/sem:object/text()
 					let $k := $triples/sem:triple[sem:subject/text() eq $mds and sem:predicate/text() eq string($PRED-KEY)]/sem:object/text()
 					let $v := $triples/sem:triple[sem:subject/text() eq $mds  and sem:predicate/text() eq string($PRED-VALUE)]/sem:object/text()
 					return (
@@ -627,10 +638,10 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 			else ()
 
 		(:quality:)
-		let $qual := $tClassQuality/sem:triple[sem:predicate eq string($PRED-QUALITY)]
+		let $qual := $triples/sem:triple[sem:predicate eq string($PRED-QUALITY) and sem:subject/text() eq $classIRI]
 		let $_ := 
 			if (count($qual) eq 1) then
-				let $val := $qual/sem:triple/sem:object/text()
+				let $val := $qual/sem:object/text()
 				return (
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.quality = ', $val, ';')),
 					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "quality", ', $val, ')'))
@@ -650,33 +661,33 @@ declare function xes:generateTriples($xes as map:map, $codeMap as map:map) as em
 
 (: TODO - bring in subordinates :)
 
+(: TODO - check dynamic IRI is really IRI; i.e., don't allow boolean-valued attribute for IRI. 
+This one is not a gimme; only RESOLVED type is the true type. Even then, no telling if actual value at runtime is an IRI. :)
+
 	let $triples:= <triples>{json:array-values(map:get($xes, "triples"))}</triples>
-	let $tClassSemTypes := $triples/sem:triple[sem:predicate eq string($PRED-SEM-TYPE)]
-	let $tClassSemFacts := $triples/sem:triple[sem:predicate eq string($PRED-SEM-FACT)]
-	let $tAttribSemIRIs := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI)]
-	let $tAttribSemLabels := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-LABEL)]
-	let $tAttribSemPredicates := $triples/sem:triple[sem:predicate eq string($PRED-SEM-PREDICATE)]
-	let $tAttribSemQPredicates := $triples/sem:triple[sem:predicate eq string($PRED-SEM-QUAL)]
+	let $classTriples := $triples/sem:triple[
+		sem:predicate eq string($PRED-SEM-TYPE) or sem:predicate eq string($PRED-SEM-FACT)]
+	let $attribTriples := $triples/sem:triple[
+		sem:predicate eq string($PRED-IS-SEM-IRI) or sem:predicate eq string($PRED-IS-SEM-LABEL) or
+		sem:predicate eq string($PRED-SEM-PREDICATE) or sem:predicate eq string($PRED-SEM-QUAL)]
 	let $semClasses := fn:distinct-values((
-		for $t in $tClassSemTypes/sem:subject/text() return $t,
-		for $t in $tClassSemFacts/sem:subject/text() return $t,
-		for $t in $tAttribSemIRIs/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"),
-		for $t in $tAttribSemLabels/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"),
-		for $t in $tAttribSemPredicates/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/"),
-		for $t in $tAttribSemQPredicates/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/")))
+		for $t in $classTriples/sem:subject/text() return $t,
+		for $t in $attribTriples/sem:subject/text() return string-join(fn:tokenize($t, "/")[1 to last() - 1], "/")))
 	for $classIRI in $semClasses
 		let $className := fn:tokenize($classIRI, "/")[last()]
+		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat("setTriples", $className)
-		let $_ := map:put($xes, $LIB-SJS, json:array-push(map:get($xes, $LIB-SJS), $sjsFunction))
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat('function ', $sjsFunction, '(id, content, headers, options) {'))
-		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat('declare function ', $NS-PREFIX, ':setTriples', $className, 
+		let $_ := xes:addSJSFunction($xes, $sjsFunction)
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, headers, options) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':setTriples', $className, 
 			'($id as xs:string, $content as item()?, $headers as item()*, $options as map:map) as sem:triple* {'))
 
 		(: IRI :)
-		let $tSemIRI := $tAttribSemIRIs/sem:triple[contains(sem:subject/text(), $classIRI)]
+let $_ := xdmp:log("IRI")
+		let $tSemIRI := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI) and starts-with(sem:subject, $classIRIx)]
 		let $iriVal :=
 			if (count($tSemIRI) ne 1) then ('"unknown"', '"unknown"')
-			else  xes:getAttribForModule($triples, $tSemIRI/sem:triple/sem:subject/text())
+			else xes:getAttribForModule($triples, $tSemIRI/sem:subject/text())
 		let $_ := (
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var iri = ', $iriVal[1], ';')),
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ret = [];')),
@@ -685,11 +696,12 @@ declare function xes:generateTriples($xes as map:map, $codeMap as map:map) as em
 		)
 
 		(: Label :)
-		let $tSemLabel := $tAttribSemLabels/sem:triple[contains(sem:subject/text(), $classIRI)]
+let $_ := xdmp:log("Label")
+		let $tSemLabel:= $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-LABEL) and starts-with(sem:subject, $classIRIx)]
 		let $_ := 
 			if (count($tSemLabel) ne 1) then ()
 			else 
-				let $label :=xes:getAttribForModule($triples, $tSemLabel/sem:triple/sem:subject/text())
+				let $label :=xes:getAttribForModule($triples, $tSemLabel/sem:subject/text())
 				return (
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
 						'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/2000/01/rdf-schema#label"), ', $label[1], '));')),
@@ -698,14 +710,15 @@ declare function xes:generateTriples($xes as map:map, $codeMap as map:map) as em
 				)
 
 		(: Types :)
-		let $tSemTypes := $tClassSemTypes/sem:triple[sem:subject/text() eq $classIRI]
+let $_ := xdmp:log("Types")
+		let $tSemTypes:= $triples/sem:triple[sem:predicate eq string($PRED-SEM-TYPE) and sem:subject eq $classIRI]
 		let $_ := for $tt in $tSemTypes return (
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
 				'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem.iri("', 
-				$tt/sem:triple/sem:object/text(), '")));')),
-			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-				'json:array-push(sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
-				$tt/sem:triple/sem:object/text(), '")))'))
+				$tt/sem:object/text(), '")));')),
+			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
+				'json:array-push($ret, sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
+				$tt/sem:object/text(), '")))'))
 			)
 
 		(: Facts :)
@@ -721,18 +734,80 @@ declare function xes:generateTriples($xes as map:map, $codeMap as map:map) as em
 			)
 			:)
 
-		(: Predicates :)
-		(:
-		let $tSemPreds := $tAttribSemPred/sem:triple[contains(sem:subject/text(), $classIRI)]
-		let $_ := for $tt in $tSemTypes return (
-			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-				'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem.iri("', 
-				$tt/sem:triple/sem:object/text(), '")));')),
-			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-				'json:array-push(sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
-				$tt/sem:triple/sem:object/text(), '")))'))
-			)
+		(: Properties :)
+let $_ := xdmp:log("preds")
+		let $tSemPreds:= $triples/sem:triple[sem:predicate eq string($PRED-SEM-PREDICATE) and starts-with(sem:subject, $classIRI)]
+		let $_ := for $pp in $tSemPreds return
+			let $attribIRI := $pp/sem:subject/text()
+			let $pred := $pp/sem:object/text()
+			let $qualifiedObj := $triples/sem:triple[sem:predicate eq string($PRED-SEM-QUAL) and sem:subject eq $pp/sem:subject]/sem:object
+
+			let $profileForm := map:get($xes, "profileForm")
+			let $attribInProfileForm := $profileForm//Class[iri eq $classIRI]/Attribute[iri eq $attribIRI]
+			let $isExplicitIRI :=
+				if (count($qualifiedObj) eq 0) then string($attribInProfileForm/esProperty/@mlType) eq "iri" (: it's typed as IRI :) 
+				else if ($attribIRI eq tSemIRI/sem:subject/text()) then true() (: this is the class IRI :)
+				else if ($attribInProfileForm/typeIsReference/text() eq true()) then true()
+				else false()
+
+			(: 
+			Rules for object:
+			1. If qualified is defined, it's a new blank node. The qualification triples reference that blank node as subject.
+			2. Otherwise, it's the value of this attribute. If the attribute's type is IRI or object reference, it is an IRI. 
+			If the attribute's type is a primitive, it's a literal.
 			:)
+
+			let $objName := "semProperty" || fn:tokenize($attribIRI, "/")[last()]
+			let $_ := 
+				if (count($qualifiedObj) gt 0) then (
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = sem.bnode();')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := sem:bnode();'))
+				)
+				else 
+					let $attribVal := xes:getAttribForModule($triples, $attribIRI)
+					return 
+						if ($isExplicitIRI) then (
+							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = sem.iri(', $attribVal[1], ');')),
+							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := sem:iri(', $attribVal[2], ')'))
+						)
+						else (
+							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = ', $attribVal[1], ';')),
+							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' :=  ', $attribVal[2]))
+						)
+			let $_ := (						
+				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+					'ret.push(sem.triple(sem.iri(iri), sem.iri("', $pred, '"),', $objName, '));')),
+				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
+					'json:array-push($ret, sem:triple(sem:iri($iri), sem:iri("', $pred, '"), $', $objName, '))'))
+			)
+
+			(: Qualification for that property :)
+			for $q in $qualifiedObj return 
+				let $qs := $triples/sem:triple[sem:subject eq string($q) and sem:predicate eq string($PRED-SEM-S)]/sem:object
+				let $qp := $triples/sem:triple[sem:subject eq string($q) and sem:predicate eq string($PRED-SEM-P)]/sem:object
+				let $qo := $triples/sem:triple[sem:subject eq string($q) and sem:predicate eq string($PRED-SEM-O)]/sem:object
+
+				let $qsVal := 
+					if (count($qs) ne 1) then ("sem.iri(iri)", "sem:iri($iri)") 
+					else 
+						let $parsedQS := xes:parseXipany($xes, $attribIRI, $qs/text(), string($qs/@dataType/@datatype))
+						return xes:buildSemTripleParameter($xes, $triples, $attribIRI, $classIRI, $parsedQS, true())
+				let $qpVal := 
+					if (count($qp) ne 1) then ("bug", "bug") 
+					else 
+						let $parsedQP := xes:parseXipany($xes, $attribIRI, $qp/text(), string($qp/@dataType/@datatype))
+						return xes:buildSemTripleParameter($xes, $triples, $attribIRI, $classIRI, $parsedQP, true())
+				let $qoVal := 
+					if (count($qo) ne 1) then ("bug", "bug") 
+					else 
+						let $parsedQO := xes:parseXipany($xes, $attribIRI, $qo/text(), string($qo/@dataType/@datatype))
+						return xes:buildSemTripleParameter($xes, $triples, $attribIRI, $classIRI, $parsedQO, false())
+				return  (					
+					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
+						'ret.push(sem.triple(', $qsVal[1], ',', $qpVal[1], ',', $qoVal[1], '));')),
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
+						'json:array-push($ret, sem:triple(', $qsVal[1], ',', $qpVal[1], ',', $qoVal[1], '))'))
+				)
 
 		(: close :)
 		return (
@@ -744,59 +819,11 @@ declare function xes:generateTriples($xes as map:map, $codeMap as map:map) as em
 };
 
 declare function xes:generateContent($xes as map:map, $codeMap as map:map) as empty-sequence() {
-	""
+	()
 };
 
 declare function xes:emptyString($s) {
 	not($s) or string-length($s) eq 0
-};
-
-declare function xes:parseXString($xes, $sourceIRI as xs:string?, $s as xs:string) as xs:string* {
-	let $problems := map:get($xes,  "problems")	
-	return 
-		if (starts-with($s, "$attribute")) then xes:parseDollar($xes, "$attribute", $s)
-		else if (starts-with($s, "$xqy") or starts-with($s, "$sjs")) then 
-			let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "dynamic sjs/xqy not supported") 
-			return ("junk", $s)
-		else ("literal", $s)
-};
-
-(:
-declare function xes:parseXiany($xes, $sourceIRI as xs:string?, $s as xs:string) as xs:string* {
-	let $problems := map:get($xes,  "problems")	
-	
-	let $xi := parseXString($xes, $sourceIRI, $s)
-	return 
-		if ($xi[1] eq "literal") then
-			if ($xi[2] eq "$iri") then "iri"
-			else if (starts-with($xi[2], "$iri")) then xes:parseDollar($xes, "$iri", $xi[2])
-			else 
-				let $type := xdmp:type($xi[2])
-				if ($type eq "string") then
-				else 
-		else $xi
-
-unquoted string that converts to an integer - integer
-unquoted string that converts to a boolean - boolean
-unquoted string that converts to a real - real
-unquoted string in the form of a prefixed IRI - IRI
-unquoted string that is NOT in the form of the above - will treat like an IRI
-quoted string - string with outer quotes removed
-
-
-		if (starts-with($s, "$attribute")) then xes:parseDollar($xes, "$attribute", $s)
-		else if (starts-with($s, "$xqy") or starts-with($s, "$sjs")) then 
-			let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "dynamic sjs/xqy not supported") 
-			return ("junk", $s)
-		else ("literal", $s)
-};
-:)
-
-declare function xes:parseDollar($xes, $function, $dollar as xs:string?) as xs:string? {
-	let $attempt := normalize-space(fn:tokenize(fn:tokenize(fn:substring-after($a, $function), "\(")[2], "\)")[1])
-	return 
-		if (string-length($attempt) eq 0) then $dollar (: bad parse - send the garbage up, it will blemish the gen code :)
-		else $attempt 
 };
 
 declare function xes:appendSourceLine($codeMap, $key, $line) as empty-sequence() {
@@ -809,12 +836,170 @@ We want an attribute from either content or options. If the attribute it exclude
 otherwise it's from content. Return both sjs and xqy expression.
 :)
 declare function xes:getAttribForModule($triples, $attribIRI)  as xs:string+ {
-	if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
-		sem:predicate/text() eq string($PRED-EXCLUDES)])) then
-		( concat('options[', $attribName, ']'), concat('map:get($options, "', $attribName, '")') )
-	else ( concat('content[', $attribName, ']') , concat('$content/', $attribName) )
+	let $attribName := fn:tokenize($attribIRI, "/")[last()]
+	return 
+		if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
+			sem:predicate/text() eq string($PRED-EXCLUDES)])) then
+			( concat('options[', $attribName, ']'), concat('map:get($options, "', $attribName, '")') )
+		else ( concat('content[', $attribName, ']') , concat('$content/', $attribName) )
 };
 
+declare function xes:addSJSFunction($xes, $function as xs:string) as empty-sequence() {
+	let $currList := map:get($xes, $LIB-SJS)
+	let $_ := json:array-push($currList, $function)
+	return map:put($xes, $LIB-SJS, $currList)
+};
 
+declare function xes:buildSemTripleParameter($xes, $triples, $sourceIRI as xs:string, $parentIRI as xs:string?,
+	$parsed as xs:string+, $iriNeeded as xs:boolean) {
+	try {
+		if ($parsed[1] eq "iri") then
+			if (count($parsed) eq 1) then ("sem.iri(iri)", "sem:iri($iri)") 
+			else ('sem.iri("' || $parsed[2], '")', 'sem:iri("' || $parsed[2], '")')
+		else if ($parsed[1] eq "sattribute" or $parsed[1] eq "attribute") then 
+			let $sattrib := xes:getAttribForModule($triples, concat($parentIRI, "/", $parsed[2]))
+			return 
+				if ($iriNeeded) then ('sem.iri(' || $sattrib, ')', 'sem:iri(' || $sattrib, ')')
+				else $sattrib
+		else if ($parsed[1] eq "tattribute") then 
+			let $replacer := "TODO - provide value of target attribute *" || $parsed[2] || "*"
+			return 
+				if ($iriNeeded) then ('sem.iri("' || $replacer || '")', 'sem:iri("' || $replacer, '")')
+				else '"' || $replacer || '"'
+		else if ($parsed[1] eq "value") then 
+			let $val := xes:getAttribForModule($triples, $sourceIRI)
+			return
+				if ($iriNeeded) then ('sem.iri(' || $val, ')', 'sem:iri(' || $val, ')')
+				else $val
+		else if ($parsed[1] eq "integer" or $parsed[1] eq "decimal") then
+			if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, *" || $parsed[1] || "* found *" || $parsed[2] || "*")
+			else ($parsed[2], $parsed[2])
+		else if ($parsed[1] eq "boolean") then
+			if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, boolean found *" || $parsed[2] || "*")
+			else ($parsed[2], $parsed[2] || "()")
+		else if ($parsed[1] eq "string") then
+			if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, string found *" || $parsed[2] || "*")
+			else ('"' || $parsed[2] || '"', '"' || $parsed[2] || '"')
+		else fn:error(xs:QName("cannot deal with " || $parsed))
+	} catch($e) {
+		let $problems := map:get($xes,  "problems")	
+		let $err := string($e//error:code)
+		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, $err) 
+		let $ret := '"error ' || $err || '"'
+		return ($ret, $ret)
+	}
+};
 
+declare function xes:parseXString($xes, $sourceIRI as xs:string?, $s as xs:string) as xs:string* {
+	try {
+		if (starts-with($s, "$attribute")) then ("attribute", xes:parseDollar($xes, "$attribute", $s))
+		else if (starts-with($s, "$xqy") or starts-with($s, "$sjs")) then fn:error(xs:QName("ERROR"), "dynamic sjs/xqy not supported") 
+		else ("literal", $s)
+	} catch($e) {
+		let $problems := map:get($xes,  "problems")	
+		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, string($e//error:code)) 
+		return ("junk", $s)
+	}
+};
 
+declare function xes:parseXiany($xes, $sourceIRI as xs:string?, $s as xs:string, $tripleDataType as xs:string?) as xs:string* {
+	xes:parseXianyImpl($xes, $sourceIRI, $s, $tripleDataType, false())
+};
+
+declare function xes:parseXipany($xes, $sourceIRI as xs:string?, $s as xs:string, $tripleDataType as xs:string?) as xs:string* {
+	xes:parseXianyImpl($xes, $sourceIRI, $s, $tripleDataType, true())
+};
+
+declare function xes:parseXianyImpl($xes, $sourceIRI as xs:string?, $s as xs:string, $tripleDataType as xs:string?, $pMode as xs:boolean) as xs:string* {
+	try {
+		if (string-length($tripleDataType) eq 0) then ("iri", $s)
+		else 
+			let $xi := parseXString($xes, $sourceIRI, $s)
+			return 
+				if ($xi[1] eq "junk" or $xi[1] eq "attribute") then $xi
+				else if (ends-with($tripleDataType, "#integer")) then ("integer", xs:integer($s))
+				else if (ends-with($tripleDataType, "#decimal")) then ("decimal", xs:decimal($s))
+				else if (ends-with($tripleDataType, "#boolean")) then ("boolean", xs:boolean($s))
+				else if (ends-with($tripleDataType, "#string")) then 
+					if (starts-with($s, "$sattribute")) then 
+						if ($pMode) then ("sattribute", xes:parseDollar($xes, "$sattribute", $s))
+						else fn:error(xs:QName("ERROR"), "sattribute allowed only for xipany") 
+					else if (starts-with($s, "$tattribute")) then 
+						if ($pMode) then ("tattribute", xes:parseDollar($xes, "$tattribute", $s))
+						else fn:error(xs:QName("ERROR"), "tattribute allowed only for xipany") 
+					else if ($s eq "$value") then 
+						if ($pMode) then ("value")
+						else fn:error(xs:QName("ERROR"), "value allowed only for xipany") 
+					else if ($s eq "$iri") then ("iri")
+					else if (starts-with($s, "$iri")) then 
+						let $irid := xes:parseDollar($xes, "$iri", $s)
+						let $iricast := xes:castIRI($xes, $irid)
+						return 
+							if (count($iricast) eq 1) then ("iri", $iricast)
+							else fn:error(xs:QName("ERROR"), "bad iri *" || $s || "*") 
+					else if ((starts-with($s, "'") and ends-with($s, "'")) or (starts-with($s, '"') and ends-with($s, '"'))) then 
+						let $len := string-length($s)
+						return substring($s, 2, $len - 2)
+					else
+						let $si := xes:castInteger($xes, $s) 
+						let $sd := xes:castDecimal($xes, $s)
+						let $sb := xes:castBoolean($xes, $s)
+						let $siri := xes:castIRI($xes, $s)
+						return 
+							if (count($si) eq 1) then ("integer", $si)
+							else if (count($sd) eq 1) then ("decimal", $sd)
+							else if (count($sb) eq 1) then ("boolean", $sb)
+							else if (count($siri) eq 1) then ("iri", $siri)
+							else fn:error(xs:QName("ERROR"), "bad unquoted string *" || $s || "*")
+				else fn:error(xs:QName("ERROR"), "bad input *" || $s || "* of type *" || $tripleDataType || "*")
+	}
+	catch($e) {
+		let $problems := map:get($xes,  "problems")	
+		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, string($e//error:code)) 
+		return ("junk", $s)
+	}
+};
+
+declare function xes:parseDollar($xes, $function, $dollar as xs:string?) as xs:string? {
+	let $attempt := normalize-space(fn:tokenize(fn:tokenize(fn:substring-after($dollar, $function), "\(")[2], "\)")[1])
+	return 
+		if (string-length($attempt) eq 0) then fn:error(xs:QName("Unparseable *" || $dollar || "* on *" || $function || "*"))
+		else $attempt 
+};
+
+declare function xes:castIRI($xes, $s as xs:string?) as xs:string {
+	try {
+		let $testTriple := map:get($xes, "rdfBuilder")($s, "a", "dontcare")
+		return string(sem:triple-subject($testTriple))
+	}
+	catch($e) {
+		return ($s, $e)
+	}
+};
+
+declare function xes:castInteger($xes, $s as xs:string) as xs:string+ {
+	try {
+		xs:integer($s)
+	}
+	catch($e) {
+		($s, $e)
+	}
+};
+
+declare function xes:castDecimal($xes, $s as xs:string?) as xs:string {
+	try {
+		xs:decimal($s)
+	}
+	catch($e) {
+		($s, $e)
+	}
+};
+
+declare function xes:castBoolean($xes, $s as xs:string?) as xs:string {
+	try {
+		xs:boolean($s)
+	}
+	catch($e) {
+		($s, $e)
+	}
+};
