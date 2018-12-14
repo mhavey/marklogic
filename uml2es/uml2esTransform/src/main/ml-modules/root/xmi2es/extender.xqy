@@ -896,7 +896,7 @@ declare function xes:generateCalcs($xes as map:map, $codeMap as map:map) as empt
 		(: close out :)
 		let $target := xes:assignAttribInModule($triples, $attribIRI, ("c", '$c'))
 		return (
-			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $target[1])),
+			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $target[1], ';')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'return ', $target[2])),
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '}')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '};'))
