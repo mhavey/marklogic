@@ -26,7 +26,6 @@ declare function xmi2es:xmi2es($xmi as node(), $param as xs:string?) as map:map 
     ))
     else
       (: obtain the ES model (and XES along the way) and validate :)
-let $_ := xdmp:log("JUST BEFORE TRANSFORM")
       let $_ := xes:transform($xmodel, $profileForm)
       let $descriptor := xes:getDescriptor($xmodel)
       let $val := xmi2es:isEsValid($descriptor)
@@ -35,7 +34,6 @@ let $_ := xdmp:log("JUST BEFORE TRANSFORM")
         else()
 
       (: do the code gen :)
-let $_ := xdmp:log("JUST BEFORE GENERATE")
       let $genMap := xes:generateCode($xmodel)
 
       (: return the descriptor,findings, ES validation status :)
@@ -62,7 +60,6 @@ declare function xmi2es:transform(
   $content as map:map,
   $context as map:map
 ) as map:map* {
-let $_ := xdmp:log("IN THE TRANSFORM", "error")
   let $xmiURI := map:get($content, "uri")
   let $xmi := map:get($content, "value")
   let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".xml")
@@ -353,7 +350,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
         if ($xBizKey eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-BIZ-KEY, $xBizKey) else (),
         if ($xURI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-URI, $xURI) else (),
 
-        xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, json:to-array(for $c in $xCalculated return normalize-space($c))),
+        if (count($xCalculated) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, json:to-array(for $c in $xCalculated return normalize-space($c))) else (),
 
         if (string-length($xHeader) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-HEADER, $xHeader) else (),
         if ($semIRI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-IRI, $semIRI) else (),
