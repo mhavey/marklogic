@@ -232,7 +232,8 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
             let $count := count($semFact/term)
             return 
               xes:addQualifiedFact($xes, $classIRI, $xes:PRED-SEM-FACT, map:new((
-                if ($count eq 3) then map:entry($xes:PRED-SEM-S, string($semFact/term[1]/text())) else (),
+                if ($count eq 3) then 
+                map:entry($xes:PRED-SEM-S, xes:resolveXiany($xes, string($semFact/term[1]/text())) else (),
                 map:entry($xes:PRED-SEM-P, string($semFact/term[position() eq last() -1]/text())),
                 map:entry($xes:PRED-SEM-O, string($semFact/term[position() eq last()]/text()))))),
           if (string-length($inheritance/baseClass) gt 0) then 
@@ -517,6 +518,7 @@ declare function xmi2es:isEsValid($descriptor as json:object) {
 Common utility to split comma-separated KV string to a sequence of two strings (K,V),
 Nod to Dave Cassel: https://github.com/dmcassel/blog-code/blob/master/src/app/models/csv-lib.xqy
 :)
+(: TODO - this doesn't handle quotes properly :)
 declare function xmi2es:csvParse($kv as xs:string) as xs:string* {
   if ($kv) then
     if (fn:starts-with($kv, '"')) then
@@ -533,6 +535,86 @@ declare function xmi2es:csvParse($kv as xs:string) as xs:string* {
       $kv
   else ()
 };
+
+(:
+
+function parseCSV(line) {
+  var state = "i";
+  var currWord = "";
+  var words = [];
+  var len = line.length;
+  for (var i = 0; i < len; i++) {
+    var handled = true;
+    var c = line.charAt(i);
+    switch(c) {
+      case '"':
+        switch(state) {
+          case "i":
+            state = "s";
+            break;
+          case "s":
+            state = "q";
+            break;
+          case "q":
+            state = "s";
+            currWord += c;
+            break;
+          default:
+            handled = false;
+            break;
+        }
+        break;
+      case ',': 
+        switch(state) {
+          case "i":
+          case "t":
+          case "q":
+            words.push(currWord);
+            currWord = "";
+            state = "i";
+            break;
+          case "s":
+            currWord += c;
+            break;
+          default:
+            handled = false;
+            break;
+        }
+        break;
+      default:
+        switch(state) {
+          case "i":
+          case "t":
+            state = "t";
+            currWord += c;
+            break;
+          case "s":
+            currWord += c;
+            break;
+          default:
+            handled = false;
+            break;
+        }
+        break;
+    }
+    if (handled == false) throw "Illegal character *" + c + "* at pos " + i + " in state " + state;
+  }
+  
+  switch(state) {
+    case "i":
+    case "t":
+    case "q":
+      words.push(currWord);
+      break;
+    default:
+      throw "Cannot end the line in state *" + state + "*";
+  }
+  
+  return words;
+}
+:)
+
+
 
 declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as empty-sequence() {
 

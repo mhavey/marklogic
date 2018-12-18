@@ -19,8 +19,8 @@ declare variable $DEFAULT-VERSION := "0.0.1";
 
 declare variable $IRI-PREFIX := "http://marklogic.com/xmi2es/xes#";
 
-declare variable $PRED-REMINDER := sem:iri($IRI-PREFIX || "reminder");
-
+declare variable $PRED-REMINDER := sem:iri($IRI-PREFIX || "reminder"); (: string :)
+ 
 declare variable $PRED-COLLECTIONS := sem:iri($IRI-PREFIX || "collections");
 declare variable $PRED-PERM := sem:iri($IRI-PREFIX || "perm");
 declare variable $PRED-CAPABILITY := sem:iri($IRI-PREFIX || "capability");
@@ -111,6 +111,7 @@ declare function xes:getDescriptor($xes as map:map) as json:object {
 
 declare function xes:setPrefixes($xes as map:map, $modelIRI as sem:iri, $prefixes as map:map) as empty-sequence() {
 	let $fullPrefixes := map:new((sem:prefixes(), $prefixes))
+	let $_ := map:put($xes, "specifiedPrefixes", $prefixes)
 	let $_ := map:put($xes, "prefixes", $fullPrefixes)
 	let $_ := map:put($xes, "rdfBuilder", sem:rdf-builder($fullPrefixes))
 
@@ -125,11 +126,55 @@ declare function xes:resolveIRI($xes as map:map, $vals as xs:string*,
 	$subjectOfProblem as sem:iri, $contextOfProblem) as sem:iri* {
 
 	for $val in $vals return
+		if (starts-with($s, "_:")) then  
+	try {
+	  sem:curie-expand($val, map:get($xes, "prefixes"))
+	}
+	catch($e) {
+		try {
+            sem:curie-expand(sem:curie-shorten(sem:iri($val)))
+		}
+		catch($e2) {
+			$val
+		}
+	}
+
+
+
+    else if (starts-with($s, "_:")) then 
+      try {
+        let $bsubject := sem:triple-subject(sem:rdf-builder()($s, "a", "dontcare"))
+        return ("iri", $s)
+      } catch($e) {
+        ($s, $e)
+      }
+    else 
+      try {
+        ("iri", sem:curie-expand($s))
+      } catch($e) {
+        try {
+            ("blank", sem:curie-expand(sem:curie-shorten(sem:iri($s))))          
+        }
+        catch($e) {
+          ("error", $s, $e)
+        }
+    }
+};
+
+
+(:TODO - make this handle blanks too :)
+
+		for $val in $vals return
 		try {
 		  sem:curie-expand($val, map:get($xes, "prefixes"))
 		}
 		catch($e) {
-		  sem:iri($val)
+			try {
+	            sem:curie-expand(sem:curie-shorten(sem:iri($val)))
+			}
+			catch($e2) {
+				$val
+			}
 		}
 };
 
@@ -451,15 +496,47 @@ For class/attrib rel, cheat and use starts-with. An attribute's IRI starts with 
 
 declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) as empty-sequence() {
 	let $ns := 	map:get($xes, "ns")
+
+	let $prefixMap := map:get($xes, "prefixes")
+	let $prefixRDFAMap := map:get($xes, "specifiedPrefixes")
+	let $prefixesRDFa := for $pkey in map:keys($prefixRDFAMap) return concat($pkey, ":", map:get($prefixRDFAMap, $pkey))
+	let $prefixesRDFA_SJS := string-join($prefixesRDFa, '\n')
+	let $prefixesRDFA_XQY := string-join($prefixesRDFa, $NEWLINE)
+	let $prefixList := for $p in map:keys($prefixMap) return concat('"', $p, '"')
+	let $allPrefixesSJS := concat('[', string-join($prefixList, ',') ,']')
+	let $allPrefixesXQY := concat('(', string-join($prefixList, ',') ,')')
+
 	let $_  := (
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat('const sem = require("/MarkLogic/semantics.xqy");', $NEWLINE)),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat('xquery version "1.0-ml";', $NEWLINE)),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'module namespace ', $NS-PREFIX, ' = "', $ns, '";')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 
 			'import module namespace sem = "http://marklogic.com/semantics" at "/MarkLogic/semantics.xqy";', 
-			$NEWLINE))
+			$NEWLINE)),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIX_RDFA = "', $prefixesRDFA_SJS, '";')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIX-RDFA := "', $prefixesRDFA_XQY, '";')),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIXES = ', $allPrefixesSJS, ';')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIXES := "', $allPrefixesXQY, ';')),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_TYPE = sem.curieExpand("rdf:type");')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $IRI-TYPE := sem:curie-expand("rdf:type");')),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_LABEL = sem.curieExpand("rdfs:label");')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $IRI-LABEL := sem:curie-expand("rdfs:label");')),
+		xes:appendSourceLine($codeMap, $LIB-SJS, $NEWLINE),
+		xes:appendSourceLine($codeMap, $LIB-XQY, $NEWLINE),
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function dynIRI(expr) {
+   for (var i = 0; i < PREFIXES.length; i++) {
+      if (expr.startsWith(PREFIXES[i] + ":")) return sem.curieExpand(expr, $PREFIXES-RDFA);	
+   }
+   return sem.iri(expr);
+}')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':dynIRI($expr) as sem:iri {
+   let $iri := sem:iri($expr)
+   let $_ := for $p in $PREFIXES return 
+      if (starts-with($expr, concat($p, ":")) then xdmp:set($iri, sem:curie-expand($expression))
+      else ()
+   return $iri
+};'))
 	)
-
 	return  map:put($xes, $LIB-SJS, json:array()) (: here is where we keep list of exported sjs functions :)
 };
 
@@ -693,6 +770,11 @@ return aTriples.concat(bTriples);
 This one is not a gimme; only RESOLVED type is the true type. Even then, no telling if actual value at runtime is an IRI. :)
 
 	let $triples:= <triples>{json:array-values(map:get($xes, "triples"))}</triples>
+
+	(: RDF Builder is needed because there are lots of dynamic IRIs, some fully qualified, others in curie notation.
+	   The builder takes care of all that.
+	:)
+	(: TODO - create the builder init module :)
 	let $classTriples := $triples/sem:triple[
 		sem:predicate eq string($PRED-SEM-TYPE) or sem:predicate eq string($PRED-SEM-FACT)]
 	let $attribTriples := $triples/sem:triple[
@@ -710,13 +792,14 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
 			'($id as xs:string, $content as item()?, $headers as item()*, $options as map:map) as sem:triple* {'))
 
+		let $declaredBlanks := json:array()
+
 		(: IRI :)
 		let $tSemIRI := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI) and starts-with(sem:subject, $classIRIx)]
 		let $iriVal :=
 			if (count($tSemIRI) ne 1) then ('"unknown"', '"unknown"')
-			else xes:getAttribForModule($triples, $tSemIRI/sem:subject/text())
+			else xes:dynIRI($xes, xes:getAttribForModule($triples, $tSemIRI/sem:subject/text()))
 		let $_ := (
-			(: TODO - this iriVal might need to be curie-expanded at runtime:)
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var iri = ', $iriVal[1], ';')),
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ret = [];')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $iri := ', $iriVal[2])),
@@ -731,23 +814,22 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 				let $label :=xes:getAttribForModule($triples, $tSemLabel/sem:subject/text())
 				return (
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-						'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/2000/01/rdf-schema#label"), ', $label[1], '));')),
+						'ret.push(sem:triple(iri, IRI_LABEL,', $label[1], '));')),
 					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-						'json:array-push($ret, sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/2000/01/rdf-schema#label"), ', $label[2], '))'))
+						'json:array-push($ret, sem:triple($iri, $IRI-LABEL,', $label[2], '))'))
 				)
 
 		(: Types :)
 		let $tSemTypes:= $triples/sem:triple[sem:predicate eq string($PRED-SEM-TYPE) and sem:subject eq $classIRI]
 		let $_ := for $tt in $tSemTypes return (
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-				'ret.push(sem.triple(sem.iri(iri), sem.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem.iri("', 
-				$tt/sem:object/text(), '")));')),
+				'ret.push(sem.triple(iri, IRI_TYPE, sem.iri("', $tt/sem:object/text(), '")));')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-				'json:array-push($ret, sem:triple(sem:iri($iri), sem:iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), sem:iri("', 
-				$tt/sem:object/text(), '")))'))
+				'json:array-push($ret, sem:triple($iri, $IRI-TYPE, sem:iri("', $tt/sem:object/text(), '")))'))
 			)
 
 		(: Facts :)
+		let $factBNodes := json:array()
 		let $tSemFacts:= $triples/sem:triple[sem:predicate eq string($PRED-SEM-FACT) and sem:subject eq $classIRI]/sem:object
 		let $_ := for $tf in $tSemFacts 
 			let $fs := $triples/sem:triple[sem:subject eq string($tf) and sem:predicate eq string($PRED-SEM-S)]/sem:object
@@ -755,19 +837,40 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 			let $fo := $triples/sem:triple[sem:subject eq string($tf) and sem:predicate eq string($PRED-SEM-O)]/sem:object
 
 			let $fsVal := 
-				if (count($fs) ne 1) then ("sem.iri(iri)", "sem:iri($iri)") 
+				if (count($fs) ne 1) then ("iri", "$iri") 
 				else 
-					let $parsedFS := xes:parseXiany($xes, $classIRI, $fs/text(), string($fs/@dataType/@datatype))
+let $_ := xdmp:log("FACT S")
+					let $parsedFS := xes:parseXiany($xes, $classIRI, $fs/text(), string($fs/@datatype))
+					let $_ :=
+						if ($parsedFS[1] eq "blank") then (
+							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $parsedFS[3])),
+							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $parsedFS[4]))
+						)
+						else ()
 					return xes:buildSemTripleParameter($xes, $triples, $classIRI, (), $parsedFS, true())
 			let $fpVal := 
 				if (count($fp) ne 1) then ("bug", "bug") 
 				else 
-					let $parsedFP := xes:parseXiany($xes, $classIRI, $fp/text(), string($fp/@dataType/@datatype))
+let $_ := xdmp:log("FACT P")
+					let $parsedFP := xes:parseXiany($xes, $classIRI, $fp/text(), string($fp/@datatype))
+					let $_ :=
+						if ($parsedFP[1] eq "blank") then (
+							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $parsedFP[3])),
+							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $parsedFP[4]))
+						)
+						else ()
 					return xes:buildSemTripleParameter($xes, $triples, $classIRI, (), $parsedFP, true())
 			let $foVal := 
 				if (count($fo) ne 1) then ("bug", "bug") 
 				else 
-					let $parsedFO := xes:parseXiany($xes, $classIRI, $fo/text(), string($fo/@dataType/@datatype))
+let $_ := xdmp:log("FACT O")
+					let $parsedFO := xes:parseXiany($xes, $classIRI, $fo/text(), string($fo/@datatype))
+					let $_ :=
+						if ($parsedFO[1] eq "blank") then (
+							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $parsedFO[3])),
+							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $parsedFO[4]))
+						)
+						else ()
 					return xes:buildSemTripleParameter($xes, $triples, $classIRI, (), $parsedFO, false())
 			return  (					
 				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
@@ -798,7 +901,7 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 			If the attribute's type is a primitive, it's a literal.
 			:)
 
-			let $objName := "semProperty" || "_" || fn:tokenize($attribIRI, "/")[last()]
+			let $objName := xes:semBlank($attribIRI, "")
 			let $_ := 
 				if (count($qualifiedObj) gt 0) then (
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = sem.bnode();')),
@@ -817,9 +920,9 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 						)
 			let $_ := (						
 				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-					'ret.push(sem.triple(sem.iri(iri), sem.iri("', $pred, '"),', $objName, '));')),
+					'ret.push(sem.triple(iri, sem.iri("', $pred, '"),', $objName, '));')),
 				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-					'json:array-push($ret, sem:triple(sem:iri($iri), sem:iri("', $pred, '"), $', $objName, '))'))
+					'json:array-push($ret, sem:triple($iri, sem:iri("', $pred, '"), $', $objName, '))'))
 			)
 
 			(: Qualification for that property :)
@@ -829,19 +932,37 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 				let $qo := $triples/sem:triple[sem:subject eq string($q) and sem:predicate eq string($PRED-SEM-O)]/sem:object
 
 				let $qsVal := 
-					if (count($qs) ne 1) then ("sem.iri(iri)", "sem:iri($iri)") 
+					if (count($qs) ne 1) then ("iri", "$iri") 
 					else 
-						let $parsedQS := xes:parseXipany($xes, $attribIRI, $qs/text(), string($qs/@dataType/@datatype))
+						let $parsedQS := xes:parseXipany($xes, $attribIRI, $qs/text(), string($qs/@datatype))
+						let $_ :=
+							if ($parsedQS[1] eq "blank") then (
+								xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $parsedQS[3])),
+								xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $parsedQS[4]))
+							)
+							else ()
 						return xes:buildSemTripleParameter($xes, $triples, $attribIRI, $classIRI, $parsedQS, true())
 				let $qpVal := 
 					if (count($qp) ne 1) then ("bug", "bug") 
 					else 
-						let $parsedQP := xes:parseXipany($xes, $attribIRI, $qp/text(), string($qp/@dataType/@datatype))
+						let $parsedQP := xes:parseXipany($xes, $attribIRI, $qp/text(), string($qp/@datatype))
+						let $_ :=
+							if ($parsedQP[1] eq "blank") then (
+								xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $parsedQP[3])),
+								xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $parsedQP[4]))
+							)
+							else ()
 						return xes:buildSemTripleParameter($xes, $triples, $attribIRI, $classIRI, $parsedQP, true())
 				let $qoVal := 
 					if (count($qo) ne 1) then ("bug", "bug") 
 					else 
-						let $parsedQO := xes:parseXipany($xes, $attribIRI, $qo/text(), string($qo/@dataType/@datatype))
+						let $parsedQO := xes:parseXipany($xes, $attribIRI, $qo/text(), string($qo/@datatype))
+						let $_ :=
+							if ($parsedQO[1] eq "blank") then (
+								xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, $parsedQO[3])),
+								xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, $parsedQO[4]))
+							)
+							else ()
 						return xes:buildSemTripleParameter($xes, $triples, $attribIRI, $classIRI, $parsedQO, false())
 				return  (					
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
@@ -952,26 +1073,38 @@ declare function xes:addSJSFunction($xes, $function as xs:string) as empty-seque
 	return map:put($xes, $LIB-SJS, $currList)
 };
 
+declare function xes:dynIRI($xes, $expression as xs:string+) as xs:string+ {
+	(
+		concat('dynIRI(', $expression[1], ')'),
+		concat($NS-PREFIX, ':dynIRI(', $expression[2], ')')
+	)
+};
+
 declare function xes:buildSemTripleParameter($xes, $triples, $sourceIRI as xs:string, $parentIRI as xs:string?,
 	$parsed as xs:string+, $iriNeeded as xs:boolean) {
 	try {
 		if ($parsed[1] eq "iri") then
 			if (count($parsed) eq 1) then ("sem.iri(iri)", "sem:iri($iri)") 
 			else ('sem.iri("' || $parsed[2], '")', 'sem:iri("' || $parsed[2], '")')
+		else if ($parsed[1] eq "blank") then 
+			let $blank := xes:semBlank($sourceIRI, $parsed[2])
+			return ($blank, '$' || blank, 
+				concat('var ', $blank, ' = sem.bnode();'), 
+				concat('let $', $blank, ' := sem:bnode()'))
 		else if ($parsed[1] eq "sattribute" or $parsed[1] eq "attribute") then 
 			let $sattrib := xes:getAttribForModule($triples, concat($parentIRI, "/", $parsed[2]))
 			return 
-				if ($iriNeeded) then ('sem.iri(' || $sattrib, ')', 'sem:iri(' || $sattrib, ')')
+				if ($iriNeeded) then xes:dynIRI($xes, $sattrib)
 				else $sattrib
 		else if ($parsed[1] eq "tattribute") then 
 			let $replacer := "TODO - provide value of target attribute *" || $parsed[2] || "*"
 			return 
-				if ($iriNeeded) then ('sem.iri("' || $replacer || '")', 'sem:iri("' || $replacer, '")')
+				if ($iriNeeded) then xes:dynIRI($xes, $replacer)
 				else '"' || $replacer || '"'
 		else if ($parsed[1] eq "value") then 
 			let $val := xes:getAttribForModule($triples, $sourceIRI)
 			return
-				if ($iriNeeded) then ('sem.iri(' || $val, ')', 'sem:iri(' || $val, ')')
+				if ($iriNeeded) then xes:dynIRI($xes, $val)
 				else $val
 		else if ($parsed[1] eq "integer" or $parsed[1] eq "decimal") then
 			if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, *" || $parsed[1] || "* found *" || $parsed[2] || "*")
@@ -1019,6 +1152,8 @@ declare function xes:parseXipany($xes, $sourceIRI as xs:string?, $s as xs:string
 
 declare function xes:parseXianyImpl($xes, $sourceIRI as xs:string?, $s as xs:string, $tripleDataType as xs:string?, $pMode as xs:boolean) as xs:string* {
 	try {
+let $_:= xdmp:log(concat("doing *", $s, "*"))
+return		
 		if (string-length($tripleDataType) eq 0) then ("iri", $s)
 		else 
 			let $xi := parseXStringImpl($xes, $sourceIRI, $s, true())
@@ -1041,26 +1176,30 @@ declare function xes:parseXianyImpl($xes, $sourceIRI as xs:string?, $s as xs:str
 					else if (starts-with($s, "$iri")) then 
 						let $irid := xes:parseDollar($xes, "$iri", $s)
 						let $iricast := xes:castIRI($xes, $irid)
+let $_:= xdmp:log(concat("castIRI1 *", $s, "* results in ", $iricast[1]))
 						return 
-							if (count($iricast) eq 1) then ("iri", $iricast)
-							else fn:error(xs:QName("ERROR"), "bad iri *" || $s || "*") 
+							if ($iricast[1] eq "error") then fn:error(xs:QName("ERROR"), "bad iri *" || $s || "*") 
+							else $iricast
 					else if ((starts-with($s, "'") and ends-with($s, "'")) or (starts-with($s, '"') and ends-with($s, '"'))) then 
 						let $len := string-length($s)
 						return substring($s, 2, $len - 2)
 					else
+let $_:= xdmp:log(concat("checkpoint *", $s, "*"))
 						let $si := xes:castInteger($xes, $s) 
 						let $sd := xes:castDecimal($xes, $s)
 						let $sb := xes:castBoolean($xes, $s)
 						let $siri := xes:castIRI($xes, $s)
+let $_:= xdmp:log(concat("castIRI2 *", $s, "* results in ", $siri[1], "*", $siri[2]))
 						return 
 							if (count($si) eq 1) then ("integer", $si)
 							else if (count($sd) eq 1) then ("decimal", $sd)
 							else if (count($sb) eq 1) then ("boolean", $sb)
-							else if (count($siri) eq 1) then ("iri", $siri)
+							else if ($siri[1] ne "error") then $siri
 							else fn:error(xs:QName("ERROR"), "bad unquoted string *" || $s || "*")
 				else fn:error(xs:QName("ERROR"), "bad input *" || $s || "* of type *" || $tripleDataType || "*")
 	}
 	catch($e) {
+let $_:= xdmp:log(concat("but got here *", $s, "*", $e//error:code))
 		let $problems := map:get($xes,  "problems")	
 		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, string($e//error:code)) 
 		return ("junk", $s)
@@ -1074,17 +1213,34 @@ declare function xes:parseDollar($xes, $function, $dollar as xs:string?) as xs:s
 		else $attempt 
 };
 
-declare function xes:castIRI($xes, $s as xs:string?) as xs:string {
-	try {
-		let $testTriple := map:get($xes, "rdfBuilder")($s, "a", "dontcare")
-		return string(sem:triple-subject($testTriple))
-	}
-	catch($e) {
-		($s, $e)
-	}
+declare function xes:semBlank($sourceIRI as xs:string, $blankName as xs:string?) as xs:string {
+	concat("semProperty_", fn:tokenize($sourceIRI, "/")[last()], 
+		if (string-length($blankName) eq 0) then "" else concat("_", $blankName))
 };
 
-declare function xes:castInteger($xes, $s as xs:string) as xs:string+ {
+declare function xes:castIRI($xes, $s as xs:string?) {
+    if ($s eq "a") then ("iri", sem:curie-expand("rdf:type"))
+    else if (starts-with($s, "_:")) then 
+      try {
+        let $bsubject := sem:triple-subject(sem:rdf-builder()($s, "a", "dontcare"))
+        return ("iri", $s)
+      } catch($e) {
+        ($s, $e)
+      }
+    else 
+      try {
+        ("iri", sem:curie-expand($s))
+      } catch($e) {
+        try {
+            ("blank", sem:curie-expand(sem:curie-shorten(sem:iri($s))))          
+        }
+        catch($e) {
+          ("error", $s, $e)
+        }
+    }
+};
+
+declare function xes:castInteger($xes, $s as xs:string) {
 	try {
 		xs:integer($s)
 	}
@@ -1093,7 +1249,7 @@ declare function xes:castInteger($xes, $s as xs:string) as xs:string+ {
 	}
 };
 
-declare function xes:castDecimal($xes, $s as xs:string?) as xs:string {
+declare function xes:castDecimal($xes, $s as xs:string?) {
 	try {
 		xs:decimal($s)
 	}
@@ -1102,7 +1258,7 @@ declare function xes:castDecimal($xes, $s as xs:string?) as xs:string {
 	}
 };
 
-declare function xes:castBoolean($xes, $s as xs:string?) as xs:string {
+declare function xes:castBoolean($xes, $s as xs:string?) {
 	try {
 		xs:boolean($s)
 	}
