@@ -212,37 +212,36 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
           xmi2es:xImplHints($classIRI, $hints, $xes, $problems),
           if ($exclude eq true()) then 
             (
-              xes:addFact($xes, $modelIRI, $xes:PRED-EXCLUDES,$classIRI),
-              xes:addFact($xes, $modelIRI, sem:iri("http://marklogic.com/entity-services#definitions"), $classIRI),
-              xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#title"), $className)
+              xes:addFact($xes, $modelIRI, $xes:PRED-EXCLUDES,(),$classIRI),
+              xes:addFact($xes, $modelIRI, sem:iri("http://marklogic.com/entity-services#definitions"), (), $classIRI),
+              xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#title"), (), $className)
             ) 
           else (),
-          for $coll in $inheritance/xDocument/collections/item return xes:addFact($xes, $classIRI, $xes:PRED-COLLECTIONS, string($coll)),
+          for $coll in $inheritance/xDocument/collections/item return xes:addFact($xes, $classIRI, $xes:PRED-COLLECTIONS, (), string($coll)),
           for $perm in $inheritance/xDocument/permsCR/item return 
-            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, map:new((
+            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, (), map:new((
               map:entry($xes:PRED-CAPABILITY, string($perm/@capability)),
               map:entry($xes:PRED-ROLE,string(pred/@role))))),
-          if (string-length($inheritance/xDocument/quality) gt 0) then xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, xs:integer($inheritance/xDocument/quality)) else (),
+          if (string-length($inheritance/xDocument/quality) gt 0) then xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, (), $inheritance/xDocument/quality) else (),
           for $md in $inheritance/xDocument/metadataKV/item return 
-            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-METADATA, map:new((
+            xes:addQualifiedFact($xes, $classIRI, $xes:PRED-METADATA, (), map:new((
               map:entry($xes:PRED-KEY, string($md/@key)),
               map:entry($xes:PRED-VALUE, string(md/@value))))), 
-          xes:addFact($xes, $classIRI, $xes:PRED-SEM-TYPE, xes:resolveIRI($xes, $inheritance/semTypes/item, $classIRI, ())),
+          xes:addFact($xes, $classIRI, $xes:PRED-SEM-TYPE, (), $inheritance/semTypes/item),
           for $semFact in $inheritance/semFacts/item return 
             let $count := count($semFact/term)
             return 
-              xes:addQualifiedFact($xes, $classIRI, $xes:PRED-SEM-FACT, map:new((
-                if ($count eq 3) then 
-                map:entry($xes:PRED-SEM-S, xes:resolveXiany($xes, string($semFact/term[1]/text())) else (),
+              xes:addQualifiedFact($xes, $classIRI, $xes:PRED-SEM-FACT, (), map:new((
+                if ($count eq 3) then map:entry($xes:PRED-SEM-S, string($semFact/term[1]/text())) else (),
                 map:entry($xes:PRED-SEM-P, string($semFact/term[position() eq last() -1]/text())),
                 map:entry($xes:PRED-SEM-O, string($semFact/term[position() eq last()]/text()))))),
           if (string-length($inheritance/baseClass) gt 0) then 
-            xes:addFact($xes, $classIRI, $xes:PRED-BASE-CLASS, xes:classIRI($xes, $modelIRI, string($inheritance/baseClass)))
+            xes:addFact($xes, $classIRI, $xes:PRED-BASE-CLASS, (), xes:classIRI($xes, $modelIRI, string($inheritance/baseClass)))
           else (), 
-          if ($associationClass eq true()) then xes:addFact($xes, $classIRI, $xes:PRED-IS-ASSOCIATION-CLASS, $associationClass) else (), 
+          if ($associationClass eq true()) then xes:addFact($xes, $classIRI, $xes:PRED-IS-ASSOCIATION-CLASS, (), $associationClass) else (), 
           for $end in $assocClassEnds return 
             let $endClassIRI := xes:classIRI($xes, $modelIRI, string($end/@class))
-            return xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-ASSOC-CLASS-END, map:new((
+            return xes:addQualifiedFact($xes, $classIRI, $xes:PRED-HAS-ASSOC-CLASS-END, (), map:new((
               map:entry($xes:PRED-ASSOC-CLASS-END-ATTRIB, xes:attribIRI($xes, $endClassIRI, string($end/@attribute))),
               map:entry($xes:PRED-ASSOC-CLASS-END-CLASS, $endClassIRI),
               map:entry($xes:PRED-ASSOC-CLASS-END-FK, $end/@FK eq true()))))
@@ -334,35 +333,35 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
       (: attrib-level facts :)
       let $_ := (
         xmi2es:xImplHints($attribIRI, $hints, $xes, $problems),
-        if (string-length($relationship) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-RELATIONSHIP,string($relationship)) else (),
-        if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-IS-REFERENCE,$typeIsReference) else (),
-        if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-REFERENCE,xes:classIRI($xes, $modelIRI, $type)) else (),
-        if (string-length($associationClass) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-ASSOCIATION-CLASS,xes:classIRI($xes, $modelIRI, $associationClass)) else (),
+        if (string-length($relationship) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-RELATIONSHIP, (), string($relationship)) else (),
+        if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-IS-REFERENCE,(),$typeIsReference) else (),
+        if ($typeIsReference eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-TYPE-REFERENCE, (), xes:classIRI($xes, $modelIRI, $type)) else (),
+        if (string-length($associationClass) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-ASSOCIATION-CLASS, (), xes:classIRI($xes, $modelIRI, $associationClass)) else (),
 
         if ($exclude eq true()) then 
           (
-            xes:addFact($xes, $classIRI, $xes:PRED-EXCLUDES,$attribIRI),
-            xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#property"), $attribIRI),
-            xes:addFact($xes, $attribIRI, sem:iri("http://marklogic.com/entity-services#title"), $attribName)
+            xes:addFact($xes, $classIRI, $xes:PRED-EXCLUDES, (), $attribIRI),
+            xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#property"), (), $attribIRI),
+            xes:addFact($xes, $attribIRI, sem:iri("http://marklogic.com/entity-services#title"), (), $attribName)
             (: TODO - do we need to capture type and cardinality? :)
           ) 
         else (),
 
-        if ($xBizKey eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-BIZ-KEY, $xBizKey) else (),
-        if ($xURI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-URI, $xURI) else (),
+        if ($xBizKey eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-BIZ-KEY, (), $xBizKey) else (),
+        if ($xURI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-URI, (),  $xURI) else (),
 
-        if (count($xCalculated) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, json:to-array(for $c in $xCalculated return normalize-space($c))) else (),
+        if (count($xCalculated) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-CALCULATION, (), json:to-array(for $c in $xCalculated return normalize-space($c))) else (),
 
-        if (string-length($xHeader) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-HEADER, $xHeader) else (),
-        if ($semIRI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-IRI, $semIRI) else (),
-        if ($semLabel eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-LABEL, $semLabel) else (),
-        if (string-length($semPropertyPredicate) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE, xes:resolveIRI($xes, $semPropertyPredicate, $attribIRI, ())) else (),
+        if (string-length($xHeader) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-HEADER, (), $xHeader) else (),
+        if ($semIRI eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-IRI,(), $semIRI) else (),
+        if ($semLabel eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-LABEL,(), $semLabel) else (),
+        if (string-length($semPropertyPredicate) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE, (), $semPropertyPredicate) else (),
         for $qual in $semPropertyPredicateQual return
           let $kv := xmi2es:csvParse(normalize-space($qual/text()))
           let $count := count($kv)
           return 
             if ($count eq 2 or $count eq 3) then 
-              xes:addQualifiedFact($xes, $attribIRI, $xes:PRED-SEM-QUAL, map:new((
+              xes:addQualifiedFact($xes, $attribIRI, $xes:PRED-SEM-QUAL, (), map:new((
                 if ($count eq 3) then map:entry($xes:PRED-SEM-S, normalize-space(string($kv[1]))) else (),
                 map:entry($xes:PRED-SEM-P, normalize-space(string($kv[position() eq last() -1]))),
                 map:entry($xes:PRED-SEM-O, normalize-space(string($kv[position() eq last()]))))))
@@ -622,7 +621,7 @@ declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as 
   let $hintTriples := $hints/*:triplesPO
 
   return (
-    for $r in $reminderHints return xes:addFact($xes, $iri, $xes:PRED-REMINDER, string($r)), 
+    for $r in $reminderHints return xes:addFact($xes, $iri, $xes:PRED-REMINDER, (), string($r)), 
     for $t in $hintTriples return 
       let $po := xmi2es:csvParse($t)
       return 
@@ -630,10 +629,8 @@ declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as 
           let $pred := normalize-space($po[1])
           let $obj := normalize-space($po[2])
           return xes:addFact($xes, $iri, 
-            xes:resolveIRI($xes, $pred, $iri, $po), 
-            xes:resolveIString($xes, $obj, $iri, $po))
+            xes:resolveIRI($xes, $pred, $iri), $xes:MUSICAL-ISTRING, $obj)
         else pt:addProblem($problems, $iri, (), $pt:ILLEGAL-TRIPLE-PO, $po) 
   )
 };
-
 
