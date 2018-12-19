@@ -5,6 +5,8 @@ import module namespace es = "http://marklogic.com/entity-services" at "/MarkLog
 import module namespace pt = "http://marklogic.com/xmi2es/problemTracker" at "/xmi2es/problemTracker.xqy";
 import module namespace xes = "http://marklogic.com/xmi2es/extender" at "/xmi2es/extender.xqy";
 
+declare namespace error = "http://marklogic.com/xdmp/error";
+
 (: 
 Main xmi to ES descriptor function, Pass in XMI. Return descriptor,findings, ES validation status.
 :)
@@ -146,7 +148,7 @@ declare function buildModel($xmi as node(), $xes, $problems) as node()? {
       (: Model-level facts :)
       let $prefixMap := map:new((
         for $semPrefixCSV in $semPrefixes return 
-          let $semPrefix := xmi2es:csvParse($semPrefixCSV)
+          let $semPrefix := xmi2es:csvParse($semPrefixCSV, $modelIRI, $problems)
           return 
             if (count($semPrefix) eq 2) then map:entry(normalize-space($semPrefix[1]), normalize-space($semPrefix[2]))
             else pt:addProblem($problems, $modelIRI, (), $pt:ILLEGAL-SEM-PREFIX, $semPrefixCSV)
@@ -193,7 +195,7 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
       let $xmlNamespace := ($xmi/*/*:xmlNamespace[@base_Class eq $classID], $rootNamespace)[1]
       let $hints := $xmi/*/*:xImplHints[@base_Class eq $classID]
       let $exclude := exists($xmi/*/*:exclude[@base_Class eq $classID])
-      let $inheritance := xmi2es:determineInheritance($xmi, $problems, $class, $classes, ())
+      let $inheritance := xmi2es:determineInheritance($xmi, $xes, $problems, $modelIRI, $class, $classes, ())
       let $_ := 
         if (count($class/generalization) gt 1) then 
           pt:addProblem($problems, $classIRI, (), $pt:CLASS-MULTI-INHERIT, count($class/generalization)) 
@@ -357,7 +359,7 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
         if ($semLabel eq true()) then xes:addFact($xes, $attribIRI, $xes:PRED-IS-SEM-LABEL,(), $semLabel) else (),
         if (string-length($semPropertyPredicate) gt 0) then xes:addFact($xes, $attribIRI, $xes:PRED-SEM-PREDICATE, (), $semPropertyPredicate) else (),
         for $qual in $semPropertyPredicateQual return
-          let $kv := xmi2es:csvParse(normalize-space($qual/text()))
+          let $kv := xmi2es:csvParse(normalize-space($qual/text()), $attribIRI, $problems)
           let $count := count($kv)
           return 
             if ($count eq 2 or $count eq 3) then 
@@ -407,8 +409,10 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
 (: Determine the inherited aspects of a class. Used if there are generalizations.
 This is recursive and moves UP (recurses TO ancestor).
 :)
-declare function xmi2es:determineInheritance($xmi as node(), $problems, $class as node(), $classes as node()*, 
-  $descDef as node()?) as node()? {
+declare function xmi2es:determineInheritance($xmi as node(), $xes, $problems, $modelIRI as xs:string,
+  $class as node(), $classes as node()*, $descDef as node()?) as node()? {
+
+  let $classIRI := xes:classIRI($xes, $modelIRI, fn:normalize-space(string($class/@name)))
 
   (: want the immediate base class of the first class passed in :)
   let $baseClass := 
@@ -431,7 +435,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
         <permsCR>{(
           $descXDoc/permsCR/item,
           for $c in $currentXDoc/*:permsCR return 
-            let $kv := xmi2es:csvParse(normalize-space($c/text()))
+            let $kv := xmi2es:csvParse(normalize-space($c/text()), $classIRI, $problems)
             return 
               if (count($kv) eq 2) then <item capability="{normalize-space($kv[1])}" role="{normalize-space($kv[2])}"/>
               else pt:addProblem($problems, (), concat("*",$class/@name,"*",$class/@id), $pt:ILLEGAL-PERM, $kv) 
@@ -443,7 +447,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
         <metadataKV>{(
           $descXDoc/metadataKV/item,
           for $c in $currentXDoc/*:metadataKV return 
-            let $kv := xmi2es:csvParse(normalize-space($c/text()))
+            let $kv := xmi2es:csvParse(normalize-space($c/text()), $classIRI, $problems)
             return 
               if (count($kv) eq 2) then <item key="{normalize-space($kv[1])}" value="{normalize-space($kv[2])}"/>
               else pt:addProblem($problems, (), concat("*",$class/@name,"*",$class/@id), $pt:ILLEGAL-METADATA, $kv) 
@@ -471,7 +475,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
     else 
         ($descSEMFacts, 
          for $c in $currentSEMFacts return 
-            let $kv := xmi2es:csvParse(normalize-space($c/text()))
+            let $kv := xmi2es:csvParse(normalize-space($c/text()), $classIRI, $problems)
             return 
               if (count($kv) eq 2 or count($kv) eq 3) then 
                 <item>{
@@ -497,7 +501,7 @@ declare function xmi2es:determineInheritance($xmi as node(), $problems, $class a
   let $parentClass := $classes[@*:id eq $class/generalization[1]/@general]
   return 
     if (count($parentClass) eq 0) then $def
-    else xmi2es:determineInheritance($xmi, $problems, $parentClass, $classes, $def)
+    else xmi2es:determineInheritance($xmi, $xes, $problems, $modelIRI, $parentClass, $classes, $def)
 };  
 
 (:
@@ -513,107 +517,46 @@ declare function xmi2es:isEsValid($descriptor as json:object) {
   }  
 };
 
-(:
-Common utility to split comma-separated KV string to a sequence of two strings (K,V),
-Nod to Dave Cassel: https://github.com/dmcassel/blog-code/blob/master/src/app/models/csv-lib.xqy
-:)
-(: TODO - this doesn't handle quotes properly :)
-declare function xmi2es:csvParse($kv as xs:string) as xs:string* {
-  if ($kv) then
-    if (fn:starts-with($kv, '"')) then
-      let $after-quote := fn:substring($kv, 2)
-      return (
-        fn:substring-before($after-quote, '"'),
-        xmi2es:csvParse(fn:substring-after($after-quote, '",'))
-      )
-    else if (fn:matches($kv, ",")) then (
-      fn:substring-before($kv, ','),
-      xmi2es:csvParse(fn:substring-after($kv, ','))
-    )
-    else 
-      $kv
-  else ()
-};
-
-(:
-
-function parseCSV(line) {
-  var state = "i";
-  var currWord = "";
-  var words = [];
-  var len = line.length;
-  for (var i = 0; i < len; i++) {
-    var handled = true;
-    var c = line.charAt(i);
-    switch(c) {
-      case '"':
-        switch(state) {
-          case "i":
-            state = "s";
-            break;
-          case "s":
-            state = "q";
-            break;
-          case "q":
-            state = "s";
-            currWord += c;
-            break;
-          default:
-            handled = false;
-            break;
-        }
-        break;
-      case ',': 
-        switch(state) {
-          case "i":
-          case "t":
-          case "q":
-            words.push(currWord);
-            currWord = "";
-            state = "i";
-            break;
-          case "s":
-            currWord += c;
-            break;
-          default:
-            handled = false;
-            break;
-        }
-        break;
-      default:
-        switch(state) {
-          case "i":
-          case "t":
-            state = "t";
-            currWord += c;
-            break;
-          case "s":
-            currWord += c;
-            break;
-          default:
-            handled = false;
-            break;
-        }
-        break;
+(: Common utility to split comma-separated KV string to a sequence of two strings (K,V),:)
+declare function xmi2es:csvParse($line as xs:string, $sourceIRI as xs:string, $problems) as xs:string* {
+  let $state := "i"
+  let $currWord := ""
+  let $len := string-length($line)
+  return
+    try {
+      let $words := for $pos in 1 to $len return
+        let $c := substring($line, $pos, 1)
+        return
+          if ($c eq '"') then
+            if ($state eq "i") then xdmp:set($state, "s") 
+            else if ($state eq "s") then xdmp:set($state, "q") 
+            else if ($state eq "q") then 
+              let $_ := xdmp:set($state, "s") 
+              return xdmp:set($currWord, concat($currWord, $c))
+            else fn:error(xs:QName("ERROR"), concat("Illegal character *", $c, "* at pos ", $pos, " in state ", $state))
+          else if ($c eq ',') then
+            if ($state eq "i" or $state eq "t" or $state eq "q") then
+              let $wordToGo := $currWord
+              let $_ := xdmp:set($currWord, "")
+              let $_ := xdmp:set($state, "i")
+              return $wordToGo
+            else if ($state eq "s") then xdmp:set($currWord, concat($currWord, $c))
+            else fn:error(xs:QName("ERROR"), concat("Illegal character *", $c, "* at pos ", $pos, " in state ", $state))
+          else 
+            if ($state eq "i" or $state eq "t") then
+              let $_ := xdmp:set($currWord, concat($currWord, $c))
+              return xdmp:set($state, "t")
+            else if ($state eq "s") then xdmp:set($currWord, concat($currWord, $c))
+            else fn:error(xs:QName("ERROR"), concat("Illegal character *", $c, "* at pos ", $pos, " in state ", $state))
+       return 
+          if ($state eq "i" or $state eq "t" or $state eq "q") then ($words, $currWord)
+          else fn:error(xs:QName("ERROR"), concat("cannot end line in state", $state))
     }
-    if (handled == false) throw "Illegal character *" + c + "* at pos " + i + " in state " + state;
-  }
-  
-  switch(state) {
-    case "i":
-    case "t":
-    case "q":
-      words.push(currWord);
-      break;
-    default:
-      throw "Cannot end the line in state *" + state + "*";
-  }
-  
-  return words;
-}
-:)
-
-
+    catch($e) {
+      let $_ := pt:addProblem($problems, $sourceIRI, (), $pt:ILLEGAL-CSV, concat("in line *", $line, "* error is *", string($e//error:code)))
+      return $line
+    }
+};
 
 declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as empty-sequence() {
 
@@ -623,11 +566,12 @@ declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as 
   return (
     for $r in $reminderHints return xes:addFact($xes, $iri, $xes:PRED-REMINDER, (), string($r)), 
     for $t in $hintTriples return 
-      let $po := xmi2es:csvParse($t)
+      let $po := xmi2es:csvParse($t, $iri, $problems)
       return 
         if (count($po) eq 2) then 
           let $pred := normalize-space($po[1])
           let $obj := normalize-space($po[2])
+let $_ := xdmp:log("PO is *" || $pred || "*" || $obj || "*")
           return xes:addFact($xes, $iri, 
             xes:resolveIRI($xes, $pred, $iri), $xes:MUSICAL-ISTRING, $obj)
         else pt:addProblem($problems, $iri, (), $pt:ILLEGAL-TRIPLE-PO, $po) 

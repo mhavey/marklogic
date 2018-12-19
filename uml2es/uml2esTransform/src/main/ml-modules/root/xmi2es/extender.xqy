@@ -319,8 +319,8 @@ declare function xes:musicalType($predicateIRI as sem:iri) as xs:string {
 declare function xes:resolveFactObject($xes, $subjectIRI as sem:iri, $predicateIRI as sem:iri, 
 	$objectMusicalType as xs:string?, $object as xs:anyAtomicType) {
 
-
 	let $musicalType := ($objectMusicalType, xes:musicalType($predicateIRI))[1]
+let $_:= xdmp:log("ADDFACT *" || $predicateIRI || "*" || $musicalType || "*" || $object || "*")
 	return 
 		if ($musicalType eq $MUSICAL-IRI) then 
 			let $iri := xes:resolveIRI($xes, $object, $subjectIRI)

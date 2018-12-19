@@ -43,6 +43,7 @@ declare variable $ILLEGAL-SEM-PREFIX := "Illegal sem prefix";
 declare variable $ILLEGAL-SEM-FACT := "Illegal sem fact";
 declare variable $ILLEGAL-SEM-QUAL := "Illegal sem qual";
 declare variable $ILLEGAL-MUSICAL := "Illegal musical expression";
+declare variable $ILLEGAL-CSV := "Illegal CSV";
 
 (:
 initialize the problem tracker

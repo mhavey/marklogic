@@ -9,7 +9,7 @@ Here is our UML model.
 
 ![DeclarativeCity](../umlModels/DeclarativeCity.png)
 
-Notice we have a class, called City, consisting of several attributes: name, countryCode, population, metroPopulation, dense, and countryName. City is our target structure. We want the output of Declarative Mapper to bear the structure of City. The source data -- the input of Declarative Mapper -- has a much different structure. We don't model in UML the structure of the source. Rather, in the UML model, for each attribute, we stereotype the attribute as xImpl and tag the stereotype with a mapping expression. The stereotype indicates how obtain the value of that attribute from source data. In effect, the UML model defines the target structure and reveals how to arrive at that structure from source data. 
+Notice we have a class, called City, consisting of several attributes: name, countryCode, population, metroPopulation, dense, and countryName. City is our target structure. We want the output of Declarative Mapper to bear the structure of City. The source data -- the input of Declarative Mapper -- has a much different structure. We don't model in UML the structure of the source. Rather, in the UML model, for each attribute, we stereotype the attribute as xImpl and tag the stereotype with a mapping expression. The stereotype indicates how we obtain the value of that attribute from source data. In effect, the UML model defines the target structure and reveals how to arrive at that structure from source data. 
 
 In our example we have two sources of data: dmdemo and funbase. Each source has its own structure, and thus each needs its own mapping. 
 
@@ -39,8 +39,8 @@ In funbase, cities are defined in a CSV. Here is an excerpt:
 
 For a given attribute, the xImpl stereotype's tagged value defines how to map that attribute from source. Here is the mapping for countryName:
 
-	* http://marklogic.com/xmi2es/xes/mapper/dmdemo,"[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]"
-	* http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('country')]]
+	* http://marklogic.com/xmi2es/xes/mapper/dmdemo,"""[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]"""
+	* http://marklogic.com/xmi2es/xes/mapper/funbase,"""[[extract('country')]]"""
 
 The first of these is the dmdemo mapping; to obtain countryName, we lookup in another document (countries.json), the English text name for the country whose code country source attribute. The second is the funbase mapping; from funbase the country attribute maps to the target countryName attribute.
 

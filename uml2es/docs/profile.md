@@ -98,7 +98,10 @@ The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic
 	- unquoted string that is NOT in the form of the above - will treat like an IRI
 	- quoted string - string with outer quotes removed
 
-For CSVs, use CSV escape rules if any term contains a comma.
+For CSVs, use the usual CSV grammar:
+- Delimit terms with a comma. Example a,b
+- If a term contains a comma, enclose it in double quotes. Example a,"b, c, and d"
+- If a term contains a double quote in its text, enclose the term in double quotes. Escape the double quote by adding another double quote before it. Example: a,"b, c, and ""my favorite"" d" 
 
 IMPORTANT NOTE: $xqy() and $sjs() are NOT supported currently. This is future functionality.
 

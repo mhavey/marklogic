@@ -41,24 +41,24 @@
   </uml:Model>
   <MarkLogicEntityServicesProfile.es:esModel xmi:id="_9rQc4LIQEeiBv8houo55Zg" version="0.0.1" baseUri="http://org.jude/ml/uml2es/declarativeMapper/city" base_Package="_cbGAkLIMEeiBv8houo55Zg"/>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_KAIH0LIREeiBv8houo55Zg" base_Property="_fWcXYLIMEeiBv8houo55Zg">
-    <triplesPO>mapper:dmdemo,&quot;[[extract('name')]]&quot;</triplesPO>
-    <triplesPO>mapper:funbase,&quot;[[extract('city_name')]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('name')]]&quot;&quot;&quot;</triplesPO>
+    <triplesPO>mapper:funbase,&quot;&quot;&quot;[[extract('city_name')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_LWW68LIREeiBv8houo55Zg" base_Property="_gOARgLIMEeiBv8houo55Zg">
-    <triplesPO>mapper:dmdemo,&quot;[[extract('country')]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('country')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_MSz8ILIREeiBv8houo55Zg" base_Property="_hF7YALIMEeiBv8houo55Zg">
-    <triplesPO>mapper:dmdemo,&quot;[[extract('population') * 1000 ]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('population') * 1000 ]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_NJcpMLIREeiBv8houo55Zg" base_Property="_mk2e0LIMEeiBv8houo55Zg">
-    <triplesPO>mapper:dmdemo,&quot;[[extract('metroPopulation') * 1000 ]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('metroPopulation') * 1000 ]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_N-2nMLIREeiBv8houo55Zg" base_Property="_oI2oMLIMEeiBv8houo55Zg">
-    <triplesPO>mapper:dmdemo,&quot;[[if((@'population' / @'metro-population') > 0.75, 'dense', 'sparse')]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[if((@'population' / @'metro-population') > 0.75, 'dense', 'sparse')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_PCGM4LIREeiBv8houo55Zg" base_Property="_iYJ4ELIQEeiBv8houo55Zg">
-    <triplesPO>mapper:dmdemo,&quot;[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]&quot;</triplesPO>
-    <triplesPO>mapper:funbase,&quot;[[extract('country')]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]&quot;&quot;&quot;</triplesPO>
+    <triplesPO>mapper:funbase,&quot;&quot;&quot;[[extract('country')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_ty0IELIREeiBv8houo55Zg" base_Class="_dWq4ALIMEeiBv8houo55Zg">
     <triplesPO>xes:hasMapper,mapper:dmdemo</triplesPO>

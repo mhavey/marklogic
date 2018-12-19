@@ -116,6 +116,10 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:semIRI xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
+					if ($attribSemLabel eq "Y") then
+						json:array-push($classAttribStereotypes, 
+							<ml:semLabel xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+					else (),
 					if ($attribElemRangeIndex eq "Y") then
 						json:array-push($classAttribStereotypes, 
 							<ml:elememtRangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
