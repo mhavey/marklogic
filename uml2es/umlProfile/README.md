@@ -6,3 +6,5 @@ This part of the toolkit has two MarkLogic profiles for UML:
 Also notice [eclipse/MLProfileProject](eclipse/MLProfileProject). This is an Eclipse project that contains the standard profile [MLProfile.xml](MLProfile.xml); in the Eclipse project, the profile is named [eclipse/MLProfileProject/MLProfile.profile.uml](eclipse/MLProfileProject/MLProfile.profile.uml), a name EMF and Papyrus prefer to MLProfile.xml. Use this project when developing Papyrus examples; import it into the same workspace where you are building your model. 
 
 UNLESS YOU ARE DEVELOPING THE TOOLKIT, YOU SHOULD NOT NEED TO EDIT THE PROFILE. 
+
+Here is what the profile looks like: ![Profile](magicdraw/profile.png). See [../docs/profile.md](../docs/profile.md) for a reference guide.
