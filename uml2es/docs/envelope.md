@@ -20,5 +20,4 @@ The toolkit's code generation feature builds code that persists your business da
 
 The following diagram shows how this works:
 
-TODO - refresh the diagram
 ![Envelope](envelope.png)
