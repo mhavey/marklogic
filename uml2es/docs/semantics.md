@@ -1,9 +1,11 @@
 # Semantics and Mixed Modeling in the UML-to-Entity Services Toolit
 
-And a link to here: <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics> ... TODO...
+Among the capabilities of the toolkit is the ability to model semantics. Specificially, the toolkit supports a mixed modelling approach in which documents contain embedded semantic triples. Those triples constitute semantic facts about the document, such as the document's provenance and its relationship to other semantic things. 
 
-## Mixed Model, Not Ontology Design
-TODO - why we use the toolkit for mixed model; why that model is NOT an ontology ... 
+The toolkit is NOT meant to design semantic ontologies. Indeed, UML isn't a suitable notation for ontological design. There are several patterns in OWL that cannot easily be expressed in UML's class notation. If you need to build an ontology, use an ontology tool, such as Protege or TopBraid Composer. 
+
+The toolkit allows you associate semantic facts with your class definition. You model these facts using stereotypes. Your facts can reference ontologies. In the examples described below, UML classes reference provenance and organizational ontologies. 
+
 
 ## The Semantic Stereotypes
 The stereotypes in our toolkit's UML profile for MarkLogic Entity Services are documented here: [profile.md](profile.md). In the profile there is a set of stereotypes to help you model the semantic part of your mixed model. Your model describes the structure of a *document* that is encased in an *envelope*. That envelope includes an important section called *triples*, where the semantic aspects of the document is contained. Semantics of a document include facts, expressed as triples, relating the document to other documents. 
@@ -44,4 +46,7 @@ TODO - rework this...
 - For semType, the types tag is a String array. Each item in the array is meant to be an IRI. It can be either a prefixed (p:abc) or a fully-qualified IRI (http://path/to/abc). The type is known at design time.
 - For semPredicate's predicate tag, the predicate is meant to be an IRI.  It can be either a prefixed (p:abc) or a fully-qualified IRI (http://path/to/abc). The predicate is known at design time. The object of the predicate is the value of the attribute bearing the semPredicate stereotype. If it of resolved type IRI, it is an IRI. If it a String, it denotes an IRI if it is in prefixed form (p:abc) or in angled brackets. Otherwise, it is a literal. The object can be dynamic. If you use xCalculated's concat tag to build the value, pay attention to concat conventions (described below).
 - For semFacts or semPredicate's predicateTtl tag, you are writing Turtle code! If you need to substitute in dynamic values, use ${abc} to substitute in the value of attribute abc, ${Xyz.abc} to substitute in the value of attribute abc in class Xyz.
+
+## For more..
+- <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>
 

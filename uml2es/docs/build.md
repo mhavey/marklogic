@@ -1,6 +1,8 @@
 # Using the UML-to-Entity Services Toolkit In Your Build
 
-Non-DHF (just like movies!)
+TODO - THIS PAGE IS UNDER CONSTRUCTION. ETA: EOQ FY18Q4
+
+Non-DHF (example: movies...)
 - copy transform into your gradle
 - deploy the transform 
 - use a loadXMI to load the XMI and transform it to ES
