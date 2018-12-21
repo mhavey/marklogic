@@ -82,7 +82,7 @@ Confirm:
 - Final DB now has the following document
   * /marklogic.com/entity-services/models/IMDBMovie.json
 
-- In Query Console, open a tab of type SPARQL, point to the FINAL DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
+- In Query Console, open a tab of type SPARQL, point to the content DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
 
 select * where {?s ?o ?p}
 

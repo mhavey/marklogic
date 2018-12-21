@@ -22,48 +22,67 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i includeXMI2ESTransform mlDeploy
+gradle -PenvironmentName=local -i clearGenerated includeXMI2ESTransform mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-jokebook.
+- Content DB is empty
+- Modules DB includes these modules
+  * /xmi2es/xmi2esTransform.xqy - Main module of the toolkit's transform
 
-### Import the Model
+### Transform UML to ES
+Next, move our UML model into ML as an ES model. Let's divide this into two parts.
 
-Run the following to load the model:
+#### Load UML Model and Observe Output of Transform
 
-gradle -PenvironmentName=local -i loadXMI
+We will load our UML model and transform it to Entity Services format. Run the following:
 
-Confirm:
-- Content DB includes several documents created when loading the XMI, including:
-	* /xmi2es/es/JokeBook.json - the ES model
-	* /xmi2es/extension/JokeBook.ttl - the extended ES model
-	* /xmi2es/findings/JokeBook.xml - findings during the transform
-	* /xmi2es/xmi/JokeBook.xml - the original MagicDraw model (XMI)
-	* 
-
-Check the /xmi2es/findings/DeclarativeCity.xml file. This indicates whether there were any issues during the transform. Verify there are none.
-
-### Load the Source Data
-
-Load the source data into our content database:
-
-gradle -PenvironmentName=local -i loadSources
+gradle -PenvironmentName=local -i ingestModel
 
 Confirm:
-- Content DB now has, in addition to the documents created in the previous step, the following documents
+- Content DB has the following documents
+	* /xmi2es/es/JokeBook.json (The ES model descriptor in JSON form)
+	* /xmi2es/extension/JokeBook.ttl (Semantic triples that extend our model)
+	* /xmi2es/findings/JokeBook.xml (Problems found during transformation)
+	* /xmi2es/xmi/JokeBook.xml (The original UML model as an XMI document)
+	* /xmi2es/gen/JokeBook/lib.sjs - generated Javascript code to create the triples
+	* /xmi2es/gen/JokeBook/lib.xqy - generated XQuery code to create the triples
+- Your gradle directory structure under data/entity-services-dump has the same documents as above.
+- File JokeBook.json exists in gradle's data/entity-services directory. This is our ES model descriptor to be deployed.
+- File JokeBook.ttl exists in gradle's data/entity-services-extension directory. This is our ES model extension to be deployed.
+- File lib.sjs exists in gradle's data/entity-services-dump/gen/JokeBook directory. The transform generated this server-side Javascript code module to populate triples based on the model. You will use this in the Explore section below.
+- File lib.xqy exists in gradle's data/entity-services-dump/gen/JokeBook directory. The transform generated this XQuery server-side code module to populate triples based on the model. You will use this in the Explore section below.
 
-	* /population.json - A large JSON containing the source city data for the dmdemo data set
-	* /countries.json - A JSON lookup file that maps country code to country name. Used during our Declarative Mapper transformation.
-	* /Otter Lake.json - A city record from the funbase data set.
-	* /US Flag.json - A city record from the funbase data set.
-	* /Venustown.json - A city record from the funbase data set.
+Check the /xmi2es/findings/JokeBook.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
-### Deploy Declarative Mapper
+#### Deploy Entity Services Model and Associated Artifacts
 
-Obtain the Declarative Mapper tool and deploy to the modules database from this example: xmi2es-examples-dmcity-modules. (If you deploy it to a different modules database in the instance, following the instructions in the workspace to point to that modules DB.)
+Next, generate ES artifacts. Run the following:
 
-## Explore the Mapping
-In Query Console, import XMI2ESDeclarative.xml workspace. You won't want to miss this part; it's where the fun happens. In this workspace you will: 
-- Examine the source data and the entity services model.
-- Generate the Declarative Mapper templates
-- Pass the source data through the Declarative Mapper templates to obtain target data that conforms to the Entity Services model.
+gradle -PenvironmentName=local -i mlgen loadExtendedModel mlReloadModules
+
+Confirm:
+- Modules DB now has /JokeBook/lib.sjs and /JokeBook/lib.xqy
+- Content DB now has the following document
+  * /marklogic.com/entity-services/models/JokeBook.json
+
+- In Query Console, open a tab of type SPARQL, point to the content DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
+
+select * where {?s ?o ?p}
+
+Among the results, you should see the following:
+-<http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes>	<http://marklogic.com/entity-services#title>	"selectedJokes" - From basic ES model
+- <http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes>	<http://marklogic.com/xmi2es/xes#semPredicate>	<http://www.w3.org/ns/prov#qualifiedDerivation> - From the extended ES model
+
+
+## Explore
+In Query Console, import XMI2ESJokeBook.xml workspace. You won't want to miss this part; it's where the fun happens: you create documents whose embedded triples conform to the model! 
+
+
+TODO - issues:
+1. triples function looks for brilliantworksiri in content, but it's in options. Proper place is options.
+2. Various syntax faxes in PREFIX function and constants.
+3. IRIs get generated as string literals
+4. check for null before generating triple. because this isn't happening, my test has to make up values.
+5. Does it handle multivals - e.g. multiple selected jokes
+

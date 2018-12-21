@@ -68,3 +68,60 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = 'dummy'
 }
+
+task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/entity-services-dump"
+  collection_filter = "xmi2es"
+  host = mlAppServicesHost
+  port = mlAppServicesPort.toInteger()
+}
+
+task deleteESDump(type: Delete) {
+    delete "data/entity-services-dump"
+}
+
+task copyES(type: Copy) {
+    from "data/entity-services-dump/xmi2es/es/JokeBook.json"
+    into "data/entity-services" 
+}
+
+task copyGenCode(type: Copy) {
+    from "data/entity-services-dump/xmi2es/gen"
+    into "src/main/ml-modules/root" 
+}
+
+task copyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension/JokeBook.ttl"
+    into "data/entity-services-extension" 
+}
+
+task ingestModel() {
+  dependsOn 'deleteESDump'
+  dependsOn 'loadXMI'
+  dependsOn 'fetchDescriptors'
+  dependsOn 'copyES'
+  dependsOn 'copyESExt'
+  dependsOn 'copyGenCode'
+  tasks.findByName('loadXMI').mustRunAfter 'deleteESDump'
+  tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
+  tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
+  tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
+  tasks.findByName('copyGenCode').mustRunAfter 'fetchDescriptors'
+}
+
+task clearGenerated(type: Delete) {
+  dependsOn 'deleteESDump'
+}
+
+task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlAppServicesHost
+  port = mlAppServicesPort.toInteger()
+
+  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_type = "rdf" 
+  output_uri_prefix = "/triplestore"
+}
