@@ -548,7 +548,7 @@ declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) 
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIX_MAP = sem.prefixes(PREFIX_RDFA);')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIX-MAP := sem:prefixes($PREFIXES-RDFA);')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIXES = ', $allPrefixesSJS, ';')),
-		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIXES := "', $allPrefixesXQY, ';')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIXES := ', $allPrefixesXQY, ';')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_TYPE = sem.curieExpand("rdf:type");')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $IRI-TYPE := sem:curie-expand("rdf:type");')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_LABEL = sem.curieExpand("rdfs:label");')),
