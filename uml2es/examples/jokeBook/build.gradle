@@ -42,7 +42,6 @@ dependencies {
   mlcp files("lib")
 }
 
-
 task includeXMI2ESTransform(type: Copy) {
     from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "src/main/ml-modules/root/xmi2es"

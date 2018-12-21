@@ -41,7 +41,7 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 		let $attribLoc := concat($classSheet, ".", $attribName, " at ", $row)
 		return
 			if ($attribName eq json:array-values($attribNames)) then 
-				pt:addProblem($pt, (), $attribLoc, "Ignoring duplicate attrib name", $row)
+				pt:addProblem($pt, $attribLoc, "", "Ignoring duplicate attrib name", $row)
 			else 
 				let $_ := json:array-push($attribNames, $attribName)
 				let $attribID := sem:uuid-string()
@@ -116,10 +116,6 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:semIRI xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
-					if ($attribSemLabel eq "Y") then
-						json:array-push($classAttribStereotypes, 
-							<ml:semLabel xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
-					else (),
 					if ($attribElemRangeIndex eq "Y") then
 						json:array-push($classAttribStereotypes, 
 							<ml:elememtRangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
@@ -192,7 +188,7 @@ declare function xlsx:convertClasses($entitySheets as node()*, $stringTable as n
 		let $className := xlsx:excelCell($entitySheet, concat("Sheet at ", ($pos + 2)), $stringTable, "B1", $VAL-MANDATORY, ())
 		return
 			if ($className eq json:array-values($classNames)) then 
-				pt:addProblem($pt, (), $className, "Ignoring duplicate class name", ($pos + 2))
+				pt:addProblem($pt, $className, "", "Ignoring duplicate class name", ($pos + 2))
 			else (
 				json:array-push($classNames, $className),
 				map:put($classDetailsPerClassName, $className, 
@@ -293,7 +289,7 @@ declare function xlsx:convert($excel, $pt) as node() {
 	let $contents := xdmp:zip-get($excel, "[Content_Types].xml")/node()
 	let $modelSheet := 
 		if (exists($contents/*:Override[@PartName eq "/xl/worksheets/sheet2.xml"])) then xdmp:zip-get($excel, "xl/worksheets/sheet2.xml")/node()
-		else pt:addProblem($pt, (), "excel", "No model sheet found", ())
+		else pt:addProblem($pt, "excel", "", "No model sheet found", ())
 	let $entitySheets := 
 		for $sheet in $contents/*:Override[
 			@ContentType eq "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"
@@ -374,7 +370,7 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 					return ($stringTable//*:si)[xs:integer($stringTableIndex) + 1]/*:t/text()
 				else if (string-length($cellType) eq 0) then string($cell/*:v)
 				else
-					let $_ := pt:addProblem($pt, (), $errorSource, "Ignoring unknown cell type", "*" || $cellType || "*")
+					let $_ := pt:addProblem($pt, $errorSource, "", "Ignoring unknown cell type", "*" || $cellType || "*")
 					return ""
 
 	let $cellVals := for $tok in fn:tokenize($cellValWS, "[\n\r]") return
@@ -388,22 +384,22 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 		for $val in $validation return
 			if ($val eq $VAL-MANDATORY) then
 				if (string-length($cellVal) gt 0) then ()
-				else pt:addProblem($pt, (), $errorSource, "Cell is mandatory", $cellVal)
+				else pt:addProblem($pt, $errorSource, "", "Cell is mandatory", $cellVal)
 			else if ($val eq $VAL-YN) then
 				if ($cellVal eq "" or $cellVal eq "Y" or $cellVal eq "N") then ()
-				else pt:addProblem($pt, (), $errorSource, "Illegal YN value", $cellVal)
+				else pt:addProblem($pt, $errorSource, "", "Illegal YN value", $cellVal)
 			else if ($val eq $VAL-INT) then
 				try { 
 					if (string-length($cellVal) gt 0) then xs:integer($cellVal)
 					else ()
   				} catch($e) {
-					pt:addProblem($pt, (), $errorSource, "value is not an integer", $cellVal)
+					pt:addProblem($pt, $errorSource, "", "value is not an integer", $cellVal)
 				}
 			else if ($val eq $VAL-CARDINALITY) then
 				if ($cellVal eq "0" or $cellVal eq "1" or $cellVal eq "*" or $cellVal eq "+") then ()
-				else pt:addProblem($pt, (), $errorSource, "Illegal cardinality value", $cellVal)
+				else pt:addProblem($pt, $errorSource, "", "Illegal cardinality value", $cellVal)
 			else 
-				pt:addProblem($pt, (), $errorSource, "Unknown validation type", $val)
+				pt:addProblem($pt, $errorSource, "", "Unknown validation type", $val)
 
 	return $cellVals
 };
@@ -483,7 +479,6 @@ declare function xlsx:transform(
   let $xmiDoc := xlsx:convert($excelDoc, $problems)
 
   (: Run the regular XMI2ES transform :)
-  
   let $xmi2ESDocs := xmi2es:transform(
   	map:new((
   		map:entry("uri", $xmiURI), 

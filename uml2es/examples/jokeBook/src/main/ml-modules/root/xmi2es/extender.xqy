@@ -548,7 +548,7 @@ declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) 
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIX_MAP = sem.prefixes(PREFIX_RDFA);')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIX-MAP := sem:prefixes($PREFIXES-RDFA);')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIXES = ', $allPrefixesSJS, ';')),
-		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIXES := ', $allPrefixesXQY, ';')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIXES := "', $allPrefixesXQY, ';')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_TYPE = sem.curieExpand("rdf:type");')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $IRI-TYPE := sem:curie-expand("rdf:type");')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_LABEL = sem.curieExpand("rdfs:label");')),
@@ -748,8 +748,8 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 				let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var mds = {};'))
 				let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $perms := map:map()'))
 				let $_ := for $md in $mds/sem:object/text()
-					let $k := $triples/sem:triple[sem:subject/text() eq $md and sem:predicate/text() eq string($PRED-KEY)]/sem:object/text()
-					let $v := $triples/sem:triple[sem:subject/text() eq $md  and sem:predicate/text() eq string($PRED-VALUE)]/sem:object/text()
+					let $k := $triples/sem:triple[sem:subject/text() eq $mds and sem:predicate/text() eq string($PRED-KEY)]/sem:object/text()
+					let $v := $triples/sem:triple[sem:subject/text() eq $mds  and sem:predicate/text() eq string($PRED-VALUE)]/sem:object/text()
 					return (
 						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'mds["', $k, '"] = "', $v, '";')),
 						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($mds, "', $k, '", "', $v, '")'))

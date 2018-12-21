@@ -223,12 +223,12 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
           for $perm in $inheritance/xDocument/permsCR/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, (), map:new((
               map:entry($xes:PRED-CAPABILITY, string($perm/@capability)),
-              map:entry($xes:PRED-ROLE,string($perm/@role))))),
+              map:entry($xes:PRED-ROLE,string(pred/@role))))),
           if (string-length($inheritance/xDocument/quality) gt 0) then xes:addFact($xes, $classIRI, $xes:PRED-QUALITY, (), $inheritance/xDocument/quality) else (),
           for $md in $inheritance/xDocument/metadataKV/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-METADATA, (), map:new((
               map:entry($xes:PRED-KEY, string($md/@key)),
-              map:entry($xes:PRED-VALUE, string($md/@value))))), 
+              map:entry($xes:PRED-VALUE, string(md/@value))))), 
           xes:addFact($xes, $classIRI, $xes:PRED-SEM-TYPE, (), $inheritance/semTypes/item),
           for $semFact in $inheritance/semFacts/item return 
             let $count := count($semFact/term)
@@ -300,8 +300,6 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
   let $attribName := fn:normalize-space(string($attrib/@name))
   let $attribID := string($attrib/@*:id)
 
-  let $_ := xdmp:log(concat("BUILDATTRIB *", $attrib/@name, "*"), "info")
-
   return 
     if (string-length($attribName) eq 0) then pt:addProblem($problems, (), $attribID, $pt:ATTRIB-NO-NAME, "")
     else
@@ -331,8 +329,8 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
       let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
       let $associationClass := string($xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name) 
       let $type := string(($attrib/*:type/@href, 
-        $xmi//*:packagedElement[@*:id eq $attrib/@type]/@name, 
-        $xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name)[1])
+        string($xmi//*:packagedElement[@*:id eq $attrib/@type]/@name), 
+        string($xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name))[1])
 
       (: attrib-level facts :)
       let $_ := (
@@ -573,6 +571,7 @@ declare function xmi2es:xImplHints($iri as sem:iri, $hints, $xes, $problems) as 
         if (count($po) eq 2) then 
           let $pred := normalize-space($po[1])
           let $obj := normalize-space($po[2])
+let $_ := xdmp:log("PO is *" || $pred || "*" || $obj || "*")
           return xes:addFact($xes, $iri, 
             xes:resolveIRI($xes, $pred, $iri), $xes:MUSICAL-ISTRING, $obj)
         else pt:addProblem($problems, $iri, (), $pt:ILLEGAL-TRIPLE-PO, $po) 
