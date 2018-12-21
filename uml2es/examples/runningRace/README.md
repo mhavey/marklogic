@@ -44,21 +44,14 @@ gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
 - Content DB has the following documents
-	* /xmi2es/es/RunningRace.json
-	* /xmi2es/es/RunningRaceEMF.json
-	* /xmi2es/es/RunningRacePapyrus.json
-	* /xmi2es/extension/RunningRace.ttl
-	* /xmi2es/extension/RunningRace.txt
-	* /xmi2es/extension/RunningRaceEMF.ttl
-	* /xmi2es/extension/RunningRaceEMF.txt
-	* /xmi2es/extension/RunningRacePapyrus.ttl
-	* /xmi2es/extension/RunningRacePapyrus.txt
-	* /xmi2es/findings/RunningRace.xml
-	* /xmi2es/findings/RunningRaceEMF.xml
-	* /xmi2es/findings/RunningRacePapyrus.xml
-	* /xmi2es/xmi/RunningRace.xml
-	* /xmi2es/xmi/RunningRaceEMF.xml
-	* /xmi2es/xmi/RunningRacePapyrus.xml
+	* /xmi2es/es/RunningRace.json - ES model
+	* /xmi2es/es/RunningRaceEMF.json - ES model
+	* /xmi2es/es/RunningRacePapyrus.json - ES model
+	* /xmi2es/findings/RunningRace.xml - findings during the transform
+	* /xmi2es/findings/RunningRaceEMF.xml - findings during the transform
+	* /xmi2es/findings/RunningRacePapyrus.xml - findings during the transform
+
+Check each of the findings documents: /xmi2es/findings/RunningRace.xml, /xmi2es/findings/RunningRaceEMF.xml, /xmi2es/findings/RunningRacePapyrus.xml. Verify there are no issues reported in any of them.
 
 ## Check Model Differences
 In Query Console, import XMI2ESRunningRace.xml workspace. In the tab entitled Check Diff, run to confirm the models are the same.

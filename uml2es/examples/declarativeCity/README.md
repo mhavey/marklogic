@@ -105,14 +105,13 @@ Run the following to load the model:
 gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
-- Content DB has the following documents
-	* /xmi2es/es/DeclarativeCity.json - Entity Services model descriptor.
-	* /xmi2es/extension/DeclarativeCity.ttl - Entity Services extended model
-	* /xmi2es/extension/DeclarativeCity.txt - Entity Services extended model described textually
-	* /xmi2es/findings/DeclarativeServices.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/DeclarativeCity.txt - Generated code for DHF. Not used in this example.
-	* /xmi2es/intermediate/DeclarativeCity.xml - XMI/ES intermediate form
-	* /xmi2es/xmi/DeclarativeCity.xml - UML model in XMI form.
+- Content DB includes several documents creating when loading the XMI, including:
+	* /xmi2es/es/DeclarativeCity.json - the ES model
+	* /xmi2es/extension/DeclarativeCity.ttl - the extended ES model
+	* /xmi2es/findings/DeclarativeCity.xml - findings during the transform
+	* /xmi2es/xmi/DeclarativeCity.xml - the original Papyrus model (XMI)
+
+Check the /xmi2es/findings/DeclarativeCity.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
 ### Load the Source Data
 

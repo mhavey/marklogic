@@ -36,12 +36,13 @@ To deploy the logical model, run the following:
 gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
-- Content DB has the following documents
-	* /xmi2es/es/MovieTalk.json
-	* /xmi2es/extension/MovieTalk.ttl
-	* /xmi2es/extension/MovieTalk.txt
-	* /xmi2es/findings/MovieTalk.xml
-	* /xmi2es/xmi/MovieTalk.xml
+- Content DB includes several documents creating when loading the XMI, including:
+	* /xmi2es/es/MovieTalk.json - the ES model
+	* /xmi2es/extension/MovieTalk.ttl - the extended ES model
+	* /xmi2es/findings/MovieTalk.xml - findings during the transform
+	* /xmi2es/xmi/MovieTalk.xml - the original Papyrus model (XMI)
+
+Check the /xmi2es/findings/MovieTalk.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
 ## Explore Logical vs. Physical
 In Query Console, import XMI2ESMovieTalk.xml workspace. 
@@ -49,7 +50,6 @@ In Query Console, import XMI2ESMovieTalk.xml workspace.
 Your first step is to import the physical data. Go to the "Populate Physical Data" tab and run to load data. Don't cheat! Don't look at code that populates the data. Assume that code is missing and you want to discover the data's structure by querying it.
 
 Next go to the tab "Discover" to discover the data.
-
 
 The tab "Discover" is where we map physical back to logical. 
 

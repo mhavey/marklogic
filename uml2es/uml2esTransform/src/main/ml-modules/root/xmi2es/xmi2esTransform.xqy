@@ -329,8 +329,8 @@ declare function xmi2es:buildAttribute($xmi as node(), $modelIRI as sem:iri, $cl
       let $typeIsReference :=  exists($relationship) or exists($attrib/@type)
       let $associationClass := string($xmi//packagedElement[@*:id eq $attrib/@*:association and @*:type eq "uml:AssociationClass"]/@name) 
       let $type := string(($attrib/*:type/@href, 
-        string($xmi//*:packagedElement[@*:id eq $attrib/@type]/@name), 
-        string($xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name))[1])
+        $xmi//*:packagedElement[@*:id eq $attrib/@type]/@name, 
+        $xmi//*:packagedElement[@*:id eq $xmi//*:ownedEnd[@association eq $attrib/@association]/@type]/@name)[1])
 
       (: attrib-level facts :)
       let $_ := (
