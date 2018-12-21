@@ -43,7 +43,7 @@ Run the following:
 gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
-- Content DB has the following documents
+- Content DB includes several documents created when loading the XMI files, including:
 	* /xmi2es/es/RunningRace.json - ES model
 	* /xmi2es/es/RunningRaceEMF.json - ES model
 	* /xmi2es/es/RunningRacePapyrus.json - ES model

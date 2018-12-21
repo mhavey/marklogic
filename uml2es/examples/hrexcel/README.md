@@ -49,16 +49,14 @@ Run the following to load the Excel HR model:
 gradle -PenvironmentName=local -i loadExcel
 
 Confirm:
-- Content DB has the following documents
-	* /xmi2es/es/HRExcel.json - Excel-originated entity services model descriptor
-	* /xmi2es/excel/findings/HRExcel.xml - Excel-to-XMI conversion findings. Should be no problems.
+- Content DB includes several documents created when loading the Excel, including:
+	* /xmi2es/es/HRExcel.json - the ES model from the Excel
+	* /xmi2es/extension/HRExcel.ttl - the extended ES model from the Excel
+	* /xmi2es/findings/HRExcel.xml - findings during the transform of the Excel
 	* /xmi2es/excel/HRExcel.xlsx - Original Excel file
-	* /xmi2es/extension/HRExcel.ttl - Excel extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/HRExcel.txt - Excel dxtended model described textually
-	* /xmi2es/findings/HRExcel.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/HRExcel.txt - Generated code for DHF
-	* /xmi2es/intermediate/HRExcel.xml - XMI/ES intermediate form
 	* /xmi2es/xmi/HRExcel.xml - Excel model converted to XMI form.
+
+Check the /xmi2es/findings/HRExcel.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
 ### Transform HR UML to ES
 
@@ -67,14 +65,13 @@ For comparison, we will load the HR UML model from examples/hr. Run the followin
 gradle -PenvironmentName=local -i loadUML
 
 Confirm:
-- Content DB now has, in addition to the document created in the previous step, the following documents
-	* /xmi2es/es/DHFEmployeeSample.json	 - UML-originated Entity Services Model
-	* /xmi2es/extension/DHFEmployeeSample.ttl - UML extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/DHFEmployeeSample.txt - UML extended model described textually
-	* /xmi2es/findings/DHFEmployeeSample.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/DHFEmployeeSample.txt - Generated code for DHF
-	* /xmi2es/intermediate/DHFEmployeeSample.xml - XMI/ES intermediate form
-	* /xmi2es/xmi/DHFEmployeeSample.xml - XMI form of UML model
+- Content DB now has, in addition to the documents created in the previous step, the following documents
+	* /xmi2es/es/DHFEmployeeSample.json	 - the ES model from the UML
+	* /xmi2es/extension/DHFEmployeeSample.ttl - the extended ES model from the UML
+	* /xmi2es/findings/DHFEmployeeSample.xml - findings during the transform of the UML.
+	* /xmi2es/xmi/DHFEmployeeSample.xml - the original UML model in XMI form.
+
+Check the /xmi2es/findings/DHFEmployeeSample.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
 ## Check Model Differences
 In Query Console, import XMI2ESExcel.xml workspace. In the tab entitled Check Diff, run to confirm the Excel- and UML-based models are the same.

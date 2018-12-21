@@ -36,7 +36,7 @@ To deploy the logical model, run the following:
 gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
-- Content DB includes several documents creating when loading the XMI, including:
+- Content DB includes several documents created when loading the XMI, including:
 	* /xmi2es/es/MovieTalk.json - the ES model
 	* /xmi2es/extension/MovieTalk.ttl - the extended ES model
 	* /xmi2es/findings/MovieTalk.xml - findings during the transform

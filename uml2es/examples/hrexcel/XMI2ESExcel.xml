@@ -1,155 +1,20 @@
 <export><workspace name="XMI2ESExcel"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3522764003932159206" server="3060368382857171451" database-name="xmi2es-examples-hrexcel-content" server-name="xmi2es-examples-hrexcel" mode="javascript">'use strict';
 
-const sem = require("/MarkLogic/semantics.xqy");
-const SKIPS = ["description"];
+const util = require("/xmi2es/util.sjs");
 
-const PRED_PREFIX = "http://marklogic.com/xmi2es/xes#";
-const UML_ONLY_PREDS = [PRED_PREFIX + "relationship", PRED_PREFIX + "typeIsReference", PRED_PREFIX + "reference",
-                        PRED_PREFIX + "associationClass", PRED_PREFIX + "isAssociationClass",
-                        PRED_PREFIX + "hasAssociationClassEnd", PRED_PREFIX + "associationClassEndAttribute",
-                        PRED_PREFIX + "associationClassEndClass", PRED_PREFIX + "associationClassEndFK"];
-
-// return true if ES models at source1 and source2 are equal
-function compareES(source1, source2) {
-  return JSON.stringify(makeESComparable(cts.doc(source1).toObject())) == JSON.stringify(makeESComparable(cts.doc(source2).toObject()));  
+function makeComp(source) {
+  var doc = cts.doc(source).toObject();
+  var json = util.makeESComparable(doc, []);
+  return JSON.stringify(json);
 }
 
-// Make the JSON source in an alphabetized form for easy comparison
-function makeESComparable(source) {
-  if (source !== Object(source)) {
-    // it's a scalar
-    return source;
-  }  
-  
-  if (Array.isArray(source)) {
-    // it's an array
-
-    // step 1 - alphabetize the elements
-    var elems = [];
-    for (var i = 0; i &lt; source.length; i++) {
-      elems.push({
-        "index" : i,
-        "contents" : JSON.stringify(source[i])
-      });
-    }
-    elems.sort(function(a,b) { 
-      if (a.contents &lt; b.contents) return -1; 
-      else if (b.contents &lt; a.contents) return 1; 
-      else return 0;});
-
-    // step 2 - recurse on each element in alphabetical order
-    var comparable = [];
-    for (var i = 0; i &lt; elems.length; i++) {
-      comparable[i] = makeESComparable(source[[ elems[i].index ]]);
-    }
-    return comparable;
-  } else  {
-    // it's an object
-
-    // step 1 - get the props in alphabetical order
-    var props = [];
-    for (var prop in source) {
-      if (source.hasOwnProperty(prop) &amp;&amp; SKIPS.indexOf(""+prop) &lt; 0) {
-        props.push(prop);
-      }
-    }
-    props.sort();
-
-    // step 2 - recurse on each
-    var comparable = {};
-    for (var i = 0; i &lt; props.length; i++) {
-      comparable[props[i]] = makeESComparable(source[props[i]]);
-    }
-    return comparable;
-  }
+function makeXComp(source) {
+  var doc = cts.doc(source).toObject();
+  return util.makeXESComparable(doc);
 }
 
-// return true if XES models at source1 and source2 are equal (i.e., isomorphic)
-function compareXES(source1, source2) {
-  return makeXESComparable(cts.doc(source1)) == makeXESComparable(cts.doc(source2));  
-}
-
-function sortXES(t1, t2) {
-  if (sem.isBlank(sem.tripleSubject(t1))) {
-    if (sem.isBlank(sem.tripleSubject(t2))) return sortTriples(t1,t2);
-    else return 1;
-  }
-  else if (sem.isBlank(sem.tripleSubject(t2))) return -1;
-  else return sortTriples(t1,t2);
-}
-
-function sortTriples(t1, t2) {
-    if (""+t1 &lt; ""+t2) return -1;
-    else if (""+t1 &gt; ""+t2) return 1;
-    return 0;       
-}
-           
-function walkPaths(triples, tripleIdx, visited, path) {
-  if (visited.indexOf(tripleIdx) &gt;= 0) return;
-  visited.push(tripleIdx);
-  
-  var s = sem.tripleSubject(triples[tripleIdx]);
-  var p = sem.triplePredicate(triples[tripleIdx]);
-  var o = sem.tripleObject(triples[tripleIdx]);
-  
-  if (sem.isBlank(s) == false) path.push(s);
-  path.push(p);
-  if (xdmp.type(o) == "iri" || xdmp.type(o) == "blank") {
-    if (sem.isBlank(o) == false) path.push(o);
-    // find triples where o is the subject
-    for (var i = 0; i &lt; triples.length; i++) {
-      if (i == tripleIdx) continue;
-      if (""+sem.tripleSubject(triples[i]) == ""+o) {
-        walkPaths(triples, i, visited, path);
-      }
-    }
-  }
-  else path.push(o);
-
-  return path;
-}
-            
-function makeXESComparable(source) {
-  
-  // obtain triples from TTL source
-  var triples = sem.rdfParse(source, ["turtle"]).toArray();
-  
-  // strip out the uml-only triples (class rels, association ends, etc)
-  var index = triples.length - 1;
-  while (index &gt;= 0) {
-    var p = ""+sem.triplePredicate(triples[index]);
-    if (UML_ONLY_PREDS.indexOf(p) &gt;= 0) {
-      xdmp.log("Removing triple with predicate " + p);
-      triples.splice(index, 1); 
-    }
-    index -= 1;
-  }
-  
-  // sort the triples
-  triples.sort(sortXES);
-  
-  // find the path of each triple whose subject is not blank
-  var visited = [];
-  var paths = [];
-  for (var i = 0; i &lt; triples.length; i++) {
-    if (sem.isBlank(sem.tripleSubject(triples[i]))) {
-      // if we're at a blank subject, we've already covered everything
-      break;
-    }
-    var currPath = [];
-    walkPaths(triples, i, visited, currPath);
-    paths.push(currPath);
-    if (visited.length == triples.length) break;
-  }
-  
-  // dump as comparable string
-  var spaths = [];
-  paths.forEach(function(p) { spaths.push(JSON.stringify(p))});
-  return spaths.sort().join("\n")
-}
-
-"Models are the same? " + compareES("/xmi2es/es/DHFEmployeeSample.json", "/xmi2es/es/HRExcel.json") +
-"\nExtended models are the same? " + compareXES("/xmi2es/extension/DHFEmployeeSample.ttl", "/xmi2es/extension/HRExcel.ttl") 
+"Models are the same? " + (makeComp("/xmi2es/es/DHFEmployeeSample.json") == makeComp("/xmi2es/es/HRExcel.json")) +
+"\nExtended models are the same? " + (makeXComp("/xmi2es/extension/DHFEmployeeSample.ttl") == makeXComp("/xmi2es/extension/HRExcel.ttl")) 
 
 
 </query></workspace></export>

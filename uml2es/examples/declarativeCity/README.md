@@ -105,7 +105,7 @@ Run the following to load the model:
 gradle -PenvironmentName=local -i loadXMI
 
 Confirm:
-- Content DB includes several documents creating when loading the XMI, including:
+- Content DB includes several documents created when loading the XMI, including:
 	* /xmi2es/es/DeclarativeCity.json - the ES model
 	* /xmi2es/extension/DeclarativeCity.ttl - the extended ES model
 	* /xmi2es/findings/DeclarativeCity.xml - findings during the transform
