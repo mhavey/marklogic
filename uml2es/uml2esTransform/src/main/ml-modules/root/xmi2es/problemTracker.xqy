@@ -44,6 +44,8 @@ declare variable $ILLEGAL-SEM-FACT := "Illegal sem fact";
 declare variable $ILLEGAL-SEM-QUAL := "Illegal sem qual";
 declare variable $ILLEGAL-MUSICAL := "Illegal musical expression";
 declare variable $ILLEGAL-CSV := "Illegal CSV";
+declare variable $ILLEGAL-IRI-TYPE := "Illegal type for attribute used as IRI";
+declare variable $ILLEGAL-CARDINALITY := "Unexpected cardinality";
 
 (:
 initialize the problem tracker

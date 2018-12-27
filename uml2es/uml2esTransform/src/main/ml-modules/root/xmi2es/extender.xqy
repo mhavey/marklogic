@@ -34,6 +34,7 @@ declare variable $PRED-KEY := sem:iri($IRI-PREFIX || "key");
 declare variable $PRED-VALUE := sem:iri($IRI-PREFIX || "value");
 
 declare variable $PRED-EXCLUDES := sem:iri($IRI-PREFIX || "excludes");
+declare variable $PRED-RESOLVED-TYPE := sem:iri($IRI-PREFIX || "resolvedType");
 declare variable $PRED-RELATIONSHIP := sem:iri($IRI-PREFIX || "relationship");
 declare variable $PRED-TYPE-IS-REFERENCE := sem:iri($IRI-PREFIX || "typeIsReference");
 declare variable $PRED-TYPE-REFERENCE := sem:iri($IRI-PREFIX || "reference");
@@ -440,6 +441,7 @@ declare function xes:transformAttribute($xes as map:map, $profileForm as node(),
 	let $resolveTypeResult := xes:resolveType($xes, $profileForm, $class, $attrib)
 	let $type := $resolveTypeResult[1]
 	let $typeKey := $resolveTypeResult[2]
+	let $_ := xes:addFact($xes, $attribIRI, $PRED-RESOLVED-TYPE, (), $type[1])
 	
 	(: facts and problems :)
 	let $_ := (
@@ -524,12 +526,20 @@ Solution: Just wrap the triples we do have in an XML root and do XPath to find w
 For class/attrib rel, cheat and use starts-with. An attribute's IRI starts with the class's IRI.
 :)
 
+(:
+TODO
+here are the current issues with code gen
+1. dynIRI - when to use it; should be any time we get a value from content or options.
+2. dynIRI - current impl thinks any string should be an IRI, what if it's just a fn:string()
+3. brilliantWorksOf - should be options, triples thinks it's in content - why?
+4. the joke example, "selectedreasonfromanothersource" - should NOT be a string but an unknown attribute. When we find an unknown attribute, get it from options.
+:)
 declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) as empty-sequence() {
 	let $ns := 	map:get($xes, "ns")
 
 	let $prefixMap := map:get($xes, "prefixes")
 	let $prefixRDFAMap := map:get($xes, "specifiedPrefixes")
-	let $prefixesRDFa := for $pkey in map:keys($prefixRDFAMap) return concat($pkey, ":", map:get($prefixRDFAMap, $pkey))
+	let $prefixesRDFa := for $pkey in map:keys($prefixRDFAMap) return concat($pkey, ": ", map:get($prefixRDFAMap, $pkey))
 	let $prefixesRDFA_SJS := string-join($prefixesRDFa, '\n')
 	let $prefixesRDFA_XQY := string-join($prefixesRDFa, $NEWLINE)
 	let $prefixList := for $p in map:keys($prefixMap) return concat('"', $p, '"')
@@ -546,7 +556,7 @@ declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) 
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIX_RDFA = "', $prefixesRDFA_SJS, '";')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIX-RDFA := "', $prefixesRDFA_XQY, '";')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIX_MAP = sem.prefixes(PREFIX_RDFA);')),
-		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIX-MAP := sem:prefixes($PREFIXES-RDFA);')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIX-MAP := sem:prefixes($PREFIX-RDFA);')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const PREFIXES = ', $allPrefixesSJS, ';')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $PREFIXES := ', $allPrefixesXQY, ';')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'const IRI_TYPE = sem.curieExpand("rdf:type");')),
@@ -555,19 +565,58 @@ declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) 
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare variable $IRI-LABEL := sem:curie-expand("rdfs:label");')),
 		xes:appendSourceLine($codeMap, $LIB-SJS, $NEWLINE),
 		xes:appendSourceLine($codeMap, $LIB-XQY, $NEWLINE),
-		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function dynIRI(expr) {
-   for (var i = 0; i < PREFIXES.length; i++) {
-      if (expr.startsWith(PREFIXES[i] + ":")) return sem.curieExpand(expr, PREFIX-MAP);	
+		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '
+function dynIRI(expr) {
+   if (!expr || expr == null) return null;
+   var type = xdmp.type(expr)
+   if (type == "array") {
+    var arr = [];
+    for (var i = 0; i < expr.length; i++) {
+      var expri = dynIRI(expr[i]);
+      if (expri &amp;&amp; expri != null) arr.push(expri);
+    }
+    return arr;
    }
-   return sem.iri(expr);
-}')),
-		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':dynIRI($expr) as sem:iri {
-   let $iri := sem:iri($expr)
-   let $_ := for $p in $PREFIXES return 
-      if (starts-with($expr, concat($p, ":")) then xdmp:set($iri, sem:curie-expand($expression, $PREFIX-MAP))
-      else ()
-   return $iri
-};'))
+   if (type == "iri" || type == "blank") return expr;
+   if (type == "string") {
+	   for (var i = 0; i < PREFIXES.length; i++) {
+	      if (expr.startsWith(PREFIXES[i] + ":")) return sem.curieExpand(expr, PREFIX_MAP);	
+	   }
+	   return sem.iri(expr);
+   }
+   throw expr + " " + type;
+}
+
+function addTriple(ret, s, p, o) {
+  if (!s || s== null || !p || p == null || !o || o == null) return;
+  if (xdmp.type(o) == "array") {
+    for (var i = 0; i < o.length; i++) addTriple(ret, s, p, o[i]);
+  }
+  else ret.push(sem.triple(s,p,o));    
+}
+')),
+		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '
+declare function ', $NS-PREFIX, ':dynIRI($expr) as sem:iri* {
+   if (not(exists($expr))) then ()
+   else if (count($expr) gt 1) then for $t in $expr return ', $NS-PREFIX, ':dynIRI($t)
+   else
+      let $type := string(xdmp:type($expr))
+      return
+        if ($type eq "iri" or $type eq "blank") then $expr
+        else if ($type eq "string") then 
+           let $iri := sem:iri($expr)
+           let $_ := for $p in $PREFIXES return 
+              if (starts-with($expr, concat($p, ":"))) then xdmp:set($iri, sem:curie-expand($expr, $PREFIX-MAP))
+              else ()
+           return $iri
+        else fn:error(xs:QName("ERROR"), $expr || " " || $type)
+};
+
+declare function ', $NS-PREFIX, ':addTriple($ret as json:array, $s, $p, $o) as empty-sequence() {
+  if (not(exists($s)) or not(exists($p)) or not(exists($o))) then ()
+  else for $oi in $o return json:array-push($ret, sem:triple($s, $p, $oi))   
+};
+'))
 	)
 	return  map:put($xes, $LIB-SJS, json:array()) (: here is where we keep list of exported sjs functions :)
 };
@@ -621,11 +670,11 @@ return aHeaders;
 			let $moreToCome := $pos lt count($headersInClass)
 			let $attribIRI := $triple/sem:subject/text()
 			let $attribName := fn:tokenize($attribIRI, "/")[last()]
-			let $val := xes:getAttribForModule($triples, $attribIRI)
+			let $val := xes:getAttribForModule($xes, $triples, $attribIRI)
 			let $field := 
 				let $p := xes:parseXString($xes, $attribIRI, string($triple/sem:object))
 				return
-					if ($p[1] eq "attribute") then xes:getAttribForModule($triples, $p[2])
+					if ($p[1] eq "attribute") then xes:getAttribForModule($xes, $triples, $p[2])
 					else (concat('"', $p[2], '"'), concat('"', $p[2], '"'))
 			let $_ := xdmp:set($jBody, concat($jBody, $NEWLINE, $INDENT, 'ret[', $field[1], '] = ', $val[1], ';'))
 			let $_ := xdmp:set($xxBody, concat($xxBody, $NEWLINE, $INDENT, $INDENT, 'element {', $field[2], '} {', $val[2], '}',
@@ -687,7 +736,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 			if (count($tXURI) ne 1) then ("id", "$id")
 			else 
 				let $attribName := fn:tokenize($tXURI/sem:subject/text(), "/")[last()]
-				return xes:getAttribForModule($triples, $tXURI/sem:subject/text())
+				return xes:getAttribForModule($xes, $triples, $tXURI/sem:subject/text())
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var uri = ', $xuriVal[1], ';'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $uri := ', $xuriVal[2]))
 
@@ -704,7 +753,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 				let $_ := for $coll in $colls/sem:object/text()
 					let $field := xes:parseXString($xes, $classIRI, $coll)
 					let $val := 
-						if ($field[1] eq "attribute") then xes:getAttribForModule($triples, $field[2])
+						if ($field[1] eq "attribute") then xes:getAttribForModule($xes, $triples, $field[2])
 						else (concat('"', $field[2], '"'), concat('"', $field[2], '"'))
 					return (
 						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'collections.push(', $val[1], ');')),
@@ -798,15 +847,11 @@ var bTriples = setTriples_B(A, bContent, headers, bOptions); // calling generate
 return aTriples.concat(bTriples);
 :)
 
-(: TODO - check dynamic IRI is really IRI; i.e., don't allow boolean-valued attribute for IRI. 
-This one is not a gimme; only RESOLVED type is the true type. Even then, no telling if actual value at runtime is an IRI. :)
-
 	let $triples:= <triples>{json:array-values(map:get($xes, "triples"))}</triples>
 
 	(: RDF Builder is needed because there are lots of dynamic IRIs, some fully qualified, others in curie notation.
 	   The builder takes care of all that.
 	:)
-	(: TODO - create the builder init module :)
 	let $classTriples := $triples/sem:triple[
 		sem:predicate eq string($PRED-SEM-TYPE) or sem:predicate eq string($PRED-SEM-FACT)]
 	let $attribTriples := $triples/sem:triple[
@@ -830,7 +875,7 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 		let $tSemIRI := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI) and starts-with(sem:subject, $classIRIx)]
 		let $iriVal :=
 			if (count($tSemIRI) ne 1) then ('"unknown"', '"unknown"')
-			else xes:dynIRI($xes, xes:getAttribForModule($triples, $tSemIRI/sem:subject/text()))
+			else xes:getAttribForModule($xes, $triples, $tSemIRI/sem:subject/text(), true(), true(), ())
 		let $_ := (
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var iri = ', $iriVal[1], ';')),
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ret = [];')),
@@ -843,21 +888,21 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 		let $_ := 
 			if (count($tSemLabel) ne 1) then ()
 			else 
-				let $label :=xes:getAttribForModule($triples, $tSemLabel/sem:subject/text())
+				let $label :=xes:getAttribForModule($xes, $triples, $tSemLabel/sem:subject/text())
 				return (
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-						'ret.push(sem:triple(iri, IRI_LABEL,', $label[1], '));')),
+						'addTriple(ret,iri, IRI_LABEL,', $label[1], ');')),
 					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-						'json:array-push($ret, sem:triple($iri, $IRI-LABEL,', $label[2], '))'))
+						'let $_ := ', $NS-PREFIX, ':addTriple($ret, $iri, $IRI-LABEL,', $label[2], ')'))
 				)
 
 		(: Types :)
 		let $tSemTypes:= $triples/sem:triple[sem:predicate eq string($PRED-SEM-TYPE) and sem:subject eq $classIRI]
 		let $_ := for $tt in $tSemTypes return (
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-				'ret.push(sem.triple(iri, IRI_TYPE, sem.iri("', $tt/sem:object/text(), '")));')),
+				'addTriple(ret, iri, IRI_TYPE, sem.iri("', $tt/sem:object/text(), '"));')),
 			xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-				'json:array-push($ret, sem:triple($iri, $IRI-TYPE, sem:iri("', $tt/sem:object/text(), '")))'))
+				'let $_ := ', $NS-PREFIX, ':addTriple($ret, $iri, $IRI-TYPE, sem:iri("', $tt/sem:object/text(), '"))'))
 			)
 
 		(: Facts :)
@@ -867,14 +912,14 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 			let $fp := $triples/sem:triple[sem:subject eq string($tf) and sem:predicate eq string($PRED-SEM-P)]/sem:object
 			let $fo := $triples/sem:triple[sem:subject eq string($tf) and sem:predicate eq string($PRED-SEM-O)]/sem:object
 
-			let $fsVal := xes:buildSemSPOParameter($xes, $codeMap, $triples, $classIRI, (), ("iri", "$iri"), $fs, true(), false(), $placeholders)
-			let $fpVal := xes:buildSemSPOParameter($xes, $codeMap, $triples, $classIRI, (), ("bug", "bug"), $fp, true(), false(), $placeholders)
-			let $foVal := xes:buildSemSPOParameter($xes, $codeMap, $triples, $classIRI, (), ("bug", "bug"), $fo, false(), false(), $placeholders)
+			let $fsVal := xes:buildSemSPParameter($xes, $codeMap, $triples, $classIRI, $classIRI, ("iri", "$iri"), $fs,  false(), $placeholders)
+			let $fpVal := xes:buildSemSPParameter($xes, $codeMap, $triples, $classIRI, $classIRI, ("bug", "bug"), $fp,  false(), $placeholders)
+			let $foVal := xes:buildSemOParameter($xes, $codeMap, $triples, $classIRI, $classIRI, ("bug", "bug"), $fo,  false(), $placeholders)
 			return  (					
 				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-					'ret.push(sem.triple(', $fsVal[1], ',', $fpVal[1], ',', $foVal[1], '));')),
+					'addTriple(ret, ', $fsVal[1], ',', $fpVal[1], ',', $foVal[1], ');')),
 				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-					'json:array-push($ret, sem:triple(', $fsVal[2], ',', $fpVal[2], ',', $foVal[2], '))'))
+					'let $_ := ', $NS-PREFIX, ':addTriple($ret, ', $fsVal[2], ',', $fpVal[2], ',', $foVal[2], ')'))
 			)
 
 		(: Properties :)
@@ -883,14 +928,6 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 			let $attribIRI := $pp/sem:subject/text()
 			let $pred := $pp/sem:object/text()
 			let $qualifiedObj := $triples/sem:triple[sem:predicate eq string($PRED-SEM-QUAL) and sem:subject eq $pp/sem:subject]/sem:object
-
-			let $profileForm := map:get($xes, "profileForm")
-			let $attribInProfileForm := $profileForm//Class[iri eq $classIRI]/Attribute[iri eq $attribIRI]
-			let $isExplicitIRI :=
-				if (count($qualifiedObj) eq 0) then string($attribInProfileForm/esProperty/@mlType) eq "iri" (: it's typed as IRI :) 
-				else if ($attribIRI eq $tSemIRI/sem:subject/text()) then true() (: this is the class IRI :)
-				else if ($attribInProfileForm/typeIsReference/text() eq true()) then true()
-				else false()
 
 			(: 
 			Rules for object:
@@ -904,24 +941,19 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 			let $_ := 
 				if (count($qualifiedObj) gt 0) then (
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = sem.bnode();')),
-					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := sem:bnode();'))
+					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := sem:bnode()'))
 				)
 				else 
-					let $attribVal := xes:getAttribForModule($triples, $attribIRI)
-					return 
-						if ($isExplicitIRI) then (
-							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = sem.iri(', $attribVal[1], ');')),
-							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := sem:iri(', $attribVal[2], ')'))
-						)
-						else (
-							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = ', $attribVal[1], ';')),
-							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' :=  ', $attribVal[2]))
-						)
+					let $attribVal := xes:getAttribForModule($xes, $triples, $attribIRI, true(), false(), ()) 
+					return (
+						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = ', $attribVal[1], ';')),
+						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := ', $attribVal[2]))
+					)
 			let $_ := (						
 				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-					'ret.push(sem.triple(iri, sem.iri("', $pred, '"),', $objName, '));')),
+					'addTriple(ret, iri, sem.iri("', $pred, '"),', $objName, ');')),
 				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-					'json:array-push($ret, sem:triple($iri, sem:iri("', $pred, '"), $', $objName, '))'))
+					'let $_ := ', $NS-PREFIX, ':addTriple($ret, $iri, sem:iri("', $pred, '"), $', $objName, ')'))
 			)
 
 			(: Qualification for that property :)
@@ -930,15 +962,15 @@ This one is not a gimme; only RESOLVED type is the true type. Even then, no tell
 				let $qp := $triples/sem:triple[sem:subject eq string($q) and sem:predicate eq string($PRED-SEM-P)]/sem:object
 				let $qo := $triples/sem:triple[sem:subject eq string($q) and sem:predicate eq string($PRED-SEM-O)]/sem:object
 
-				let $qsVal := xes:buildSemSPOParameter($xes, $codeMap, $triples, $attribIRI, $classIRI, ($objName, "$" || $objName), $qs, true(), true(), $placeholders)
-				let $qpVal := xes:buildSemSPOParameter($xes, $codeMap, $triples, $attribIRI, $classIRI, ("bug", "bug"), $qp, true(), true(), $placeholders)
-				let $qoVal := xes:buildSemSPOParameter($xes, $codeMap, $triples, $attribIRI, $classIRI, ("bug", "bug"), $qo, false(), true(), $placeholders)
+				let $qsVal := xes:buildSemSPParameter($xes, $codeMap, $triples, $attribIRI, $classIRI, ($objName, "$" || $objName), $qs, true(), $placeholders)
+				let $qpVal := xes:buildSemSPParameter($xes, $codeMap, $triples, $attribIRI, $classIRI, ("bug", "bug"), $qp, true(), $placeholders)
+				let $qoVal := xes:buildSemOParameter($xes, $codeMap, $triples, $attribIRI, $classIRI, ("bug", "bug"), $qo, true(), $placeholders)
 
 				return  (					
 					xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 
-						'ret.push(sem.triple(', $qsVal[1], ',', $qpVal[1], ',', $qoVal[1], '));')),
+						'addTriple(ret, ', $qsVal[1], ',', $qpVal[1], ',', $qoVal[1], ');')),
 					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 
-						'json:array-push($ret, sem:triple(', $qsVal[2], ',', $qpVal[2], ',', $qoVal[2], '))'))
+						'let $_ := ', $NS-PREFIX, ':addTriple($ret, ', $qsVal[2], ',', $qpVal[2], ',', $qoVal[2], ')'))
 				)
 
 		(: close :)
@@ -974,7 +1006,7 @@ declare function xes:generateCalcs($xes as map:map, $codeMap as map:map) as empt
 			let $cval := xes:parseXString($xes, $attribIRI, $concat)
 			return 
 				if ($cval[1] eq "attribute") then 
-					let $attribVal := xes:getAttribForModule($triples, $cval[2])
+					let $attribVal := xes:getAttribForModule($xes, $triples, string-join($toks[1 to last() - 1], "/") || "/" || $cval[2])
 					return (
 						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'c += ', $attribVal[1], ';')),
 						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $c := concat($c, ', $attribVal[2], ')'))
@@ -1019,14 +1051,65 @@ declare function xes:appendSourceLine($codeMap, $key, $line) as empty-sequence()
 We want an attribute from either content or options. If the attribute it excluded it comes from options,
 otherwise it's from content. Return both sjs and xqy expression.
 :)
-declare function xes:getAttribForModule($triples, $attribIRI)  as xs:string+ {
-	let $attribName := fn:tokenize($attribIRI, "/")[last()]
-	return 
-		if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
-			sem:predicate/text() eq string($PRED-EXCLUDES)])) then
-			( concat('options.', $attribName), concat('map:get($options, "', $attribName, '")') )
-		else ( concat('content.', $attribName) , concat('map:get($content, "', $attribName, '")') )
+declare function xes:getAttribForModule($xes, $triples, $attribIRI as xs:string)  as xs:string+ {
+	xes:getAttribForModule($xes, $triples, $attribIRI, false(), false(), ())
 };
+
+declare function xes:getAttribForModule($xes, $triples, $attribIRI, 
+	$tryForIRI as xs:boolean, 
+	$mustBeIRI as xs:boolean, 
+	$expectedCardinality as xs:string?)  as xs:string+ {
+
+	let $attribName := fn:tokenize($attribIRI, "/")[last()]
+	let $profileForm := map:get($xes, "profileForm")
+	let $attribInProfileForm := $profileForm//Class//Attribute[IRI eq $attribIRI]
+
+let $_ := xdmp:log("get attrib *" || $attribIRI || "*" )
+	return 
+		(: not even found - it's ok, we'll assume they'll provide an option for it :)
+		if (string-length($attribInProfileForm/name/text()) eq 0) then 
+			(concat('options.', $attribName), concat('map:get($options, "', $attribName, '")')) 
+
+		(: found :)
+		else 
+			let $cardinality := 
+				if ($attribInProfileForm/array/text() eq true()) then
+					if ($attribInProfileForm/required/text() eq true()) then "+" 
+					else "*"
+				else
+					if ($attribInProfileForm/required/text() eq true()) then "1"
+					else "0" 
+			let $isSemIRI := count($triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI) and sem:subject eq $attribIRI]) eq 1
+			let $resolvedType:= $triples/sem:triple[sem:predicate eq string($PRED-RESOLVED-TYPE) and sem:subject eq $attribIRI]/sem:object/text()
+
+			let $expr := 
+				if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
+					sem:predicate/text() eq string($PRED-EXCLUDES)])) then
+					( concat('options.', $attribName), concat('map:get($options, "', $attribName, '")') )
+				else ( concat('content.', $attribName) , concat('map:get($content, "', $attribName, '")') )
+
+			let $_ := 
+				if (exists($expectedCardinality)) then
+					if ($expectedCardinality eq $cardinality or 
+						$expectedCardinality eq "*" or
+						$expectedCardinality eq "+" or
+						$cardinality eq "1" or $cardinality eq "0") then ()
+					else 
+						pt:addProblem(map:get($xes,  "problems"), sem:iri($attribIRI), (), $pt:ILLEGAL-CARDINALITY, 
+						"actual *" || $cardinality || "* expected *" || $expectedCardinality || "*") 
+				else ()
+
+			(: special IRI handling, if requested :)
+			return 
+				if ($tryForIRI eq true()) then 
+					if ($resolvedType eq "iri" or starts-with($resolvedType, "#/definitions/")) then xes:dynIRI($expr)
+					else if ($resolvedType eq "string" and $isSemIRI eq true()) then xes:dynIRI($expr)
+					else if ($mustBeIRI eq false()) then $expr
+					else 
+						let $_ := pt:addProblem(map:get($xes, "problems"), sem:iri($attribIRI), (), $pt:ILLEGAL-IRI-TYPE, $resolvedType)
+						return $expr
+				else $expr
+	};
 
 declare function xes:assignAttribInModule($triples, $attribIRI as xs:string, $val as xs:string+)  as xs:string+ {
 	let $attribName := fn:tokenize($attribIRI, "/")[last()]
@@ -1043,68 +1126,112 @@ declare function xes:addSJSFunction($xes, $function as xs:string) as empty-seque
 	return map:put($xes, $LIB-SJS, $currList)
 };
 
-declare function xes:dynIRI($xes, $expression as xs:string+) as xs:string+ {
+declare function xes:dynIRI($expression as xs:string+) as xs:string+ {
 	(
 		concat('dynIRI(', $expression[1], ')'),
 		concat($NS-PREFIX, ':dynIRI(', $expression[2], ')')
 	)
 };
 
+declare function xes:buildSemSPParameter($xes, $codeMap, $triples, $sourceIRI as xs:string, $parentIRI as xs:string?,
+	$defaults as xs:string+, $spoFact, 
+	$pMode as xs:boolean, $placeholders as map:map) {
+
+	let $isO := false()
+	return buildSemSPOParameter($xes, $codeMap, $triples, $sourceIRI, $parentIRI, $defaults, $spoFact, $pMode, $placeholders, $isO)
+};
+
+declare function xes:buildSemOParameter($xes, $codeMap, $triples, $sourceIRI as xs:string, $parentIRI as xs:string?,
+	$defaults as xs:string+, $spoFact, 
+	$pMode as xs:boolean, $placeholders as map:map) {
+
+	let $isO := true()
+	return buildSemSPOParameter($xes, $codeMap, $triples, $sourceIRI, $parentIRI, $defaults, $spoFact, $pMode, $placeholders, $isO)
+};
+
 declare function xes:buildSemSPOParameter($xes, $codeMap, $triples, $sourceIRI as xs:string, $parentIRI as xs:string?,
-	$defaults as xs:string+, $spoFact, $iriNeeded as xs:boolean, $pMode as xs:boolean, $placeholders as map:map) {
+	$defaults as xs:string+, $spoFact, 
+	$pMode as xs:boolean, $placeholders as map:map, $isO as xs:boolean) {
 
-	if (count($spoFact) ne 1) then $defaults
-	else 
-		let $parsed := xes:parseXiany($xes, $sourceIRI, $spoFact/text(), string($spoFact/@datatype), $pMode)
-		let $tripleParam := 
-			try {
-				if ($parsed[1] eq "iri") then
-					if (count($parsed) eq 1) then ("sem.iri(iri)", "sem:iri($iri)") 
-					else ('sem.iri("' || $parsed[2] || '")', 'sem:iri("' || $parsed[2] || '")')
-				else if ($parsed[1] eq "blank") then 
-					let $blank := concat("semPlaceholder_", $parsed[2])
-					let $_ :=
-						if (map:contains($placeholders, $blank)) then ()
-						else (
-							map:put($placeholders, $blank, $blank),
-							xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, "var ", $blank, ' = sem.bnode();')),
-							xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, "let $", $blank, ' := sem:bnode()'))
-						)
-					return ($blank, '$' || $blank)
-				else if ($parsed[1] eq "sattribute" or $parsed[1] eq "attribute") then 
-					let $sattrib := xes:getAttribForModule($triples, concat($parentIRI, "/", $parsed[2]))
-					return 
-						if ($iriNeeded) then xes:dynIRI($xes, $sattrib)
-						else $sattrib
-				else if ($parsed[1] eq "tattribute") then 
-					let $replacer := "TODO - provide value of target attribute *" || $parsed[2] || "*"
-					return 
-						if ($iriNeeded) then xes:dynIRI($xes, $replacer)
-						else '"' || $replacer || '"'
-				else if ($parsed[1] eq "value") then 
-					let $val := xes:getAttribForModule($triples, $sourceIRI)
-					return
-						if ($iriNeeded) then xes:dynIRI($xes, $val)
-						else $val
-				else if ($parsed[1] eq "integer" or $parsed[1] eq "decimal") then
-					if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, *" || $parsed[1] || "* found *" || $parsed[2] || "*")
-					else ($parsed[2], $parsed[2])
-				else if ($parsed[1] eq "boolean") then
-					if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, boolean found *" || $parsed[2] || "*")
-					else ($parsed[2], $parsed[2] || "()")
-				else if ($parsed[1] eq "string") then
-					if ($iriNeeded) then fn:error(xs:QName("ERROR"), "IRI required, string found *" || $parsed[2] || "*")
-					else ('"' || $parsed[2] || '"', '"' || $parsed[2] || '"')
-				else fn:error(xs:QName("ERROR"), "cannot deal with " || $parsed)
-			} catch($e) {
-				let $problems := map:get($xes,  "problems")	
-				let $err := string($e//error:code)
-				let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, $err) 
-				let $ret := '"error ' || $err || '"'
-				return ($ret, $ret)
-			}		
+	let $attribMaxCardinality := if ($isO eq true()) then "*" else "1"
+	let $attribMustBeIRI := if ($isO eq true()) then false() else true()
+	let $attribTryIRI := true()
 
-		return $tripleParam
+let $_ := xdmp:log("SPO *" || $sourceIRI || "*" || $parentIRI || "*" || $spoFact/text() || "*")
+
+(:
+PROBLEM - WHEN IT'S ON AN ATTRIBUTE, I DONT CHOP OFF PROPERLY :Joke/contributor/revisionComment
+2018-12-26 19:02:03.235 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/iri*
+2018-12-26 19:02:03.240 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/brilliantWorksIRI*
+2018-12-26 19:02:03.248 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/attended*
+2018-12-26 19:02:03.251 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/aliases*
+2018-12-26 19:02:03.254 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/IRI*
+2018-12-26 19:02:03.259 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/editors*
+2018-12-26 19:02:03.265 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes*
+2018-12-26 19:02:03.269 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes/_ChapterDataFromAnotherSource*
+2018-12-26 19:02:03.271 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes/_SelectionReasonFromAnotherSource_*
+2018-12-26 19:02:03.272 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/iri*
+2018-12-26 19:02:03.281 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/contributor*
+2018-12-26 19:02:03.285 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/contributor/revisionComment*
+2018-12-26 19:02:03.287 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/contributor/contribRole*
+2018-12-26 19:02:03.288 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/updateDateTime*
+2018-12-26 19:02:03.291 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/revisionOf*
+2018-12-26 19:02:03.293 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/FooleSchool/iri*
+2018-12-26 19:02:03.305 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/fooleID*
+2018-12-26 19:02:03.311 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/fooleID*
+2018-12-26 19:02:03.319 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/isbn*
+2018-12-26 19:02:03.327 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/jokeID*
+2018-12-26 19:02:03.329 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/version*
+2018-12-26 19:02:03.336 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/FooleSchool/name*
+:)
+
+	return
+		if (count($spoFact) ne 1) then $defaults
+		else 
+			let $parsed := xes:parseXiany($xes, $sourceIRI, $spoFact/text(), string($spoFact/@datatype), $pMode)
+			let $tripleParam := 
+				try {
+					if ($parsed[1] eq "iri") then
+						if (count($parsed) eq 1) then ("iri", "$iri") 
+						else ('sem.iri("' || $parsed[2] || '")', 'sem:iri("' || $parsed[2] || '")')
+					else if ($parsed[1] eq "blank") then 
+						let $blank := concat("semPlaceholder_", $parsed[2])
+						let $_ :=
+							if (map:contains($placeholders, $blank)) then ()
+							else (
+								map:put($placeholders, $blank, $blank),
+								xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, "var ", $blank, ' = sem.bnode();')),
+								xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, "let $", $blank, ' := sem:bnode()'))
+							)
+						return ($blank, '$' || $blank)
+					else if ($parsed[1] eq "sattribute" or $parsed[1] eq "attribute") then 
+						xes:getAttribForModule($xes, $triples, concat($parentIRI, "/", $parsed[2]), 
+							$attribTryIRI, $attribMustBeIRI, $attribMaxCardinality)
+					else if ($parsed[1] eq "tattribute") then 
+						let $replacer := "TODO - provide value of target attribute *" || $parsed[2] || "*"
+						return '"' || $replacer || '"'
+					else if ($parsed[1] eq "value") then 
+						xes:getAttribForModule($xes, $triples, $sourceIRI,  
+							$attribTryIRI, $attribMustBeIRI, $attribMaxCardinality)
+					else if ($parsed[1] eq "integer" or $parsed[1] eq "decimal") then
+						if ($isO eq false()) then fn:error(xs:QName("ERROR"), "IRI required, *" || $parsed[1] || "* found *" || $parsed[2] || "*")
+						else ($parsed[2], $parsed[2])
+					else if ($parsed[1] eq "boolean") then
+						if ($isO eq false()) then fn:error(xs:QName("ERROR"), "IRI required, boolean found *" || $parsed[2] || "*")
+						else ($parsed[2], $parsed[2] || "()")
+					else if ($parsed[1] eq "string") then
+						if ($isO eq false()) then fn:error(xs:QName("ERROR"), "IRI required, string found *" || $parsed[2] || "*")
+						else ('"' || $parsed[2] || '"', '"' || $parsed[2] || '"')
+					else fn:error(xs:QName("ERROR"), "cannot deal with " || $parsed)
+				} catch($e) {
+					let $problems := map:get($xes,  "problems")	
+					let $err := string($e//error:code)
+					let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "spo " || $err) 
+					let $ret := '"error ' || $err || '"'
+					return ($ret, $ret)
+				}		
+
+			return $tripleParam
 };
 
 declare function xes:parseXString($xes, $sourceIRI as xs:string?, $s as xs:string) as xs:string* {
@@ -1119,7 +1246,7 @@ declare function xes:parseXStringImpl($xes, $sourceIRI as xs:string?, $s as xs:s
 		else ("literal", $s)
 	} catch($e) {
 		let $problems := map:get($xes,  "problems")	
-		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, string($e//error:code)) 
+		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "xstring *" || $s || "* " || string($e//error:code)) 
 		return ("junk", $s)
 	}
 };
@@ -1156,7 +1283,7 @@ declare function xes:parseXiany($xes, $sourceIRI as xs:string?, $s as xs:string,
 	}
 	catch($e) {
 		let $problems := map:get($xes,  "problems")	
-		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, string($e//error:code)) 
+		let $_ := pt:addProblem($problems, sem:iri($sourceIRI), (), $pt:ILLEGAL-MUSICAL, "xiany *" || $s || "* " || string($e//error:code)) 
 		return ("junk", $s)
 	}
 };
