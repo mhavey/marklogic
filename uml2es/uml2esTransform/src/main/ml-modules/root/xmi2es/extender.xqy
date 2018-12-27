@@ -1064,7 +1064,6 @@ declare function xes:getAttribForModule($xes, $triples, $attribIRI,
 	let $profileForm := map:get($xes, "profileForm")
 	let $attribInProfileForm := $profileForm//Class//Attribute[IRI eq $attribIRI]
 
-let $_ := xdmp:log("get attrib *" || $attribIRI || "*" )
 	return 
 		(: not even found - it's ok, we'll assume they'll provide an option for it :)
 		if (string-length($attribInProfileForm/name/text()) eq 0) then 
@@ -1156,34 +1155,6 @@ declare function xes:buildSemSPOParameter($xes, $codeMap, $triples, $sourceIRI a
 	let $attribMaxCardinality := if ($isO eq true()) then "*" else "1"
 	let $attribMustBeIRI := if ($isO eq true()) then false() else true()
 	let $attribTryIRI := true()
-
-let $_ := xdmp:log("SPO *" || $sourceIRI || "*" || $parentIRI || "*" || $spoFact/text() || "*")
-
-(:
-PROBLEM - WHEN IT'S ON AN ATTRIBUTE, I DONT CHOP OFF PROPERLY :Joke/contributor/revisionComment
-2018-12-26 19:02:03.235 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/iri*
-2018-12-26 19:02:03.240 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/brilliantWorksIRI*
-2018-12-26 19:02:03.248 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/attended*
-2018-12-26 19:02:03.251 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/aliases*
-2018-12-26 19:02:03.254 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/IRI*
-2018-12-26 19:02:03.259 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/editors*
-2018-12-26 19:02:03.265 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes*
-2018-12-26 19:02:03.269 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes/_ChapterDataFromAnotherSource*
-2018-12-26 19:02:03.271 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes/_SelectionReasonFromAnotherSource_*
-2018-12-26 19:02:03.272 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/iri*
-2018-12-26 19:02:03.281 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/contributor*
-2018-12-26 19:02:03.285 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/contributor/revisionComment*
-2018-12-26 19:02:03.287 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/contributor/contribRole*
-2018-12-26 19:02:03.288 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/updateDateTime*
-2018-12-26 19:02:03.291 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/revisionOf*
-2018-12-26 19:02:03.293 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/FooleSchool/iri*
-2018-12-26 19:02:03.305 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/fooleID*
-2018-12-26 19:02:03.311 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeContributor/fooleID*
-2018-12-26 19:02:03.319 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/isbn*
-2018-12-26 19:02:03.327 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/jokeID*
-2018-12-26 19:02:03.329 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/Joke/version*
-2018-12-26 19:02:03.336 Info: get attrib *http://com.marklogic.es.uml.joke/JokeBook-0.0.1/FooleSchool/name*
-:)
 
 	return
 		if (count($spoFact) ne 1) then $defaults

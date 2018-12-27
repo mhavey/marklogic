@@ -71,18 +71,9 @@ Confirm:
 select * where {?s ?o ?p}
 
 Among the results, you should see the following:
--<http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes>	<http://marklogic.com/entity-services#title>	"selectedJokes" - From basic ES model
-- <http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes>	<http://marklogic.com/xmi2es/xes#semPredicate>	<http://www.w3.org/ns/prov#qualifiedDerivation> - From the extended ES model
+- <http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes>	<http://marklogic.com/entity-services#title>	"selectedJokes" - From basic ES model
+- <http://com.marklogic.es.uml.joke/JokeBook-0.0.1/JokeBook/selectedJokes>	<http://marklogic.com/xmi2es/xes#semPredicate>	<http://www.w3.org/ns/prov#wasDerivedFrom> - From the extended ES model
 
 
 ## Explore
 In Query Console, import XMI2ESJokeBook.xml workspace. You won't want to miss this part; it's where the fun happens: you create documents whose embedded triples conform to the model! 
-
-
-TODO - issues:
-1. triples function looks for brilliantworksiri in content, but it's in options. Proper place is options.
-2. Various syntax faxes in PREFIX function and constants.
-3. IRIs get generated as string literals
-4. check for null before generating triple. because this isn't happening, my test has to make up values.
-5. Does it handle multivals - e.g. multiple selected jokes
-
