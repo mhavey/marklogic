@@ -35,7 +35,7 @@ Notice the following about this model:
 
 - in (5), we specify qualified attribution. The joke is attributed to a joke contributor. In triple terms, the joke is the subject and the joke contributor the object. The predicate, though, is not simply that the object is attributed to the subject. The predicate itself is described semantically as having, for example, revision comments and the author's role.  
 - in (7), we use semFacts create a new OWL class containing brilliant works of the specific contributor.
-- in (15), we specify qualified derivation. The joke book is derived from one or more jokes. Among the characteristic of this derivation are the reason it was selected for the book that the chapter of the book it appears in. As it turns out, these characteristics (designated as "Selection Reason From Another Source" and "Chapter Data From Another Source" are not captured anywhere in the model. They come from some other source, which will be resolved at implementation time.
+- in (15), we use non-qualified derivation. 
 
 ## For more..
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>
