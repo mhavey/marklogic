@@ -1,32 +1,37 @@
 buildscript {
-
   repositories {
-    jcenter{url "http://jcenter.bintray.com/"}
-    mavenLocal()
-    maven { url "http://plugins.gradle.org/m2" }
-  }
-  dependencies {
-    classpath "com.marklogic:ml-gradle:3.2.0"
-    classpath "net.saliman:gradle-properties-plugin:1.4.6"
+    maven {url 'http://developer.marklogic.com/maven2/'}
   }
 }
 
 plugins {
-   id 'com.marklogic.ml-data-hub' version '2.0.2'
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make the Data Hub Framework do its magic
+    id 'com.marklogic.ml-data-hub' version '4.1.0'
 }
 
-apply plugin: "net.saliman.properties"
-apply plugin: "com.marklogic.ml-gradle"
-    
 repositories {
-  jcenter{url "http://jcenter.bintray.com/"}
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
 
-  // Needed for mlcp dependencies
-  maven { url "http://plugins.gradle.org/m2" }
-  maven { url "http://developer.marklogic.com/maven2/" }
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
 
-  // Needed for hadoop dependencies for mlcp
-  maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
 }
 
 configurations {
@@ -40,29 +45,15 @@ configurations {
     }
 }
 
-/**
- * ML 8.0-5 and 7.0-6 introduced a single mlcp dependency - see http://developer.marklogic.com/maven2/com/marklogic/mlcp/.
- * The 8.0-5 mlcp may very well work on ML versions prior to 8.0-5. If it doesn't, try the mlcp-Hadoop2
- * and marklogic-mapreduce2 dependencies that are commented out by default instead of the mlcp dependency.
- *
- * Note that at least with version 8.0-5 of mlcp, mlcp will complain on Windows that it cannot find
- * bin/winutils.exe. This does not appear to have any impact on mlcp behavior though.
- */
 dependencies {
+    // this allows you to write custom java code that depends
+    // on the Data Hub Framework library
+    compile 'com.marklogic:marklogic-data-hub:4.1.0'
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
 
-  mlcp "com.marklogic:mlcp:8.0.6.3"
-
-  /**
-   * If you need to import delimited text, be sure to include this dependency as well.
-   */
-  mlcp "org.apache.commons:commons-csv:1.2"
-
-  /**
-   * mlcp uses Log4j for logging, and if Log4j can't find a configuration file, it will complain and you'll
-   * get none of mlcp's usually-useful logging. It is recommended then that your Gradle configuration for
-   * mlcp include a directory or some other resource that provides a log4j.properties file.
-   */
-  mlcp files("lib")
+    mlcp "com.marklogic:mlcp:9.0.6"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
 }
 
 task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
@@ -195,11 +186,6 @@ task runInputMLCP() {
   dependsOn 'loadGlobalDepartment'
 }
 
-task includeXMI2ESTransform(type: Copy) {
-    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
-    into "plugins/xmi2es"
-}
-
 task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
   def unixDir = xmiDir.replace('\\', '/');
@@ -219,9 +205,19 @@ task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
-  transform_param = '{"genlang":"xqy"}'
+  transform_param = "dummy"
 }
 
+task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlFinalPort.toInteger()
+
+  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_type = "rdf" 
+  output_uri_prefix = "/triplestore"
+}
 
 task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
@@ -230,10 +226,6 @@ task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
   collection_filter = "xmi2es"
   host = mlHost
   port = mlFinalPort.toInteger()
-}
-
-task deleteESDump(type: Delete) {
-    delete "data/entity-services-dump"
 }
 
 task copyES(type: Copy) {
@@ -246,6 +238,24 @@ task copyESExt(type: Copy) {
     into "data/entity-services-extension" 
 }
 
+task deleteESDump(type: Delete) {
+    delete "data/entity-services-dump"
+}
+
+task clearGenerated(type: Delete) {
+  dependsOn 'deleteESDump'
+  dependsOn 'deleteGeneratedTDE'
+  delete "src/main/ml-config/databases/content-database.json"
+  delete "src/main/ml-config/databases/content-database-GENERATED.json"
+  delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy"
+  delete "src/main/ml-modules/options/MovieModel.xml"
+}
+
+task includeXMI2ESTransform(type: Copy) {
+    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
+    into "src/main/ml-modules/root/xmi2es"
+}
+
 task ingestModel() {
   dependsOn 'deleteESDump'
   dependsOn 'loadXMI'
@@ -256,24 +266,6 @@ task ingestModel() {
   tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
   tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
   tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
-}
-
-task clearGenerated(type: Delete) {
-  dependsOn 'deleteESDump'
-  delete 'user-config/schemas'
-  delete "src/main"
-}
-
-task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-  database = mlFinalDbName
-
-  input_file_path =  "data/entity-services-extension/*.ttl" 
-  input_file_type = "rdf" 
-  output_uri_prefix = "/triplestore"
 }
 
 task workaroundDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
