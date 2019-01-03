@@ -78,7 +78,7 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/employee/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -107,7 +107,7 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/salary/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -134,7 +134,7 @@ task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/department/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Department,flow-name=LoadDepartment"	
 }
@@ -160,7 +160,7 @@ task loadAcme(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_replace = regex 
   output_uri_prefix = "/hr/employee/acme/"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -242,15 +242,6 @@ task deleteESDump(type: Delete) {
     delete "data/entity-services-dump"
 }
 
-task clearGenerated(type: Delete) {
-  dependsOn 'deleteESDump'
-  dependsOn 'deleteGeneratedTDE'
-  delete "src/main/ml-config/databases/content-database.json"
-  delete "src/main/ml-config/databases/content-database-GENERATED.json"
-  delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy"
-  delete "src/main/ml-modules/options/MovieModel.xml"
-}
-
 task includeXMI2ESTransform(type: Copy) {
     from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "src/main/ml-modules/root/xmi2es"
@@ -268,7 +259,8 @@ task ingestModel() {
   tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
 }
 
-task workaroundDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
+// use this instead of the heavy mlGenerateModelArtifacts
+task deployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   def dataDir = "${projectDir}";
   def unixDir = dataDir.replace('\\', '/');
   def regexDir = unixDir+"/data/entity-services";

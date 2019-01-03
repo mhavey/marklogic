@@ -87,8 +87,8 @@ Confirm:
 select * where {?s ?o ?p}
 
 Among the results, you should see the following:
-- <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/cast> <http://marklogic.com/entity-services#datatype> <http://marklogic.com/json#array> - From basic ES model
-- <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/cast> <http://marklogic.com/xmi2es/xes#relationship>  "association" - From the extended ES model
+- <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/cast> <http://marklogic.com/entity-services#datatype> <http://marklogic.com/json#array> from basic ES model
+- <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/cast> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
 
 - In gradle project, check for these newly generated files:
   * src/main/ml-config/databases/content-database-GENERATED.json - Generated DB config with indexes specified in model. We will use this.

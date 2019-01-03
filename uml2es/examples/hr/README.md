@@ -112,62 +112,36 @@ Confirm:
 - Modules DB (xmi2es-examples-hr-MODULES) contains the following module:
   * /xmi2es/xmi2esTransform.xqy - Main module of the toolkit's transform
 
-### Transform UML to ES
+### Load and Transform the HR UML Model
 
-Next, move our UML model into ML as an ES model. Let's divide this into two parts.
+Next, move our UML model into ML as an ES model. Run the following:
 
-#### Load UML Model and Observe Output of Transform
-
-We will load our UML model and transform it to Entity Services format. Run the following:
-
-gradle -PenvironmentName=local -i ingestModel
+gradle -PenvironmentName=local -i ingestModel deployESModelToFinal loadExtendedModel
 
 Confirm:
-- Final DB has the following documents
-  * /xmi2es/es/DHFEmployeeSample.json (The ES model descriptor in JSON form)
+- Final DB (xmi2es-examples-hr-FINAL) includes the following documents
+  * /marklogic.com/entity-services/models/DHFEmployeeSample.json (The deployed ES model)
+  * /xmi2es/es/DHFEmployeeSample.json (The ES model descriptor converted to JSON form)
   * /xmi2es/extension/DHFEmployeeSample.ttl (Semantic triples that extend our model)
   * /xmi2es/extension/DHFEmployeeSample.txt (A text summary of our model extension)
+  * /xmi2es/gen/DHFEmployeeSample/lib.xqy (Initial generated code from the model. This is a *precursor* to the cookie-cut harmonization. That will come later.)
   * /xmi2es/findings/DHFEmployeeSample.xml (Problems found during transformation)
-  * /xmi2es/gen/DHFEmployeeSample.txt (Generated XQuery code for writer, headers, triples, and content (calculated fields only) creation.
   * /xmi2es/xmi/DHFEmployeeSample.xml (The original UML model as an XMI document)
-- Your gradle directory structure under data/entity-services-dump has the same documents as above.
-- File DHFEmployeeSample.json exists in gradle's data/entity-services directory. This is our ES model descriptor to be deployed.
-- File DHFEmployeeSample.ttl exists in gradle's data/entity-services-extension directory. This is our ES model extension to be deployed.
+- Check /xmi2es/findings/DHFEmployeeSample.xml for issues during transform. It should not indicate any issues.
+- In Query Console, open a tab of type SPARQL, point to the final DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
 
-A few things to notice:
-- We made use of the generated code in the /xmi2es/gen/DHFEmployeeSample.txt module! Specifically, we pasted it into the content, writer, headers, and triples harmonization modules of the Department and Employee entities. (See plugins/entities/Department/harmonize/HarmonizeDepartment and plugins/entities/Employee/harmoize/HarmonizeEmployee.) No need to write that code from scratch. The model gave enough information to generate this code. 
-- We made use of the extended model definition. Specifically, we pasted the contents of /xmi2es/extension/DHFEmployeeSample.txt as a block comment into our conversion module plugins/ext/entity-services/HR-0.0.1.xqy. We refer back to that comment in several points in the code, showing that our implementation references facts from the extended model.
-
-#### Deploy Entity Services Model and Associated Artifacts
-
-Next, generate ES artifacts. The strange task workaroundDeployESModelToFinal works around the issue where ES model is deployed to STAGING instead of FINAL.
-
-Run the following:
-
-gradle -PenvironmentName=local -i mlgen loadExtendedModel workaroundDeployESModelToFinal
-
-Confirm:
-- Final DB now has the following document
-  * /marklogic.com/entity-services/models/DHFEmployeeSample.json
-
-- In Query Console, open a tab of type SPARQL, point to the FINAL DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
-
-select * where {?s ?o ?p} 
+select * where {?s ?o ?p}
 
 Among the results, you should see the following:
-- <http://com.marklogic.es.uml.hr/HR-0.0.1/Department/departmentId> <http://marklogic.com/entity-services#datatype> <http://www.w3.org/2001/XMLSchema#int> - From basic ES model
-- <http://com.marklogic.es.uml.hr/HR-0.0.1/Department>  <http://marklogic.com/xmi2es/xes/semIRI>  "deptIRI" - From the extended ES model
+- <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee> <http://marklogic.com/entity-services#property> http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/emails> from basic ES model
+- <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
 
-- In gradle project, check for these newly generated files:
-  * src/main/ml-modules/ext/entity-services/HR-0.0.1-GENERATED.xqy
-  * src/main/ml-modules/options/HR.xml
-  * user-config/databases/content-database.json
-  * user-config/schemas/HR-0.0.1.xsd
-  * user-config/schemas/tde/HR-0.0.1.tdex
+... THE REST IS UNDER CONSTRUCTION ...
 
-We won't use any of these artifacts in this demo. The code already contains a tweaked version of HR-0.0.1.xqy in /plugins/ext/entity-services. Because we won't use these artifacts, we don't need to reload our schemas or modules.
 
 ### Ingest
+
+TODO: pre-req: input flow exists, duh
 Ingest staging data and some triples for FINAL	
 
 Run the following:
@@ -175,12 +149,13 @@ Run the following:
 gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
 
 Confirm:
-- In STAGING we now have 2008 documents. Of these:
+- In STAGING (xmi2es-examples-hr-STAGING) we now have 2008 documents. Of these:
   * 1002 are in Employees collection
   * 1000 are in Salary collection
   * 5 are in Department collection
 
-- In FINAL we have the a document containing triples in the collection http://www.w3.org/ns/org.
+- In FINAL (xmi2es-examples-hr-FINAL) we have the a document containing triples in the collection http://www.w3.org/ns/org.
+
 
 ### Harmonize
 Run harmonization to move employee and department data to FINAL.
