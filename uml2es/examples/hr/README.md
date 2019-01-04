@@ -168,12 +168,14 @@ Run the following:
 gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
 
 Confirm:
-- In STAGING (xmi2es-examples-hr-STAGING) we now have 2008 documents. Of these:
+- In STAGING (xmi2es-examples-hr-STAGING) we now have 2008 or more documents. Of these:
   * 1002 are in Employees collection
   * 1000 are in Salary collection
   * 5 are in Department collection
 
 - In FINAL (xmi2es-examples-hr-FINAL) we have the a document containing triples in the collection http://www.w3.org/ns/org.
+
+.. THE REST IS UNDER CONSTRUCTION ..
 
 
 ### Harmonize

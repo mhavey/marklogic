@@ -78,7 +78,7 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/employee/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -107,7 +107,7 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/salary/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -124,7 +124,7 @@ task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "json"
+  document_type = "xml"
   input_file_path =  "data/hr/GlobalCorp/department"
   input_file_type ="delimited_text" 
 
@@ -134,7 +134,7 @@ task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/department/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Department,flow-name=LoadDepartment"	
 }
@@ -160,7 +160,7 @@ task loadAcme(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_replace = regex 
   output_uri_prefix = "/hr/employee/acme/"
 
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
