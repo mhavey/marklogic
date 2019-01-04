@@ -278,3 +278,75 @@ task deployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   host = mlHost
   port = mlFinalPort.toInteger()
 }
+
+
+/*
+This runs the cookie cutter. I have it as a server eval task. The task basically calls SJS in the server-side
+to cut the cookies and store them in the Final DB. We then use MLCP import (fetch cut cookie) to get them.
+*/
+task cutCookie(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def model = project.findProperty("model")
+  if (model != null) model = '"' + model + '"'
+  def entities = project.findProperty("entities") 
+  if (entities != null) entities = '"' + entities + '"'
+  def entitySelect = project.findProperty("entitySelect") 
+  if (entitySelect != null) entitySelect = '"' + entitySelect + '"'
+  def dataFormat = project.findProperty("dataFormat") 
+  if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
+  def pluginFormat = project.findProperty("pluginFormat") 
+  if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
+  def flowName = project.findProperty("flowName") 
+  if (flowName != null) flowName = '"' + flowName + '"'
+  def mappingHints = project.findProperty("mappingHints") 
+  if (mappingHints != null) mappingHints = '"' + mappingHints + '"'
+
+def js = "'use strict';\n"
+js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
+js += 'cookie.cutCookie(' + model + ',' + entitySelect + ',' + entities + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + mappingHints + ');\n'
+println js
+  javascript = js;
+}
+
+task fetchCutCookie(type: com.marklogic.gradle.task.MlcpTask) {
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/cookieCutter-dump"
+  collection_filter = "cookieCutter," + project.findProperty("model")
+  host = mlHost
+  port = mlFinalPort.toInteger()
+}
+
+task deleteCutCookie(type: Delete) {
+    delete "data/cookieCutter-dump"
+}
+
+// TODO - If the entities already exist in plugins and overwrite=false, DONT COPY!!!
+task promoteNewCode(type: Copy) {
+    from "data/cookieCutter-dump/cookie/" + project.findProperty("model")
+    into "plugins/entities" 
+}
+
+/* 
+This is the cookie cutter for DHF entities.  Parameters:
+- model: URI of the ES model in the FINAL DB. Mandatory.
+- entities: comma-separated list of model entities to expose as plugins. Optional. If you omit this, the cookie cutter will either use all or infer.
+- entitySelect: all, infer. Optional. Default: all. Overrides entitities parameter.
+- dataFormat: xml or json. Mandatory.
+- pluginFormat: xqy or sjs. Mandatory.
+- flowName: The harmonization flow with have the name <flowName>_<pluginFormat>. Optional. Defaults to "Harmonize"<PluginName>
+- overwite: true/false. This is local gradle project overwrite. The issue is whether to overwrite plugins in the plugin folder. Optional. Defaults to false.
+- mappingHint: TDB
+*/
+task umlCreateEntities() {
+  //dependsOn 'loadHints' // TODO - implement this.
+  dependsOn 'deleteCutCookie'
+  dependsOn 'cutCookie'
+  dependsOn 'fetchCutCookie'
+  dependsOn 'promoteNewCode'
+  //tasks.findByName('cutCookie').mustRunAfter 'loadHints'
+  tasks.findByName('fetchCutCookie').mustRunAfter 'deleteCutCookie'
+  tasks.findByName('fetchCutCookie').mustRunAfter 'cutCookie'
+  tasks.findByName('promoteNewCode').mustRunAfter 'fetchCutCookie'
+}
+
+

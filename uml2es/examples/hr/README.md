@@ -136,7 +136,22 @@ Among the results, you should see the following:
 - <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee> <http://marklogic.com/entity-services#property> http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/emails> from basic ES model
 - <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
 
-... THE REST IS UNDER CONSTRUCTION ...
+### Run Cookie-Cutter to Create DHF Entities and Flows for HR Model
+
+gradle -PenvironmentName=local -i umlCreateEntities -Pmodel=DHFEmployeeSample -PentitySelect=infer -PpluginFormat=xqy -PdataFormat=xml
+
+Confirm:
+- In your local gradle project you now have a folder called data/cookieCutter-dump. This contains generated DHF plugins and harmonization flows for the Employee and Department classes.
+- In your gradle plugins folder, the plugins from cookieCutter-dump have been copied. If you run an mlReloadModules, gradle will deploy these plugins to the hub modules database.
+- In the final database xmi2es-examples-hr-FINAL), the code from cookieCutter-dump exists as text documents in the collections cookieCutter and DHFEmployeeSample.
+
+### Create Input Flows For Source Data
+
+For your newly created Employee and Department entities you need input flows for ingestion of source data. Run the following standard DHF gradle commands to create these flows.
+
+gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee -PdataFormat=xml -PpluginFormat=xqy
+
+gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=xml -PpluginFormat=xqy
 
 
 ### Ingest
@@ -156,6 +171,7 @@ Confirm:
 
 - In FINAL (xmi2es-examples-hr-FINAL) we have the a document containing triples in the collection http://www.w3.org/ns/org.
 
+.... THE REST IS UNDER CONSTRUCTION ...
 
 ### Harmonize
 Run harmonization to move employee and department data to FINAL.
