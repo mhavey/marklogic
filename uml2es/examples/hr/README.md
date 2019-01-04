@@ -153,6 +153,10 @@ gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Employee -Pflo
 
 gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=xml -PpluginFormat=xqy
 
+Confirm:
+- In your local gradle project you have newly generated code under plugins/entities/Employee/input and plugins/entities/Department/input
+
+.... THE REST IS UNDER CONSTRUCTION ...
 
 ### Ingest
 
@@ -171,7 +175,6 @@ Confirm:
 
 - In FINAL (xmi2es-examples-hr-FINAL) we have the a document containing triples in the collection http://www.w3.org/ns/org.
 
-.... THE REST IS UNDER CONSTRUCTION ...
 
 ### Harmonize
 Run harmonization to move employee and department data to FINAL.
