@@ -149,18 +149,18 @@ Confirm:
 
 For your newly created Employee and Department entities you need input flows for ingestion of source data. Run the following standard DHF gradle commands to create these flows.
 
-gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee -PdataFormat=xml -PpluginFormat=xqy
+gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee -PdataFormat=xml -PpluginFormat=xqy -PuseES=false
 
-gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=xml -PpluginFormat=xqy
+gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=xml -PpluginFormat=xqy -PuseES=false
+
+gradle -PenvironmentName=local -i mlReloadModules
 
 Confirm:
 - In your local gradle project you have newly generated code under plugins/entities/Employee/input and plugins/entities/Department/input
-
-.... THE REST IS UNDER CONSTRUCTION ...
+- These new modules are visible in the modules database (xmi2es-examples-hr-MODULES)
 
 ### Ingest
 
-TODO: pre-req: input flow exists, duh
 Ingest staging data and some triples for FINAL	
 
 Run the following:
