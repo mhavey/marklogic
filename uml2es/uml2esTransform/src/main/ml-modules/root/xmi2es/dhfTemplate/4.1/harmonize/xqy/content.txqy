@@ -18,16 +18,11 @@ declare option xdmp:mapping "false";
  :)
 declare function plugin:create-content(
   $id as xs:string,
-  $options as map:map) as item()?
+  $options as map:map) as map:map
 {
   let $doc := fn:doc($id)
-  return
-    if ($doc/es:envelope) then
-      $doc/es:envelope/es:instance/node()
-    else if ($doc/envelope/instance) then
-      $doc/envelope/instance
-    else
-      $doc
-
-    (: TODO - codegen for content :)
+  let $source := $doc
+  return plugin:extract-instance-${EntityX}($id, $source, $options)
 };
+
+${ESXBuilder}

@@ -8,6 +8,103 @@ const ALLOWABLE_PLUGINS = ["xqy", "sjs"];
 const ALLOWABLE_FORMATS = ["xml", "json"];
 const ALLOWABLE_SELECTS = ["all", "infer"];
 
+function getAttributes(modelIRI, entityName) {
+	var entity = modelIRI + "/" + entityName;
+  var res = sem.sparql(`
+select * where {
+  <${entity}> <http://marklogic.com/entity-services#property> ?attrib .
+  ?attrib <http://marklogic.com/entity-services#title> ?entityName .
+  OPTIONAL { ?attrib <http://marklogic.com/entity-services#datatype> ?simpleType }
+  OPTIONAL { ?attrib <http://marklogic.com/entity-services#ref> ?refType }
+  OPTIONAL { ?attrib <http://marklogic.com/entity-services#datatype> <http://marklogic.com/json#array> .
+             ?attrib <http://marklogic.com/entity-services#items> ?sitems .
+             ?sitems <http://marklogic.com/entity-services#datatype> ?arraySimpleType }
+  OPTIONAL { ?attrib <http://marklogic.com/entity-services#datatype> <http://marklogic.com/json#array> .
+             ?attrib <http://marklogic.com/entity-services#items> ?ritems .
+             ?ritems <http://marklogic.com/entity-services#ref> ?arrayRefType } 
+  OPTIONAL { ?attrib <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>	<http://marklogic.com/entity-services#RequiredProperty> .
+             ?attrib <http://marklogic.com/entity-services#title> ?attribRequired }
+  OPTIONAL { <${entity}> <http://marklogic.com/xmi2es/xes#excludes> ?attrib .
+             ?attrib <http://marklogic.com/entity-services#title> ?attribExcluded }
+}`);
+  
+	var attributes = [];
+	for (var r of res) {
+		var attrib = r.attrib;
+		var typeRes = r.simpleType;
+		var isArray = ""+r.simpleType == "http://marklogic.com/json#array";
+		var isSimpleType = false;
+		var isRefType = false;
+		var type;
+    
+	    if (isArray == true) {
+				if (""+r.arraySimpleType != "") {
+					isSimpleType = true;
+					type = ""+r.arraySimpleType;
+	      }
+	      else if (""+r.arrayRefType != "") {
+	        isRefType = true;
+	        type = ""+r.arrayRefType;
+				}      
+	    }
+	    else if (""+r.simpleType != "") {
+	      isSimpleType = true;
+	      type = ""+r.simpleType;
+	    }
+	    else if ("" + r.refType != "") {
+	      isRefType = true;
+	      type = ""+r.refType;
+		}
+
+		if (isRefType == true) {
+			var toks = type.split("/");
+			type = toks[toks.length - 1];
+		}
+		if (isSimpleType == true) {
+			var toks = type.split("#");
+			type = toks[1];
+		}
+
+    var isCalculated = false;
+ 		var calcs = [];
+  	var calcRes = sem.sparql(`
+select * where { 
+  <${attrib}> <http://marklogic.com/xmi2es/xes#basedOnAttribute>  ?attribBasis 
+  OPTIONAL { <${attrib}> <http://marklogic.com/xmi2es/xes#calculation>  ?attribCalculated }
+}`);
+    for (var c of calcRes) {
+      isCalculated = true;
+      calcs.push(c.attribBasis)  
+    }
+    
+ 		attributes.push({
+			attributeName: r.entityName,
+			attributeIsSimpleType: isSimpleType,
+			attributeIsRequired: ""+r.attribRequired != "",
+			attributeIsArray: isArray,
+			attributeType: type,
+			attributeIsExcluded: ""+r.attribExcluded != "",
+			attributeIsCalculated:  isCalculated,
+			attributeCalcDependencies:  Array.from(new Set(calcs)) // avoid repeats
+		});
+	}
+	return attributes;
+}
+
+function orderAttributes(attribs) {
+  return attribs.sort(function (a,b) {
+    if (a.attributeName == b.attributeName) return 0;
+    var aHas= (a.attributeCalcDependencies.length > 0);
+    var bHas = (b.attributeCalcDependencies.length > 0);
+    if (aHas == false && bHas == false) return a.attributeName - b.attributeName;
+    if (aHas == true && bHas == false) return 1;
+    if (bHas == true && aHas == false) return -1;
+    if (a.attributeCalcDependencies.indexOf(b.attributeName) >= 0) return 1;
+    if (b.attributeCalcDependencies.indexOf(a.attributeName) >= 0) return -1;
+    return a.attributeName - b.attributeName;
+  });
+}
+
 // In the model find all entities that are not children of another entity. 
 // Include entities that are merely self-references.
 // We consider these entities to be viable plugins.
@@ -83,12 +180,125 @@ function writeFile(folder, name, content, asText, model) {
 	}); // TODO - perms
 }
 
-function cutContent(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutContent(modelIRI, modelVersion, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
 	var EntityXContentEnable = "";
 	var EntityXContentXEnableIn = "";
 	var EntityXContentXEnableOut = "";
 	var EntityX = entity;
 	var EntityXGenURI = modelIRI;
+
+	var ESBuilder = "";
+	var ESXBuilder = "";
+
+	// need to build functions buildESEntity_${EntityX}(id, source, options);
+
+	// get each attribute; if it's primitive, map from source; if it's object, recurse
+	// take into account order of concats
+
+	var entities = [entity];
+	var visitedEntities = [];
+	while (entities.length > 0) {
+		var nextEntity = entities[0];
+xdmp.log("entity *" + nextEntity + "* entities" + JSON.stringify(entities) + " visited " + visitedEntities );
+		entities = entities.slice(1);
+		visitedEntities.push(entity);
+
+		ESBuilder += `
+function buildESEntity_${nextEntity}(id,source,options) {
+   // now check to see if we have XML or json, then create a node clone from the root of the instance
+   if (source instanceof Element || source instanceof ObjectNode) {
+      let instancePath = '/*:envelope/*:instance';
+      if(source instanceof Element) {
+         //make sure we grab content root only
+         instancePath += '/node()[not(. instance of processing-instruction() or . instance of comment())]';
+      }
+      source = new NodeBuilder().addNode(fn.head(source.xpath(instancePath))).toNode();
+   }
+   else{
+      source = new NodeBuilder().addNode(fn.head(source)).toNode();
+   }
+
+   var ret = {
+      '$type': '${nextEntity}',
+      '$version': '${modelVersion}',
+   };
+`;
+		ESXBuilder += `
+declare function plugin:buildESEntity_${nextEntity}($id,$source,$options) {
+   let $source :=
+      if ($source/*:envelope and $source/node() instance of element()) then
+         $source/*:envelope/*:instance/node()
+      else if ($source/*:envelope) then
+         $source/*:envelope/*:instance
+      else if ($source/instance) then
+         $source/instance
+      else
+         $source
+   let $model := json:object()
+   let $_ := (
+      map:put($model, '$type', '${nextEntity}'),
+      map:put($model, '$version', '${modelVersion}'),
+   )
+`;
+
+		var attributes = orderAttributes(getAttributes(modelIRI, nextEntity));
+		for (var i = 0; i < attributes.length; i++) {
+			var attributeName = attributes[i].attributeName;
+			var attributeType = attributes[i].attributeType;
+			var attributeIsRequired = attributes[i].attributeIsRequired;
+			var attributeIsArray = attributes[i].attributeIsArray;
+			if (attributes[i].attributeIsCalculated == true) {
+				ESBuilder += `
+   xesgen.doCalculation_${nextEntity}_${attributeName}(id, ret, options) {
+`;
+				ESXBuilder += `
+   let $_ := xesgen:doCalculation_${nextEntity}_${attributeName}($id, $model, $options) {
+`;
+			}
+			else if (attributes[i].attributeIsExcluded == true) {}
+			else if (attributes[i].attributeIsSimpleType == true) {
+				ESBuilder += `
+   ret["${attributeName}"] = "TODO"; // type ${attributeType}, reqd ${attributeIsRequired}, array ${attributeIsArray}
+`;							
+				ESXBuilder += `
+   let $_ := map:put($model, "${attributeName}", "TODO") (: type ${attributeType}, reqd ${attributeIsRequired}, array ${attributeIsArray} :)
+`;
+			}							
+			else {
+				var entity2 = attributes[i].attributeType;
+				if (entities.indexOf(entity2) < 0 && visitedEntities.indexOf(entity2) < 0) entities.push(entity2);
+				if (attributeIsArray == true) {
+					ESBuilder += `
+   ret["${attributeName}"] = [];
+   while (1 == 1) {
+      ret["${attributeName}"].push(buildESEntity_${entity2}(id,source,options));
+   }
+`;
+					ESXBuilder += `
+   let $_ := map:put($model, "${attributeName}", json:array())
+   for $x in 1 to 42 return json:array-push(map:get($model, "${attributeName}"), plugin:buildESEntity_${entity2}($id,$source,$options)))
+`;
+				}
+				else {
+					ESBuilder += `
+   ret["${attributeName}"] = buildESEntity_${entity2}(id,source,options);
+   }
+`;
+					ESXBuilder += `
+   let $_ := map:put($model, "${attributeName}", plugin:buildESEntity_${entity2}($id,$source,$options))
+`;
+				}
+			}
+		}
+
+		ESBuilder += `
+   return ret;
+}`;
+		ESXBuilder += `
+   return $model
+};`;
+}
+
 
 	var tpl = eval('`'+template+'`');
 	return tpl;
@@ -206,7 +416,7 @@ function cutCookie(model, entitySelect, entitiesCSV, dataFormat, pluginFormat, f
 		writeFile(harmonizationFolder, "main." + pluginFormat, 
 			useTemplate(cookieFolder + "main.t" + pluginFormat), true, model);
 		writeFile(harmonizationFolder, "content." + pluginFormat, 
-			cutContent(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+			cutContent(modelIRI, info.version, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 
 				useTemplate(cookieFolder + "content.t" + pluginFormat)), true, model);
 		writeFile(harmonizationFolder, "triples." + pluginFormat, 
 			cutTriples(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 

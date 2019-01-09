@@ -23,6 +23,7 @@ declare variable $OBJ-BLANK := sem:iri($IRI-PREFIX || "blank");
 declare variable $OBJ-BAD := sem:iri($IRI-PREFIX || "badIRI"); 
 
 declare variable $PRED-FUNCTION := sem:iri($IRI-PREFIX || "hasFunction");
+declare variable $PRED-BASED-ON-ATTRIBUTE := sem:iri($IRI-PREFIX || "basedOnAttribute");
 
 declare variable $PRED-REMINDER := sem:iri($IRI-PREFIX || "reminder"); 
  
@@ -1020,6 +1021,7 @@ declare function xes:generateCalcs($xes as map:map, $codeMap as map:map) as empt
 				if ($cval[1] eq "attribute") then 
 					let $attribVal := xes:getAttribForModule($xes, $triples, string-join($toks[1 to last() - 1], "/") || "/" || $cval[2])
 					return (
+						xes:addFact($xes, $attribIRI, $PRED-BASED-ON-ATTRIBUTE, "string", $cval[2]),
 						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'c += ', $attribVal[1], ';')),
 						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $c := concat($c, ', $attribVal[2], ')'))
 					)
