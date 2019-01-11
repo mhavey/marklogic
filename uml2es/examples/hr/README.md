@@ -137,10 +137,36 @@ Among the results, you should see the following:
 - <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
 
 ### Run Cookie-Cutter to Create DHF Entities and Flows for HR Model
+Now we create our DHF entity plugins. 
 
-gradle -PenvironmentName=local -i umlCreateEntities -Pmodel=DHFEmployeeSample -PentitySelect=infer -PpluginFormat=xqy -PdataFormat=xml
+First, ask the toolkit to create the basic plugins (without any flows). It will infer which classes in the model should be plugins. 
+
+gradle -PenvironmentName=local -i umlCreateEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
+
+Next, ask the toolkit to create harmonization flows that construct content using ES-style code. 
+
+gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+
+gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+
+gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+
+And now, for comparison, ask the toolkit to create harmonization flows that construct content using the Declarative Mapper.
+
+gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDM -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+
+gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+
+gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm
+
+Also, for comparison, DHF generated: 
+
+gradle -PenvironmentName=local -i hubCreateHarmonizeFlow -PflowName=harmonizeDHF -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml  -PuseES=true
+
+gradle -PenvironmentName=local -i hubCreateHarmonizeFlow -PflowName=harmonizeDHF -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml  -PuseES=true
 
 Confirm:
+THIS PART IS TODO 
 - In your local gradle project you now have a folder called data/cookieCutter-dump. This contains generated DHF plugins and harmonization flows for the Employee and Department classes.
 - In your gradle plugins folder, the plugins from cookieCutter-dump have been copied. If you run an mlReloadModules, gradle will deploy these plugins to the hub modules database.
 - In the final database xmi2es-examples-hr-FINAL), the code from cookieCutter-dump exists as text documents in the collections cookieCutter and DHFEmployeeSample.

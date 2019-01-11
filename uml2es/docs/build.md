@@ -1,5 +1,64 @@
 # Using the UML-to-Entity Services Toolkit In Your Build
 
+TODO ...
+
+Gradle Tasks:
+
+Common and Lib-Ready Tasks
+- loadXMI, ingestModel, loadExtendedModel - There are reusable and should be tasks in a plugin.
+- uml2esCreateEntities
+- uml2esCreateHarmonization
+
+- umlCreateEntities - Creates plugin-suitable entities corresponding to classes in your model. 
+	* modelName - name of model file without suffix
+	* entitySelect - infer, all 
+	* entityNames - csv list of entity names
+- umlCreateHarmonizeFlow - Create harmonization flow. 
+	* model
+	* entityName 
+	* flowName
+	* dataFormat - xml, json
+	* pluginFormat - xqy, sjs
+	* contentMode - es, dm
+		* es - Builds content using ES maps, takes into account calculated attributes and hints
+		* dm - Builds content as Declarative Mapper transformation.
+	* mappingHints - A JSON structure that says how to generate
+		* comment
+		* select
+		* variable
+		* code
+		* infer
+
+Common but example-tinged Tasks:
+- includeXMI2ESTransform - This is used by the examples, but for real purposes you don't use it...
+- useIntial/GeneartedDBConfig, clearGenerated - these are examples
+
+Project Structure For Source Control:
+
+Non-DHF
+- build.gradle
+- gradle*.properties
+- lib/log4j.properties
+- src/main/ml-schemas - TODO strategy for generated TDE vs. edited TDE
+- src/main/ml-config - TODO stategy for generated config vs. edited config
+- src/main/ml-modules/options - TODO strategy for generated options vs. edited options
+- src/main/ext/entity-services/*.xqy - TODO strategy for generated converter vs. edited converter
+- src/main/ml-modules/root/xmi2es - The transform. You have a copy of it.
+- src/main/ml-modules/... - Your stuff
+- data/entity-services - This is where transform puts the ES model. Leave this empty
+- data/entity-services-extension - This is where the transform put the ES extension. Leave this empty
+- data/entity-services-dump - This is where the transform puts its stuff. Leave this empty
+- data/model/uml/*.xml - Your UML model(s)
+- data/model/excel/*.xlsx - Your Excel model(s)
+
+DHF
+TODO ... 
+
+
+Roles - Who Does What ...
+
+
+
 TODO - THIS PAGE IS UNDER CONSTRUCTION. ETA: EOQ FY18Q4
 
 Non-DHF (example: movies...)

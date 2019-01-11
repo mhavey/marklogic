@@ -1,6 +1,19 @@
 'use strict'
 
-${EntityXContentEnable}const xesgen = require("/${EntityX}/lib.sjs");
+const xesgen = require("/${EntityX}/lib.sjs");
+
+${EntityContentEnableDMIn}
+const dm = require('/ext/declarative-mapper.sjs');
+const DM_MAPPING_CONFIG_URI = "${EntityXContentDMMapper}";
+function getDMMapper(options) {
+  if (!options.mapper) {
+    const ctx = dm.newCompilerContext(DM_MAPPING_CONFIG_URI);
+    const mapper = dm.prepare(ctx);
+    options.mapper = mapper;
+  }
+  return options.mapper;
+}
+${EntityContentEnableDMOut}
 
 /*
 * Create Content Plugin
@@ -12,6 +25,7 @@ ${EntityXContentEnable}const xesgen = require("/${EntityX}/lib.sjs");
 */
 function createContent(id, options) {
   let doc = cts.doc(id);
+  let $ioptions := xesgen.setIOptions(id,options);
 
   let source;
 
@@ -28,10 +42,10 @@ function createContent(id, options) {
     source = doc;
   }
 
-  return buildESEntity_${EntityX}(id, source, options);
+  return buildContent_${EntityX}(id, source, options, ioptions);
 }
 
-${ESBuilder}
+${ContentBuilder}
 
 module.exports = {
   createContent: createContent

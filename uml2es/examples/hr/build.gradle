@@ -286,74 +286,104 @@ task deployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlFinalPort.toInteger()
 }
 
-
 /*
-This runs the cookie cutter. I have it as a server eval task. The task basically calls SJS in the server-side
-to cut the cookies and store them in the Final DB. We then use MLCP import (fetch cut cookie) to get them.
+The rest is cookie cutter
 */
-task cutCookie(type: com.marklogic.gradle.task.ServerEvalTask) {
-  def model = project.findProperty("model")
-  if (model != null) model = '"' + model + '"'
+
+task deleteCutDump(type: Delete) {
+    delete "data/cookieCutter-dump"
+}
+
+task cutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def modelName = project.findProperty("modelName")
+  if (modelName != null) modelName = '"' + modelName + '"'
   def entities = project.findProperty("entities") 
   if (entities != null) entities = '"' + entities + '"'
   def entitySelect = project.findProperty("entitySelect") 
   if (entitySelect != null) entitySelect = '"' + entitySelect + '"'
+  def stg = '"' + mlStagingDbName + '"';
+
+def js = "'use strict';\n"
+js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
+js += 'cookie.createEntities(' + modelName + ',' + entitySelect + ',' + entities + ',' + stg + ');\n'
+println js
+  javascript = js;
+}
+
+task fetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/"
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "plugins"
+  output_file_path = "data/cookieCutter-dump"
+  directory_filter = directoryFilter
+  host = mlHost
+  port = mlFinalPort.toInteger()
+}
+
+task promoteEntities(type: Copy) {
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/plugins/entities"
+    into "plugins/entities" 
+}
+
+task umlCreateEntities() {
+  dependsOn 'deleteCutDump'
+  dependsOn 'cutEntities'
+  dependsOn 'fetchEntities'
+  dependsOn 'promoteEntities'
+  tasks.findByName('fetchEntities').mustRunAfter 'cutEntities'
+  tasks.findByName('fetchEntities').mustRunAfter 'deleteCutDump'
+  tasks.findByName('promoteEntities').mustRunAfter 'fetchEntities'
+}
+
+task cutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def modelName = project.findProperty("modelName")
+  if (modelName != null) modelName = '"' + modelName + '"'
+  def entityName = project.findProperty("entityName") 
+  if (entityName != null) entityName = '"' + entityName + '"'
   def dataFormat = project.findProperty("dataFormat") 
   if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
   def pluginFormat = project.findProperty("pluginFormat") 
   if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
   def flowName = project.findProperty("flowName") 
   if (flowName != null) flowName = '"' + flowName + '"'
+  def contentMode = project.findProperty("contentMode") 
+  if (contentMode != null) contentMode = '"' + contentMode + '"'
   def mappingHints = project.findProperty("mappingHints") 
   if (mappingHints != null) mappingHints = '"' + mappingHints + '"'
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.cutCookie(' + model + ',' + entitySelect + ',' + entities + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + mappingHints + ');\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingHints + ');\n'
 println js
   javascript = js;
 }
 
-task fetchCutCookie(type: com.marklogic.gradle.task.MlcpTask) {
+task fetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/cookieCutter-dump"
-  collection_filter = "cookieCutter," + project.findProperty("model")
+  directory_filter = directoryFilter
   host = mlHost
   port = mlFinalPort.toInteger()
 }
 
-task deleteCutCookie(type: Delete) {
-    delete "data/cookieCutter-dump"
+task promoteCutHarmonizeFlow(type: Copy) {
+    def harmPath = "plugins/entities/" + project.findProperty("entityName") + "/harmonize"
+    def flowPath = harmPath + "/" + project.findProperty("flowName") 
+    enabled = project.findProperty("overwrite") == "true" || !file(flowPath).exists()
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + flowPath  
+    into flowPath 
 }
 
-// TODO - If the entities already exist in plugins and overwrite=false, DONT COPY!!!
-task promoteNewCode(type: Copy) {
-    from "data/cookieCutter-dump/cookie/" + project.findProperty("model")
-    into "plugins/entities" 
-}
-
-/* 
-This is the cookie cutter for DHF entities.  Parameters:
-- model: URI of the ES model in the FINAL DB. Mandatory.
-- entities: comma-separated list of model entities to expose as plugins. Optional. If you omit this, the cookie cutter will either use all or infer.
-- entitySelect: all, infer. Optional. Default: all. Overrides entitities parameter.
-- dataFormat: xml or json. Mandatory.
-- pluginFormat: xqy or sjs. Mandatory.
-- flowName: The harmonization flow with have the name <flowName>_<pluginFormat>. Optional. Defaults to "Harmonize"<PluginName>
-- overwite: true/false. This is local gradle project overwrite. The issue is whether to overwrite plugins in the plugin folder. Optional. Defaults to false.
-- mappingHint: TDB
-*/
-task umlCreateEntities() {
-  //dependsOn 'loadHints' // TODO - implement this.
-  dependsOn 'deleteCutCookie'
-  dependsOn 'cutCookie'
-  dependsOn 'fetchCutCookie'
-  dependsOn 'promoteNewCode'
+task umlCreateHarmonizeFlow() {
+  dependsOn 'deleteCutDump'
+  dependsOn 'cutHarmonizeFlow'
+  dependsOn 'fetchCutHarmonizeFlow'
+  dependsOn 'promoteCutHarmonizeFlow'
   //tasks.findByName('cutCookie').mustRunAfter 'loadHints'
-  tasks.findByName('fetchCutCookie').mustRunAfter 'deleteCutCookie'
-  tasks.findByName('fetchCutCookie').mustRunAfter 'cutCookie'
-  tasks.findByName('promoteNewCode').mustRunAfter 'fetchCutCookie'
+  tasks.findByName('fetchCutHarmonizeFlow').mustRunAfter 'cutHarmonizeFlow'
+  tasks.findByName('fetchCutHarmonizeFlow').mustRunAfter 'deleteCutDump'
+  tasks.findByName('promoteCutHarmonizeFlow').mustRunAfter 'fetchCutHarmonizeFlow'
 }
-
-

@@ -575,6 +575,18 @@ declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) 
 		xes:appendSourceLine($codeMap, $LIB-SJS, $NEWLINE),
 		xes:appendSourceLine($codeMap, $LIB-XQY, $NEWLINE),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '
+// DHF support - get/set options for this ID; needed in DHF 4.1
+function getIOptions(id,options) {
+	return options["iopt_" + id];
+}
+function setIOptions(id,options) {
+	var ioptions = {};
+	options["iopt_" + id] = ioptions;
+	return ioptions;
+}
+function removeIOptions(id,options) {
+	delete options["iopt_" + id];
+}
 function dynIRI(expr) {
    if (!expr || expr == null) return null;
    var type = xdmp.type(expr)
@@ -605,6 +617,18 @@ function addTriple(ret, s, p, o) {
 }
 ')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '
+// DHF support - get/set options for this ID; needed in DHF 4.1
+declare function ', $NS-PREFIX, ':getIOptions($id,$options) {
+	map:get($options, "iopt_" || $id)
+};
+declare function ', $NS-PREFIX, ':setIOptions($id,$options) {
+	let $ioptions := json:object()
+	let $_ := map:put($options, "iopt_" || $id, $ioptions)
+	return $ioptions
+};
+declare function ', $NS-PREFIX, ':removeIOptions($id,$options) {
+	map:delete($options, "iopt_" || $id)
+};
 declare function ', $NS-PREFIX, ':dynIRI($expr) as sem:iri* {
    if (not(exists($expr))) then ()
    else if (count($expr) gt 1) then for $t in $expr return ', $NS-PREFIX, ':dynIRI($t)
@@ -670,9 +694,9 @@ return aHeaders;
 		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat($FUNCTION-HEADER, "_", $className)
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, options, lang) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, ioptions, lang) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
-			'($id as xs:string, $content as item()?, $options as map:map, $lang as xs:string) as node()* {'))
+			'($id as xs:string, $content as item()?, $ioptions as map:map, $lang as xs:string) as node()* {'))
 
 		(: Determine population of header fields from UML model :)
 		let $jBody := ""
@@ -739,7 +763,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat($FUNCTION-WRITER, "_", $className)
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, options) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, ioptions) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
 			'($id as xs:string, $envelope as item(), $options as map:map) as empty-sequence() {'))
 
@@ -777,8 +801,8 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", json:array-values($collections))'))
 				)
 			else (
-				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.collections = options.entity;')),
-				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", map:get($options, "entity"))'))
+				xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'dioptions.collections = "', $className, '"')),
+				xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $_ := map:put($dioptions, "collections", "', $className, '")'))
 			)
 
 		(: perms :)
@@ -878,9 +902,9 @@ return aTriples.concat(bTriples);
 		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat($FUNCTION-TRIPLES, "_", $className)
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, headers, options) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, headers, ioptions) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
-			'($id as xs:string, $content as item()?, $headers as item()*, $options as map:map) as sem:triple* {'))
+			'($id as xs:string, $content as item()?, $headers as item()*, $ioptions as map:map) as sem:triple* {'))
 
 		let $placeholders:= map:map()
 
@@ -1005,9 +1029,9 @@ declare function xes:generateCalcs($xes as map:map, $codeMap as map:map) as empt
 		let $attribName := $toks[last()]
 		let $sjsFunction := concat($FUNCTION-CALC, "_", $className, '_', $attribName)
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, options) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, content, ioptions) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ':', $sjsFunction, 
-			'($id as xs:string, $content as item()?, $options as map:map) as empty-sequence() {'))
+			'($id as xs:string, $content as item()?, $ioptions as map:map) as empty-sequence() {'))
 
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var c = "";'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $c :=  ""'))
@@ -1081,7 +1105,7 @@ declare function xes:getAttribForModule($xes, $triples, $attribIRI,
 	return 
 		(: not even found - it's ok, we'll assume they'll provide an option for it :)
 		if (string-length($attribInProfileForm/name/text()) eq 0) then 
-			(concat('options.', $attribName), concat('map:get($options, "', $attribName, '")')) 
+			(concat('ioptions.', $attribName), concat('map:get($ioptions, "', $attribName, '")')) 
 
 		(: found :)
 		else 
@@ -1098,7 +1122,7 @@ declare function xes:getAttribForModule($xes, $triples, $attribIRI,
 			let $expr := 
 				if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
 					sem:predicate/text() eq string($PRED-EXCLUDES)])) then
-					( concat('options.', $attribName), concat('map:get($options, "', $attribName, '")') )
+					( concat('ioptions.', $attribName), concat('map:get($ioptions, "', $attribName, '")') )
 				else ( concat('content.', $attribName) , concat('map:get($content, "', $attribName, '")') )
 
 			let $_ := 
@@ -1129,7 +1153,7 @@ declare function xes:assignAttribInModule($triples, $attribIRI as xs:string, $va
 	return 
 		if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
 			sem:predicate/text() eq string($PRED-EXCLUDES)])) then
-			( concat('options.', $attribName, ' = ', $val[1]), concat('map:put($options, "', $attribName, '",', $val[2], ')'))
+			( concat('ioptions.', $attribName, ' = ', $val[1]), concat('map:put($ioptions, "', $attribName, '",', $val[2], ')'))
 		else ( concat('content.', $attribName, ' = ', $val[1]) , concat('map:put($content, "', $attribName, '",', $val[2], ')'))
 };
 

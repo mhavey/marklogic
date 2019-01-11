@@ -23,7 +23,10 @@ declare function plugin:create-headers(
   $options as map:map) as node()*
 {
   let $lang := ${EntityDataFormat}
-  ${EntityXHeaderXEnableIn}return xesgen:setHeaders_${EntityX}($id, $content, $options, $lang)${EntityXHeaderXEnableOut}
+  ${EntityXHeaderXEnableIn}
+  let $ioptions := xesgen:getIOptions($id, $options)
+  return xesgen:setHeaders_${EntityX}($id, $content, $ioptions, $lang)
+  ${EntityXHeaderXEnableOut}
   ${EntityXHeaderXDisableIn}return ()${EntityXHeaderXDisableOut}
 
   (: TODO - nested :)

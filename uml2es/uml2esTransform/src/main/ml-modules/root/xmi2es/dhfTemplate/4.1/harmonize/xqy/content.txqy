@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-${EntityXContentXEnableIn}import module namespace xesgen = "${EntityXGenURI}" at "/${EntityX}/lib.xqy" ;${EntityXContentXEnableOut}
+import module namespace xesgen = "${EntityXGenURI}" at "/${EntityX}/lib.xqy" ;
 
 module namespace plugin = "http://marklogic.com/data-hub/plugins";
 
@@ -20,9 +20,10 @@ declare function plugin:create-content(
   $id as xs:string,
   $options as map:map) as map:map
 {
+  let $ioptions := xesgen:setIOptions($id,$options)
   let $doc := fn:doc($id)
   let $source := $doc
-  return plugin:extract-instance-${EntityX}($id, $source, $options)
+  return plugin:buildContent-${EntityX}($id, $source, $options, $ioptions)
 };
 
-${ESXBuilder}
+${ContentXBuilder}

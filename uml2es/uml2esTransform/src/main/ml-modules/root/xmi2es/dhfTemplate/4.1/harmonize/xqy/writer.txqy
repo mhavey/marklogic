@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-${EntityXWriterXEnableIn}import module namespace xesgen = "${EntityXGenURI}" at "/${EntityX}/lib.xqy" ;${EntityXWriterXEnableOut}
+import module namespace xesgen = "${EntityXGenURI}" at "/${EntityX}/lib.xqy" ;
 
 module namespace plugin = "http://marklogic.com/data-hub/plugins";
 
@@ -20,6 +20,10 @@ declare function plugin:write(
   $envelope as item(),
   $options as map:map) as empty-sequence()
 {
-  ${EntityXWriterXEnableIn}xesgen:runWriter_${EntityX}($id, $envelope, $options)${EntityXWriterXEnableOut}
-  ${EntityXWriterXDisableIn}xdmp:document-insert($id, $envelope, xdmp:default-permissions(), map:get($options, "entity"))${EntityXWriterXDisableOut}
+  (
+	  ${EntityXWriterXEnableIn}xesgen:runWriter_${EntityX}($id, $envelope, xesgen:getIOptions($id,$options))${EntityXWriterXEnableOut}
+	  ${EntityXWriterXDisableIn}xdmp:document-insert($id, $envelope, xdmp:default-permissions(), map:get($options, "entity"))${EntityXWriterXDisableOut}
+	  ,
+	  xesgen:removeIOptions($id,$options)
+  )
 };

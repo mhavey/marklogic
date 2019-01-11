@@ -24,7 +24,10 @@ declare function plugin:create-triples(
   $headers as item()*,
   $options as map:map) as sem:triple*
 {
-  ${EntityXTripleXEnableIn}xesgen:setTriples_${EntityX}($id, $content, $headers, $options)${EntityXTripleXEnableOut}
+  ${EntityXTripleXEnableIn}
+  let $ioptions := xesgen:getIOptions($id, $options)
+  return xesgen:setTriples_${EntityX}($id, $content, $headers, $ioptions)
+  ${EntityXTripleXEnableOut}
   ${EntityXTripleXDisableIn}()${EntityXTripleXDisableOut}
 
   (: TODO - nested :)

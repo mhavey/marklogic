@@ -7,6 +7,7 @@ const sem = require("/MarkLogic/semantics.xqy");
 const ALLOWABLE_PLUGINS = ["xqy", "sjs"];
 const ALLOWABLE_FORMATS = ["xml", "json"];
 const ALLOWABLE_SELECTS = ["all", "infer"];
+const ALLOWABLE_CONTENTS = ["es", "dm"];
 
 function getAttributes(modelIRI, entityName) {
 	var entity = modelIRI + "/" + entityName;
@@ -167,44 +168,98 @@ function useTemplate(name) {
 	return ""+doc;
 }
 
-function writeFile(folder, name, content, asText, model) {
+function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 	var contentNode =content;
 	if (asText == true) {
 		var textNode = new NodeBuilder();
 		textNode.addText(content);
 		contentNode = textNode.toNode();
 	}
-	xdmp.documentInsert(folder + name, contentNode, 
-	{
-		"collections": ["cookieCutter", model]
-	}); // TODO - perms
+	var uri = folder + name;
+	var collections = [coll, "cookieCutter", "http://marklogic.com/entity-services/models"];
+	if (model && model != "") collections.push(model);
+	if (stagingDB && stagingDB != "") {
+		xdmp.eval('declareUpdate(); xdmp.documentInsert(uri,contentNode, {"collections": collections})',
+			{"uri": uri, "contentNode": contentNode, "collections": collections},
+			{"database": xdmp.database(stagingDB)});
+	}
+	else {
+		xdmp.documentInsert(uri, contentNode, {"collections": collections}); // TODO - perms		
+	}
 }
 
-function cutContent(modelIRI, modelVersion, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutContent(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, contentMode, mappingHints, builderFunctions, template) {
+	// DM for now is for JSON/SJS only. Reject the other combinations.
+	var dmMode = contentMode == "dm";
+	if (dmMode == true && pluginFormat != "sjs") throw "Declarative Mapper supports SJS only";
+	if (dmMode == true && dataFormat != "json") throw "Declarative Mapper supports JSON only";
+
+	if (dmMode == true) return cutContentDM(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template);
+	else return cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template);
+}
+
+function cutContentDM(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+
+	// These are Javascript template subs. The name of each matches the ${X} sub in the template.
+	// DON'T CHANGE THE NAME.
+	var EntityContentEnableDMIn = "";
+	var EntityContentEnableDMOut = "";
+	var EntityX = entity;
+	var EntityXGenURI = modelIRI;
+	var EntityXContentDMMapper = "/dm/mapper/" + entity + "/" + flowName + ".json";
+	var ContentBuilder = `
+function buildContent_${EntityX}(id, source, options, ioptions) {
+   mapper = getDMMapper(options);
+   return mapper(source);
+};
+`;
+	var dmTemplate = {};
+	dmTemplate.config = {"format": "JSON"};
+	dmTemplate.config.template = {};
+	dmTemplate.config.template[entity] = {};
+
+	// walk the entity and map its attributes; 
+	// pay attention to calculated attributes; they need to be vars
+	// walk into sub-documents; be aware of loops
+	// watch for circular
+	// look at cutContentES for how to traverse; there it's a bit different but it helps
+
+	// also, eventually use the mapping Hints
+
+	// we need to save the mapper; 
+	// TODO - build.gradle will need to export it back to the gradle
+	// TODO - need process to upload it as part of build
+	xdmp.documentInsert(EntityXContentDMMapper, dmTemplate);
+
+	// we return module
+	var tpl = eval('`'+template+'`');
+	return tpl;
+}
+
+function cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+
+	var EntityContentEnableDMIn = "/*";
+	var EntityContentEnableDMOut = "*/";
 	var EntityXContentEnable = "";
 	var EntityXContentXEnableIn = "";
 	var EntityXContentXEnableOut = "";
 	var EntityX = entity;
 	var EntityXGenURI = modelIRI;
+	var ContentBuilder = "";
+	var ContentXBuilder = "";
+	var EntityXContentDMMapper = "";
 
-	var ESBuilder = "";
-	var ESXBuilder = "";
-
-	// need to build functions buildESEntity_${EntityX}(id, source, options);
-
-	// get each attribute; if it's primitive, map from source; if it's object, recurse
-	// take into account order of concats
-
+	// Introspect the model: what are the entities and attributes that make up the mapping
 	var entities = [entity];
 	var visitedEntities = [];
 	while (entities.length > 0) {
 		var nextEntity = entities[0];
-xdmp.log("entity *" + nextEntity + "* entities" + JSON.stringify(entities) + " visited " + visitedEntities );
 		entities = entities.slice(1);
 		visitedEntities.push(entity);
 
-		ESBuilder += `
-function buildESEntity_${nextEntity}(id,source,options) {
+		// begin building the function buildEntity_* for the current entity.
+		ContentBuilder += `
+function buildEntity_${nextEntity}(id,source,options,ioptions) {
    // now check to see if we have XML or json, then create a node clone from the root of the instance
    if (source instanceof Element || source instanceof ObjectNode) {
       let instancePath = '/*:envelope/*:instance';
@@ -223,8 +278,8 @@ function buildESEntity_${nextEntity}(id,source,options) {
       '$version': '${modelVersion}',
    };
 `;
-		ESXBuilder += `
-declare function plugin:buildESEntity_${nextEntity}($id,$source,$options) {
+		ContentXBuilder += `
+declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions) {
    let $source :=
       if ($source/*:envelope and $source/node() instance of element()) then
          $source/*:envelope/*:instance/node()
@@ -240,7 +295,7 @@ declare function plugin:buildESEntity_${nextEntity}($id,$source,$options) {
       map:put($model, '$version', '${modelVersion}'),
    )
 `;
-
+		//  now we need to map each attribute		
 		var attributes = orderAttributes(getAttributes(modelIRI, nextEntity));
 		for (var i = 0; i < attributes.length; i++) {
 			var attributeName = attributes[i].attributeName;
@@ -248,57 +303,57 @@ declare function plugin:buildESEntity_${nextEntity}($id,$source,$options) {
 			var attributeIsRequired = attributes[i].attributeIsRequired;
 			var attributeIsArray = attributes[i].attributeIsArray;
 			if (attributes[i].attributeIsCalculated == true) {
-				ESBuilder += `
-   xesgen.doCalculation_${nextEntity}_${attributeName}(id, ret, options) {
+
+				ContentBuilder += `
+   xesgen.doCalculation_${nextEntity}_${attributeName}(id, ret, ioptions) {
 `;
-				ESXBuilder += `
-   let $_ := xesgen:doCalculation_${nextEntity}_${attributeName}($id, $model, $options) {
+				ContentXBuilder += `
+   let $_ := xesgen:doCalculation_${nextEntity}_${attributeName}($id, $model, $ioptions) {
 `;
 			}
 			else if (attributes[i].attributeIsExcluded == true) {}
 			else if (attributes[i].attributeIsSimpleType == true) {
-				ESBuilder += `
-   ret["${attributeName}"] = "TODO"; // type ${attributeType}, reqd ${attributeIsRequired}, array ${attributeIsArray}
+				ContentBuilder += `
+   ret["${attributeName}"] = "TODO"; // type: ${attributeType}, req'd: ${attributeIsRequired}, array: ${attributeIsArray}
 `;							
-				ESXBuilder += `
-   let $_ := map:put($model, "${attributeName}", "TODO") (: type ${attributeType}, reqd ${attributeIsRequired}, array ${attributeIsArray} :)
+				ContentXBuilder += `
+   let $_ := map:put($model, "${attributeName}", "TODO") (: type: ${attributeType}, req'd: ${attributeIsRequired}, array: ${attributeIsArray} :)
 `;
 			}							
 			else {
 				var entity2 = attributes[i].attributeType;
 				if (entities.indexOf(entity2) < 0 && visitedEntities.indexOf(entity2) < 0) entities.push(entity2);
 				if (attributeIsArray == true) {
-					ESBuilder += `
+					ContentBuilder += `
    ret["${attributeName}"] = [];
    while (1 == 1) {
-      ret["${attributeName}"].push(buildESEntity_${entity2}(id,source,options));
+      ret["${attributeName}"].push(buildEntity_${entity2}(id,source,options,ioptions));
    }
 `;
-					ESXBuilder += `
+					ContentXBuilder += `
    let $_ := map:put($model, "${attributeName}", json:array())
-   for $x in 1 to 42 return json:array-push(map:get($model, "${attributeName}"), plugin:buildESEntity_${entity2}($id,$source,$options)))
+   for $x in 1 to 42 return json:array-push(map:get($model, "${attributeName}"), plugin:buildEntity_${entity2}($id,$source,$options,$ioptions)))
 `;
 				}
 				else {
-					ESBuilder += `
+					ContentBuilder += `
    ret["${attributeName}"] = buildESEntity_${entity2}(id,source,options);
    }
 `;
-					ESXBuilder += `
-   let $_ := map:put($model, "${attributeName}", plugin:buildESEntity_${entity2}($id,$source,$options))
+					ContentXBuilder += `
+   let $_ := map:put($model, "${attributeName}", plugin:buildESEntity_${entity2}($id,$source,$options,$ioptions))
 `;
 				}
 			}
 		}
 
-		ESBuilder += `
+		ContentBuilder += `
    return ret;
 }`;
-		ESXBuilder += `
+		ContentBuilder += `
    return $model
 };`;
-}
-
+	}
 
 	var tpl = eval('`'+template+'`');
 	return tpl;
@@ -350,12 +405,72 @@ function cutWriter(modelIRI, entity, pluginFormat, dataFormat, mappingHints, bui
 	return tpl;
 }
 
-function cutCookie(model, entitySelect, entitiesCSV, dataFormat, pluginFormat, flowName, mappingHints) {
+function validateRequired(p, desc) {
+	if (p == null) throw "Required parameter " + desc;
+	p = p.trim();
+	if (p == "") throw "Required parameter " + desc;
+	return p;
+}
+
+function createEntities(modelName, entitySelect, entityNames, stagingDB) {
+
+	// validate
+	if (entitySelect != null && ALLOWABLE_SELECTS.indexOf(entitySelect) < 0) throw "Illegal entity select *" + entitySelect + "*";
+	modelName = validateRequired(modelName, "modelName");
+
+	// find the model
+	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
+	if (!doc || doc == null) throw "Model not found *" + modelName + "*";
+	var odoc = doc.toObject();
+	var info = odoc.info;
+	var modelIRI = info.baseUri + "/" +  info.title + "-" + info.version;
+	var modelIRIHash = info.baseUri + "#" +  info.title + "-" + info.version; // cuz ES uses model IRI in a weird way
+
+	// which entities?
+	var allEntities = useAllEntities(modelIRIHash);
+	var entities;
+	if (entityNames && entityNames != null) entities = entityNames.split(",").map(function (e) {
+		e = e.trim();
+		if (allEntities.indexOf(e) < 0) throw "Unknown entity *" + e + "*";
+		return e;
+	});
+	else if (entitySelect == "infer") entities = inferPlugins(modelIRIHash);
+	else if (entitySelect == "all") entities = allEntities;
+	else throw "Should not have gotten here *" + entitySelect + "*";
+	if (entities.length == 0) throw "No entities specified or inferred";
+
+	// for DHF's benefit, do the big split
+	// this means each entity in the model gets to be its own ES model
+	// and the title of that model is the name of the entity
+	// This is only for DHF's benefit; our cookie cutter only needs to see the REAL model.
+	for (var i = 0; i < allEntities.length; i++) {
+		var defName = allEntities[i];
+		var loneDef =  {
+			info: JSON.parse(JSON.stringify(odoc.info)),
+			definitions: {}
+		};
+		loneDef.info.title = defName;
+		loneDef.info.baseUri = "http://nooneieverheardof.com/es/"; // it needs its own URI to avoid triple explosion.
+		loneDef.definitions[defName] = odoc.definitions[defName];
+
+		writeFile("/entities/", defName + ".entity.json", loneDef, false, "", "loneDef", stagingDB); 
+
+		if (entities.indexOf(defName) >= 0) {
+			var folder = "/cookieCutter/" + modelName + "/plugins/entities/" + defName + "/";
+			writeFile(folder, defName + ".entity.json", loneDef, false, modelName, "plugins"); 
+		}
+	}
+}
+
+function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingHints) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
 	if (dataFormat == null || ALLOWABLE_FORMATS.indexOf(dataFormat) < 0) throw "Illegal data format *" + dataFormat + "*";
-	if (entitySelect != null && ALLOWABLE_SELECTS.indexOf(entitySelect) < 0) throw "Illegal entity select *" + entitySelect + "*";
+	if (contentMode == null || ALLOWABLE_CONTENTS.indexOf(contentMode) < 0) throw "Illegal content mode *" + contentMode + "*";
+	modelName = validateRequired(modelName, "modelName");
+	entityName = validateRequired(entityName, "entityName");
+	flowName = validateRequired(flowName, "flowName");
 
 	// make sure I'm on a version of DHF that I can deal with
 	var version = "4.1";
@@ -370,12 +485,19 @@ function cutCookie(model, entitySelect, entitiesCSV, dataFormat, pluginFormat, f
 	}
 	*/
 
+	// find the model
+	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
+	if (!doc || doc == null) throw "Model not found *" + modelName + "*";
+	var odoc = doc.toObject();
+	var info = odoc.info;
+	var modelIRI = info.baseUri + "/" +  info.title + "-" + info.version;
+
 	// use this template folder
 	var templateFolder = "/xmi2es/dhfTemplate/" + version + "/harmonize/";
 
 	// find the model
-	var doc = cts.doc("/xmi2es/es/" + model + ".json");
-	if (!doc || doc == null) throw "Model not found *" + model + "*";
+	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
+	if (!doc || doc == null) throw "Model not found *" + modelName + "*";
 	var odoc = doc.toObject();
 	var info = odoc.info;
 	var modelIRI = info.baseUri + "/" +  info.title + "-" + info.version;
@@ -383,53 +505,37 @@ function cutCookie(model, entitySelect, entitiesCSV, dataFormat, pluginFormat, f
 
 	// determine the builder block functions implemented
 	var builderFunctions = getBuilderFunctions(modelIRI);
-	xdmp.log("BUILDER FUNCTIONS " + JSON.stringify(builderFunctions));
-
-	// which entities?
-	var entities;
-	if (entitiesCSV && entitiesCSV != null) entities = entitiesCSV.split(",");
-	else if (entitySelect == "infer") entities = inferPlugins(modelIRIHash);
-	else if (entitySelect == "all") entities = useAllEntities(modelIRIHash);
-	else throw "Should not have gotten here *" + entitySelect + "*";
-
-	if (entities.length == 0) throw "No entities specified or inferred";
 
 	// create plugins (with harmonization) for each
-	if (flowName == null) flowName = "Harmonize";
-	for (var i = 0; i < entities.length; i++) {
-		var entity = entities[i].trim();
-		var folder = "/cookie/" + model + "/" + entity + "/";
+	var harmonizationFolder = "/cookieCutter/" + modelName + "/plugins/entities/" + entityName + "/harmonize/" + flowName + "/";
+	var cookieFolder = templateFolder + pluginFormat + "/";
 
-		// Write the ES model. DHF quickstart likes to put just the plugin's entity here. We'll put the whole model.
-		writeFile(folder, entity + ".entity.json", doc, false, model); 
+	// now let's cookie-cut the harmonization flow
+	writeFile(harmonizationFolder, flowName + ".properties", 
+		useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties"), true, modelName, "harmonization");
+	writeFile(harmonizationFolder, "collector." + pluginFormat, 
+		useTemplate(cookieFolder + "collector.t" + pluginFormat), true, modelName, "harmonization");
 
-		var thisFlow = entity + flowName + "_" + pluginFormat;
-		var harmonizationFolder = folder + "harmonize/" + thisFlow + "/";
-		var cookieFolder = templateFolder + pluginFormat + "/";
+	// TODO - in main we should delete the ioptions in a finally
+	writeFile(harmonizationFolder, "main." + pluginFormat, 
+		useTemplate(cookieFolder + "main.t" + pluginFormat), true, modelName, "harmonization");
 
-		// now let's cookie-cut the harmonization flow
-		xdmp.log("COOKIE *" + harmonizationFolder + "*");
-		writeFile(harmonizationFolder, thisFlow + ".properties", 
-			useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties"), true, model);
-		writeFile(harmonizationFolder, "collector." + pluginFormat, 
-			useTemplate(cookieFolder + "collector.t" + pluginFormat), true, model);
-		writeFile(harmonizationFolder, "main." + pluginFormat, 
-			useTemplate(cookieFolder + "main.t" + pluginFormat), true, model);
-		writeFile(harmonizationFolder, "content." + pluginFormat, 
-			cutContent(modelIRI, info.version, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 
-				useTemplate(cookieFolder + "content.t" + pluginFormat)), true, model);
-		writeFile(harmonizationFolder, "triples." + pluginFormat, 
-			cutTriples(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 
-				useTemplate(cookieFolder + "triples.t" + pluginFormat)), true, model);
-		writeFile(harmonizationFolder, "headers." + pluginFormat, 
-			cutHeaders(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 
-				useTemplate(cookieFolder + "headers.t" + pluginFormat)), true, model);
-		writeFile(harmonizationFolder, "writer." + pluginFormat, 
-			cutWriter(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, 
-				useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, model);
-	}
+	writeFile(harmonizationFolder, "content." + pluginFormat, 
+		cutContent(modelIRI, info.version, entityName, flowName, pluginFormat, dataFormat, contentMode, mappingHints, builderFunctions, 
+			useTemplate(cookieFolder + "content.t" + pluginFormat)), true, modelName, "harmonization");
+
+	writeFile(harmonizationFolder, "triples." + pluginFormat, 
+		cutTriples(modelIRI, entityName, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+			useTemplate(cookieFolder + "triples.t" + pluginFormat)), true, modelName), "harmonization";
+	writeFile(harmonizationFolder, "headers." + pluginFormat, 
+		cutHeaders(modelIRI, entityName, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+			useTemplate(cookieFolder + "headers.t" + pluginFormat)), true, modelName, "harmonization");
+	writeFile(harmonizationFolder, "writer." + pluginFormat, 
+		cutWriter(modelIRI, entityName, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+			useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
 }
 
 module.exports = {
-  cutCookie: cutCookie
+  createEntities: createEntities,
+  createHarmonizeFlow: createHarmonizeFlow
 };

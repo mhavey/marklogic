@@ -11,7 +11,8 @@ ${EntityXHeaderEnable}const xesgen = require("/$EntityX/lib.sjs");
  */
 function createHeaders(id, content, options) {
   ${EntityXHeaderEnable}var lang = ${EntityDataFormat}
-  ${EntityXHeaderEnable}return xesgen.setHeaders_${EntityX}(id, content, options, lang);
+  ${EntityXHeaderEnable}var ioptions = xesgen.getIOptions(id,options);
+  ${EntityXHeaderEnable}return xesgen.setHeaders_${EntityX}(id, content, ioptions, lang);
   ${EntityXHeaderDisable}return {};
 
   // TODO nested headers
