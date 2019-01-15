@@ -1,6 +1,5 @@
 (:
-This module converts an Excel (based on our template) to XMI form. 
-We make the Excel just like UML.
+This module consumes an Excel mapping spec. It reads the contents and transforms to a JSON with equivalent content.
 :)
 
 xquery version "1.0-ml";
