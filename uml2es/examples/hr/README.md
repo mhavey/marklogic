@@ -116,7 +116,7 @@ Confirm:
 
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -PenvironmentName=local -i ingestModel deployESModelToFinal loadExtendedModel
+gradle -PenvironmentName=local -i ingestModel deployESModelToFinal loadExtendedModel loadMappingSpec
 
 Confirm:
 - Final DB (xmi2es-examples-hr-FINAL) includes the following documents
@@ -137,11 +137,24 @@ Among the results, you should see the following:
 - <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
 
 ### Run Cookie-Cutter to Create DHF Entities and Flows for HR Model
-Now we create our DHF entity plugins. 
+Now we create our DHF entity plugins. We leverage's the toolkit's ability to cut/generate code. 
 
+#### 1. Create DHF Entities
 First, ask the toolkit to create the basic plugins (without any flows). It will infer which classes in the model should be plugins. 
 
 gradle -PenvironmentName=local -i umlCreateEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
+
+Confirm:
+TODO
+
+#### 2. The Excel stuff..
+TODO ... First, ask the toolkit to create the basic plugins (without any flows). It will infer which classes in the model should be plugins. 
+
+gradle -PenvironmentName=local -i umlCreateEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
+
+Confirm:
+TODO
+
 
 Next, ask the toolkit to create harmonization flows that construct content using ES-style code. 
 

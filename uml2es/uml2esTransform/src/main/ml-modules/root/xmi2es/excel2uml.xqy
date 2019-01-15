@@ -18,7 +18,10 @@ declare variable $VAL-YN := "y";
 declare variable $VAL-INT := "i";
 declare variable $VAL-CARDINALITY := "c";
 
-declare variable $FIRST_PROP_ROW := 21;
+declare variable $FIRST-PROP-ROW := 21;
+
+declare variable $DELIM-LINE := "[\n\r]";
+declare variable $DELIM-COMMA-LINE := "[\n\r,]";
 
 (:
 Convert attributes in the excel to XMI
@@ -29,14 +32,14 @@ declare function xlsx:convertAttributes($entitySheet as node(), $classSheet as x
 	let $attribNames := json:array()
 
 	(: the attributes :)
-	let $lastPropertyRow := xlsx:excelLastRow($entitySheet, $classSheet, $stringTable, $pt)
+	let $lastPropertyRow := xlsx:excelLastRow($entitySheet, $classSheet, $stringTable, $FIRST-PROP-ROW, $pt)
 
 let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 
 	let $_ := if (not(exists($lastPropertyRow))) then 
 		fn:error(xs:QName("ERROR"), concat("programming error, unable to find last row in ", $classSheet)) else ()
 
-	for $row in $FIRST_PROP_ROW to $lastPropertyRow return
+	for $row in $FIRST-PROP-ROW to $lastPropertyRow return
 		let $attribName := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "A"||$row, $pt, $VAL-MANDATORY)
 		let $attribLoc := concat($classSheet, ".", $attribName, " at ", $row)
 		return
@@ -359,6 +362,12 @@ If there are multiple values (delimited by newline), return the sequence of them
 declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string, 
 	$stringTable as node(), $cellCoord as xs:string, $pt, $validation as xs:string*) as xs:string* {
 
+	xlsx:excelCell($sheet, $sheetName, $stringTable, $cellCoord, $pt, $validation, $DELIM-LINE)
+};
+
+declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string, 
+	$stringTable as node(), $cellCoord as xs:string, $pt, $validation as xs:string*, $fieldDelim as xs:string) as xs:string* {
+
 	let $errorSource := concat($sheetName, ".", $cellCoord)
 
 	let $cell := $sheet//*:row/*:c[@*:r eq $cellCoord]
@@ -377,7 +386,7 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 					let $_ := pt:addProblem($pt, (), $errorSource, "Ignoring unknown cell type", "*" || $cellType || "*")
 					return ""
 
-	let $cellVals := for $tok in fn:tokenize($cellValWS, "[\n\r]") return
+	let $cellVals := for $tok in fn:tokenize($cellValWS, $fieldDelim) return
 		let $n := fn:normalize-space($tok)
 		return 
 			if (string-length($n) gt 0) then $n
@@ -412,11 +421,11 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 Return the last row that in an entity sheet has a property
 :)
 declare function xlsx:excelLastRow($sheet as node(), $sheetName as xs:string, 
-	$stringTable as node(), $pt) as xs:integer? {
+	$stringTable as node(), $firstRow as xs:integer, $pt) as xs:integer? {
 
 	(: find last A cell at or beyond the last prop row :)
 	let $lastARowAttrib := $sheet//*:row[
-		xs:integer(@*:r) ge $FIRST_PROP_ROW and 
+		xs:integer(@*:r) ge $firstRow and 
 		exists(*:c[fn:starts-with(@*:r, "A")])][last()]/@*:r
 	return 
 		if (not(exists($lastARowAttrib))) then 0
@@ -424,12 +433,12 @@ declare function xlsx:excelLastRow($sheet as node(), $sheetName as xs:string,
 			let $lastARow := xs:integer($lastARowAttrib)
 			let $firstEmptyRow := 0
 			let $lastPopRow := 0
-			let $_ := for $row in $FIRST_PROP_ROW to $lastARow return
+			let $_ := for $row in $firstRow to $lastARow return
 				let $cellVal := xlsx:excelCell($sheet, $sheetName, $stringTable, "A"||$row, $pt, ())
 
 				return 
 					if ($firstEmptyRow eq 0 and (count($cellVal) eq 0 or $cellVal eq "")) then (
-						if ($row eq $FIRST_PROP_ROW) then () else xdmp:set($lastPopRow, $row - 1),
+						if ($row eq $firstRow) then () else xdmp:set($lastPopRow, $row - 1),
 						xdmp:set($firstEmptyRow, $row)
 					)
 					else ()

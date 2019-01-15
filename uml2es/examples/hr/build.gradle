@@ -290,6 +290,29 @@ task deployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
 The rest is cookie cutter
 */
 
+task loadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir + "/data/mapping"
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "binary"
+  input_file_path = regexDir + "/*.xlsx"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/excel-mapper/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = mlHost
+  port = mlFinalPort.toInteger()
+
+  transform_module = "/xmi2es/excelMapper.xqy"
+  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
+  transform_param = "dummy"
+}
+
 task deleteCutDump(type: Delete) {
     delete "data/cookieCutter-dump"
 }
