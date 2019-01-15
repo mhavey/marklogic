@@ -168,6 +168,14 @@ function useTemplate(name) {
 	return ""+doc;
 }
 
+function describeClass() {
+
+};
+
+function describeAttrib() {
+
+}
+
 function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 	var contentNode =content;
 	if (asText == true) {
@@ -258,7 +266,11 @@ function cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, da
 		visitedEntities.push(entity);
 
 		// begin building the function buildEntity_* for the current entity.
+		var ClassDesc = describeClass(modelIRI, nextEntity);
 		ContentBuilder += `
+/*
+${ClassDesc}
+*/
 function buildEntity_${nextEntity}(id,source,options,ioptions) {
    // now check to see if we have XML or json, then create a node clone from the root of the instance
    if (source instanceof Element || source instanceof ObjectNode) {
@@ -279,6 +291,9 @@ function buildEntity_${nextEntity}(id,source,options,ioptions) {
    };
 `;
 		ContentXBuilder += `
+(:
+${ClassDesc}
+:)
 declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions) {
    let $source :=
       if ($source/*:envelope and $source/node() instance of element()) then
@@ -302,6 +317,17 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 			var attributeType = attributes[i].attributeType;
 			var attributeIsRequired = attributes[i].attributeIsRequired;
 			var attributeIsArray = attributes[i].attributeIsArray;
+
+			var AttribDesc = describeAttrib(modelIRI, nextEntity, attributes[i]);
+			ContentBuilder += `
+   /*
+   ${SJSAttribDesc}
+   */`;
+			ContentXBuilder += `
+   (:
+   ${SJSAttribDesc}
+   :)`;
+
 			if (attributes[i].attributeIsCalculated == true) {
 
 				ContentBuilder += `
@@ -332,7 +358,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 `;
 					ContentXBuilder += `
    let $_ := map:put($model, "${attributeName}", json:array())
-   for $x in 1 to 42 return json:array-push(map:get($model, "${attributeName}"), plugin:buildEntity_${entity2}($id,$source,$options,$ioptions)))
+   for $x in 1 to 1 return json:array-push(map:get($model, "${attributeName}"), plugin:buildEntity_${entity2}($id,$source,$options,$ioptions)))
 `;
 				}
 				else {
@@ -341,7 +367,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
    }
 `;
 					ContentXBuilder += `
-   let $_ := map:put($model, "${attributeName}", plugin:buildESEntity_${entity2}($id,$source,$options,$ioptions))
+   let $_ := map:put($model, "${attributeName}", plugin:buildEntity_${entity2}($id,$source,$options,$ioptions))
 `;
 				}
 			}
