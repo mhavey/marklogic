@@ -11,7 +11,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - uCreateConversionModule: Create a module to convert source data to the ES model form. This conversion is smart, if you ask it to be.
 - uLoadMappingSpec: Load an Excel mapping spec, which indicates how to map source data to the model. Used in the above tasks.
 
-Details of the task interface, including task input, is described in the build file.
+Details of the task interface, including task input, are given in the build file.
 
 (TODO: in future, these tasks will be packaged in a plugin. For now, they're in a build file.)
 
