@@ -308,12 +308,35 @@ task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (flowName != null) flowName = '"' + flowName + '"'
   def contentMode = project.findProperty("contentMode") 
   if (contentMode != null) contentMode = '"' + contentMode + '"'
-  def mappingHints = project.findProperty("mappingHints") 
-  if (mappingHints != null) mappingHints = '"' + mappingHints + '"'
+  def mappingSpec = project.findProperty("mappingSpec") 
+  if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingHints + ');\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ');\n'
+println js
+  javascript = js;
+}
+
+task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def modelName = project.findProperty("modelName")
+  if (modelName != null) modelName = '"' + modelName + '"'
+  def entityName = project.findProperty("entityName") 
+  if (entityName != null) entityName = '"' + entityName + '"'
+  def dataFormat = project.findProperty("dataFormat") 
+  if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
+  def pluginFormat = project.findProperty("pluginFormat") 
+  if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
+  def moduleName = project.findProperty("moduleName") 
+  if (moduleName != null) moduleName = '"' + moduleName + '"'
+  def contentMode = project.findProperty("contentMode") 
+  if (contentMode != null) contentMode = '"' + contentMode + '"'
+  def mappingSpec = project.findProperty("mappingSpec") 
+  if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
+
+def js = "'use strict';\n"
+js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
+js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ');\n'
 println js
   javascript = js;
 }
@@ -336,12 +359,35 @@ task _cPromoteCutHarmonizeFlow(type: Copy) {
     into flowPath 
 }
 
+task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
+  def host = project.findProperty("mlHost")
+  if (host == null) host = project.findProperty("mlAppServicesHost")
+  def port = project.findProperty("mlAppServicesPort")
+  if (port == null) port = project.findProperty("mlRestPort")
+  if (port == null) port = project.findProperty("mlFinalPort")
+
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName") + "/"
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/cookieCutter-dump"
+  directory_filter = directoryFilter
+  host = host
+  port = port.toInteger()
+}
+
+task _cPromoteCutConversionModule(type: Copy) {
+    def convPath = "src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName")
+    enabled = project.findProperty("overwrite") == "true" || !file(convPath).exists()
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + convPath  
+    into convPath 
+}
+
 /*
  * PUBLIC TASKS
  */
 
 /*
-uDeployModel 
+uDeployModel : deploys your UML (or even Excel) model as an ES model
 Input: none
 Dependencies: 
 - Your gradle project has the folder data/model
@@ -380,7 +426,7 @@ task uIngestModel() {
 }
 
 /*
-uLoadMappingSpec 
+uLoadMappingSpec : loads your Excel mapping spec for use in cookie cutter codegen
 Input: none
 Dependencies: 
 - Your gradle project has the folder data/mapping
@@ -420,7 +466,7 @@ task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 /*
-uCreateDHFEntities 
+uCreateDHFEntities - create DHF plugin entities; a souped-up hubCreateEntity
 Input: 
 - modelName - name of UML module file without .xml suffix
 - entities (optional) - CSV of class names representing entities to create
@@ -445,7 +491,26 @@ task uCreateDHFEntities() {
 }
 
 /*
-TODO ...
+uCreateDHFHarmonizeFlow - creates a harmonize flow for the specified entity. A souped-up hubCreateHarmonizeFlow
+Input: 
+- modelName - name of UML module file without .xml suffix
+- entityName - name of the entity. You must already have created this using uCreateDHFEntities
+- dataFormat: xml, json
+- pluginFormat: xqy, sjs
+- flowName: the harmonization flow name
+- contentMode: possible values
+     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
+     dm - Declarative Mapper mode. This feature is not ready yet.
+- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
+- overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
+Dependencies: 
+- Your gradle project is DHF 4.1
+- You have deployed your UML model
+- You have created the entity in question using uCreateDHFEntities
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- New harmonization flow plugins/entities/entityName/harmonize folder
 */
 task uCreateDHFHarmonizeFlow() {
   dependsOn '_cDeleteCutDump'
@@ -458,16 +523,34 @@ task uCreateDHFHarmonizeFlow() {
 }
 
 /*
-TODO ...
+uCreateConversionModule - creates a harmonize flow for the specified entity. A souped up es.instanceConverterGenerate.
+Input: 
+- modelName - name of UML module file without .xml suffix
+- entityName - name of the entity. 
+- dataFormat: xml, json
+- pluginFormat: xqy, sjs
+- moduleName the module name
+- contentMode: possible values
+     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
+     dm - Declarative Mapper mode. This feature is not ready yet.
+- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
+- overwrite: true/false. If true and the module already exists, overwrite it. If you don't want to clobber, set to false.
+Dependencies: 
+- You have deployed your UML model
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort. BUT WE RECOMMEND USING uCreateDHFHarmonizeFlow IF YOU ARE ON DHF.
+Effects:
+- New conversion module in src/main/ml-modules/root/modelName/entityName folder
 */
 task uCreateConversionModule() {
   dependsOn '_cDeleteCutDump'
-  dependsOn '_cCutEntities'
-  dependsOn '_cFetchEntities'
-  dependsOn '_cPromoteEntities'
-  tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
-  tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
-  tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
+  dependsOn '_cCutConversionModule'
+  dependsOn '_cFetchCutConversionModule'
+  dependsOn '_cPromoteCutConversionModule'
+  tasks.findByName('_cFetchCutConversionModule').mustRunAfter '_cCutConversionModule'
+  tasks.findByName('_cFetchCutConversionModule').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteCutConversionModule').mustRunAfter '_cFetchCutConversionModule'
 }
 
 /*
