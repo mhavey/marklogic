@@ -1,116 +1,27 @@
 # Using the UML-to-Entity Services Toolkit In Your Build
 
-TODO ...
+The toolkit supports a gradle build process. Gradle is the most widely used build tool for MarkLogic implementations. 
+The toolkit includes common gradle tasks to deploy your UML model and generate harmonization/conversion code from it. You use these tasks, as well as common [ml-gradle](https://github.com/marklogic-community/ml-gradle/wiki) and [data hub](https://marklogic.github.io/marklogic-data-hub/refs/gradle-tasks/) tasks, to deploy your application.
 
-Gradle Tasks:
+The toolkit provides a gradle build file containing all model deployment and code generation tasks: [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle). Here is a summary of the tasks from that build file:
 
-Common and Lib-Ready Tasks
-- loadXMI, ingestModel, loadExtendedModel - There are reusable and should be tasks in a plugin.
-- uml2esCreateEntities
-- uml2esCreateHarmonization
+- uIngestModel: Load your UML model and convert it to ES
+- uCreateDHFEntities: If you use DHF, create DHF plugin entities based on classes in your model
+- uCreateDHFHarmonizeFlow: If you use DHF, generate a harmonization flow based on your model. This conversion is smart, if you ask it to be.
+- uCreateConversionModule: Create a module to convert source data to the ES model form. This conversion is smart, if you ask it to be.
+- uLoadMappingSpec: Load an Excel mapping spec, which indicates how to map source data to the model. Used in the above tasks.
 
-- umlCreateEntities - Creates plugin-suitable entities corresponding to classes in your model. 
-	* modelName - name of model file without suffix
-	* entitySelect - infer, all 
-	* entityNames - csv list of entity names
-- umlCreateHarmonizeFlow - Create harmonization flow. 
-	* model
-	* entityName 
-	* flowName
-	* dataFormat - xml, json
-	* pluginFormat - xqy, sjs
-	* contentMode - es, dm
-		* es - Builds content using ES maps, takes into account calculated attributes and hints
-		* dm - Builds content as Declarative Mapper transformation.
-	* mappingHints - A JSON structure that says how to generate
-		* comment
-		* select
-		* variable
-		* code
-		* infer
+Details of the task interface, including task input, is described in the build file.
 
-Common but example-tinged Tasks:
-- includeXMI2ESTransform - This is used by the examples, but for real purposes you don't use it...
-- useIntial/GeneartedDBConfig, clearGenerated - these are examples
+(TODO: in future, these tasks will be packaged in a plugin. For now, they're in a build file.)
 
-Project Structure For Source Control:
+The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit show this gradle build in action. (TODO: most of them are loosely based on it. Fix that.)
 
-Non-DHF
-- build.gradle
-- gradle*.properties
-- lib/log4j.properties
-- src/main/ml-schemas - TODO strategy for generated TDE vs. edited TDE
-- src/main/ml-config - TODO stategy for generated config vs. edited config
-- src/main/ml-modules/options - TODO strategy for generated options vs. edited options
-- src/main/ext/entity-services/*.xqy - TODO strategy for generated converter vs. edited converter
-- src/main/ml-modules/root/xmi2es - The transform. You have a copy of it.
-- src/main/ml-modules/... - Your stuff
-- data/entity-services - This is where transform puts the ES model. Leave this empty
-- data/entity-services-extension - This is where the transform put the ES extension. Leave this empty
-- data/entity-services-dump - This is where the transform puts its stuff. Leave this empty
-- data/model/uml/*.xml - Your UML model(s)
-- data/model/excel/*.xlsx - Your Excel model(s)
+The mega tutorial [../tutorials/runningRaceStartToFinish.md](../tutorials/runningRaceStartToFinish.md) demonstrates the gradle build as key ingredient in a soup-to-nuts modeling example for DHF. Please go through this tutorial to see how to:
 
-DHF
-TODO ... 
+- Setup a brand new source-controlled MarkLogic gradle build for UML in DHF.
+- Construct a UML model and maintain it as part of the gradle build. 
+- Construct a source mapping spec and maintain it as part of the gradle build.
+- Generate and refine by hand harmonization code to keep MarkLogic-persisted data true to the model. 
 
-
-Roles - Who Does What ...
-
-
-
-TODO - THIS PAGE IS UNDER CONSTRUCTION. ETA: EOQ FY18Q4
-
-Non-DHF (example: movies...)
-- copy transform into your gradle
-- deploy the transform 
-- use a loadXMI to load the XMI and transform it to ES
-- bring it back like in movies example
-- fine-tune indexes, config, TDE, etc...
-- deploy model and XES
-- generate code: and use that code
-
-clearGenerated - remove any generated code
-useInitialDBConfig - don't use generated config for content DB; just a file copy
-includeXMI2ESTransform  - move transform over to gradle project
-mlDeploy
-
-ingestModel - load and transform UML to ES; bring it back to gradle project; this is composed of:
-	- deleteESDump - file delete
-	- loadXMI - load and transform the XMI
-	- fetchDescriptors - export ES model back to gradle project
-	- copy ES stuff to the proper ES folders for mlgen to run
-mlgen 
-* NEW * generateModelCode
-loadExtendedModel - mlcp import of the previously exported TTL
-
-useGeneratedDBConfig - just a file copy
-deleteGeneratedTDE - just file deletes
-mlDeployDatabases 
-mlReloadModules 
-mlReloadSchemas
-
-
-
-DHF
-- createEntitiesFromSplit modelURI
-- createHarmonizeFlowFromModel
-
-
-
-
-
-
-
-
-
-Confirm:
-- Content DB now has element range indexes
-- Schemas DB has ONLY ONE tdex document: /MovieModel-0.0.1.tdex
-
-### Ingest
-Ingest movie data based on the model
-
-Run the following:
-
-gradle -PenvironmentName=local -i ingestMovieData
+The tutorial also shows who does what in the build process. A modeler owns the UML model; a source data expert owns the mapping spec; developers own the harmonization code; and an adminstrator owns the environment and the indexes called for by the model. 

@@ -9,3 +9,5 @@ A few tools tutorials:
 [How to edit the profile in MagicDraw](magicdraw_profile_edit.md)
 
 [How to edit the profile in Papyrus](papyrus_profile_edit.md)
+
+[Running Race Start To Finish](runningRaceStartToFinish.md)
