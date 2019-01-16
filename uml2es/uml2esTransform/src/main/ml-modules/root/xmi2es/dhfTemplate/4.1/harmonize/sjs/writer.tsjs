@@ -1,4 +1,5 @@
 const xesgen = require("/${EntityX}/lib.sjs");
+const util = require("/xmi2es/util.sjs");
 
 /*~
  * Writer Plugin
@@ -10,9 +11,8 @@ const xesgen = require("/${EntityX}/lib.sjs");
  * @return - nothing
  */
 function write(id, envelope, options) {
-  ${EntityXWriterEnable}xesgen.runWriter_${EntityX}(id, envelope, xes.getIOptions(id,options));
+  ${EntityXWriterEnable}xesgen.runWriter_${EntityX}(id, envelope, util.getIOptions(id,options));
   ${EntityXWriterDisable}xdmp.documentInsert(id, envelope, xdmp.defaultPermissions(), options.entity);
-  xesgen.removeIOptions(id,envelope);
 }
 
 module.exports = write;

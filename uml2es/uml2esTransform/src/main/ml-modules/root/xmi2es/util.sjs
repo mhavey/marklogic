@@ -9,6 +9,23 @@ const UML_ONLY_PREDS = [PRED_PREFIX + "relationship", PRED_PREFIX + "typeIsRefer
                         PRED_PREFIX + "hasAssociationClassEnd", PRED_PREFIX + "associationClassEndAttribute",
                         PRED_PREFIX + "associationClassEndClass", PRED_PREFIX + "associationClassEndFK"];
 
+//DHF 4.1  - From options, get the submap keyed by id. We use the submap to pass data between DHF hamronization modules 
+function getIOptions(id,options) {
+  return options["iopt_" + id];
+}
+
+//DHF 4.1  - In options, createa a submap keyed by id. We use the submap to pass data between DHF hamronization modules 
+function setIOptions(id,options) {
+  var ioptions = {};
+  options["iopt_" + id] = ioptions;
+  return ioptions;
+}
+
+//DHF 4.1  - Remove from options the submap keyed by id. We use the submap to pass data between DHF hamronization modules 
+function removeIOptions(id,options) {
+  delete options["iopt_" + id];
+}
+
 // Make the JSON source in an alphabetized form for easy comparison
 function makeESComparable(source, skips) {
 
@@ -144,6 +161,9 @@ function makeXESComparable(source) {
 }
 
 module.exports = {
+  getIOptions: getIOptions,
+  setIOptions: setIOptions,
+  removeIOptions: removeIOptions,  
   makeESComparable: makeESComparable,
   makeXESComparable:makeXESComparable
 };

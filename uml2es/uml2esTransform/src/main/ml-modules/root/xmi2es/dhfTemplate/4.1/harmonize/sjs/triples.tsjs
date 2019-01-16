@@ -1,4 +1,5 @@
 ${EntityXTripleEnable}const xesgen = require("/${EntityX}/lib.sjs");
+const util = require("/xmi2es/util.sjs");
 
 /*
  * Create Triples Plugin
@@ -11,7 +12,7 @@ ${EntityXTripleEnable}const xesgen = require("/${EntityX}/lib.sjs");
  * @return - an array of triples
  */
 function createTriples(id, content, headers, options) {
-  ${EntityXTripleEnable}var ioptions = xesgen.getIOptions(id,options);
+  ${EntityXTripleEnable}var ioptions = util.getIOptions(id,options);
   ${EntityXTripleEnable}return xesgen.setTriples_${EntityX}(id, content, headers, ioptions);
   ${EntityXTripleDisable}return [];
 

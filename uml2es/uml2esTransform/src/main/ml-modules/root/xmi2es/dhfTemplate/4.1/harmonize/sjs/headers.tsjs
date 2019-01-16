@@ -1,4 +1,5 @@
 ${EntityXHeaderEnable}const xesgen = require("/$EntityX/lib.sjs");
+const util = require("/xmi2es/util.sjs");
 
 /*
  * Create Headers Plugin
@@ -11,7 +12,7 @@ ${EntityXHeaderEnable}const xesgen = require("/$EntityX/lib.sjs");
  */
 function createHeaders(id, content, options) {
   ${EntityXHeaderEnable}var lang = ${EntityDataFormat}
-  ${EntityXHeaderEnable}var ioptions = xesgen.getIOptions(id,options);
+  ${EntityXHeaderEnable}var ioptions = util.getIOptions(id,options);
   ${EntityXHeaderEnable}return xesgen.setHeaders_${EntityX}(id, content, ioptions, lang);
   ${EntityXHeaderDisable}return {};
 

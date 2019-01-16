@@ -15,8 +15,6 @@ Examples:
 - But is a class has multiple PKs, let that flow through to ES and have ES reject it.
 :)
 
-(: TODO - remove the ones we dont use :)
-
 declare variable $MODEL-NO-NAME := "Model has no name";
 declare variable $MODEL-INVALID:= "!!!Model fails ES validation!!!";
 declare variable $MODEL-NOT-FOUND := "Model not found";

@@ -534,15 +534,6 @@ relationships during codegen.
 Solution: Just wrap the triples we do have in an XML root and do XPath to find what we need.
 For class/attrib rel, cheat and use starts-with. An attribute's IRI starts with the class's IRI.
 :)
-
-(:
-TODO
-here are the current issues with code gen
-1. dynIRI - when to use it; should be any time we get a value from content or options.
-2. dynIRI - current impl thinks any string should be an IRI, what if it's just a fn:string()
-3. brilliantWorksOf - should be options, triples thinks it's in content - why?
-4. the joke example, "selectedreasonfromanothersource" - should NOT be a string but an unknown attribute. When we find an unknown attribute, get it from options.
-:)
 declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) as empty-sequence() {
 	let $ns := 	map:get($xes, "ns")
 
@@ -575,18 +566,6 @@ declare function xes:generateModuleHeader($xes as map:map, $codeMap as map:map) 
 		xes:appendSourceLine($codeMap, $LIB-SJS, $NEWLINE),
 		xes:appendSourceLine($codeMap, $LIB-XQY, $NEWLINE),
 		xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, '
-// DHF support - get/set options for this ID; needed in DHF 4.1
-function getIOptions(id,options) {
-	return options["iopt_" + id];
-}
-function setIOptions(id,options) {
-	var ioptions = {};
-	options["iopt_" + id] = ioptions;
-	return ioptions;
-}
-function removeIOptions(id,options) {
-	delete options["iopt_" + id];
-}
 function dynIRI(expr) {
    if (!expr || expr == null) return null;
    var type = xdmp.type(expr)
@@ -617,18 +596,6 @@ function addTriple(ret, s, p, o) {
 }
 ')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '
-// DHF support - get/set options for this ID; needed in DHF 4.1
-declare function ', $NS-PREFIX, ':getIOptions($id,$options) {
-	map:get($options, "iopt_" || $id)
-};
-declare function ', $NS-PREFIX, ':setIOptions($id,$options) {
-	let $ioptions := json:object()
-	let $_ := map:put($options, "iopt_" || $id, $ioptions)
-	return $ioptions
-};
-declare function ', $NS-PREFIX, ':removeIOptions($id,$options) {
-	map:delete($options, "iopt_" || $id)
-};
 declare function ', $NS-PREFIX, ':dynIRI($expr) as sem:iri* {
    if (not(exists($expr))) then ()
    else if (count($expr) gt 1) then for $t in $expr return ', $NS-PREFIX, ':dynIRI($t)

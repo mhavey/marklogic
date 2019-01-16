@@ -1,6 +1,7 @@
 xquery version "1.0-ml";
 
 ${EntityXTripleXEnableIn}import module namespace xesgen = "${EntityXGenURI}" at "/${EntityX}/lib.xqy" ;${EntityXTripleXEnableOut}
+import module namespace util = "http://marklogic.com/xmi2es/util" at "/xmi2es/util" ;
 
 module namespace plugin = "http://marklogic.com/data-hub/plugins";
 
@@ -25,7 +26,7 @@ declare function plugin:create-triples(
   $options as map:map) as sem:triple*
 {
   ${EntityXTripleXEnableIn}
-  let $ioptions := xesgen:getIOptions($id, $options)
+  let $ioptions := util:getIOptions($id, $options)
   return xesgen:setTriples_${EntityX}($id, $content, $headers, $ioptions)
   ${EntityXTripleXEnableOut}
   ${EntityXTripleXDisableIn}()${EntityXTripleXDisableOut}

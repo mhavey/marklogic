@@ -1,0 +1,486 @@
+/*
+	Gradle tasks for UML2ES Toolkit. Use this in your project. 
+	You can either:
+	- copy bits and pieces of it into your own gradle build file
+	- use this as the basis for your gradle build file; build on it
+	- keep it as is and call it to run just the UML2ES tasks; 
+	  you will also have another gradle build file with the rest of your tasks
+
+	Tasks that begin with "_" are private. Don't call them; they are called internally.
+	Tasks that begin with "u" are public. Call them!
+*/
+
+/*
+USE THIS SETUP BLOCK IF YOUR PROJECT IS NON-DHF
+*/
+
+buildscript {
+	repositories {
+		jcenter{url "http://jcenter.bintray.com/"}
+		mavenLocal()
+		maven { url "http://plugins.gradle.org/m2" }
+	}
+	dependencies {
+		classpath "com.marklogic:ml-gradle:3.4.0"
+		classpath "net.saliman:gradle-properties-plugin:1.4.6"
+	}
+}
+
+apply plugin: "net.saliman.properties"
+apply plugin: "com.marklogic.ml-gradle"
+
+repositories {
+	jcenter{url "http://jcenter.bintray.com/"}
+
+	// Needed for mlcp dependencies
+	maven { url "http://plugins.gradle.org/m2" }
+	maven { url "http://developer.marklogic.com/maven2/" }
+
+	// Needed for hadoop dependencies for mlcp
+	maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+}
+
+configurations {
+  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
+  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
+  // shown below.  Need to force to use certain version of xml-apis library.
+  mlcp {
+      resolutionStrategy {
+        force "xml-apis:xml-apis:1.4.01"
+      }
+    }
+}
+
+dependencies {
+  mlcp "com.marklogic:mlcp:9.0.6"
+  mlcp "org.apache.commons:commons-csv:1.2"
+  mlcp files("lib")
+}
+
+/* 
+ USE THIS SETUP BLOCK IF YOUR PROJECT IS ON DHF 4.1
+
+buildscript {
+  repositories {
+    maven {url 'http://developer.marklogic.com/maven2/'}
+  }
+}
+
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make the Data Hub Framework do its magic
+    id 'com.marklogic.ml-data-hub' version '4.1.0'
+}
+
+repositories {
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
+
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
+
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+}
+
+configurations {
+  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
+  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
+  // shown below.  Need to force to use certain version of xml-apis library.
+  mlcp {
+      resolutionStrategy {
+        force "xml-apis:xml-apis:1.4.01"
+      }
+    }
+}
+
+dependencies {
+    // this allows you to write custom java code that depends
+    // on the Data Hub Framework library
+    compile 'com.marklogic:marklogic-data-hub:4.1.0'
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
+
+    mlcp "com.marklogic:mlcp:9.0.6"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
+}
+
+*/
+
+/*
+ * PRIVATE TASKS: Model deployment
+ */
+
+task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
+  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  def host = project.findProperty("mlHost")
+  if (host == null) host = project.findProperty("mlAppServicesHost")
+  def port = project.findProperty("mlAppServicesPort")
+  if (port == null) port = project.findProperty("mlRestPort")
+  if (port == null) port = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "xml"
+  input_file_path = xmiDir + "/*.xml"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/xmi/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = host
+  port = port.toInteger()
+
+  transform_module = "/xmi2es/xmi2esTransform.xqy"
+  transform_namespace ="http://marklogic.com/xmi2es"
+  transform_param = "dummy"
+}
+
+task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
+  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  def host = project.findProperty("mlHost")
+  if (host == null) host = project.findProperty("mlAppServicesHost")
+  def port = project.findProperty("mlAppServicesPort")
+  if (port == null) port = project.findProperty("mlRestPort")
+  if (port == null) port = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "binary"
+  input_file_path = xmiDir + "/*.xlsx"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/excel/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = host
+  port = port.toInteger()
+
+  transform_module = "/xmi2es/excel2uml.xqy"
+  transform_namespace = "http://marklogic.com/xmi2es/xlsx"
+  transform_param = "dummy"
+}
+
+task _mFetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
+
+  def host = project.findProperty("mlHost")
+  if (host == null) host = project.findProperty("mlAppServicesHost")
+  def port = project.findProperty("mlAppServicesPort")
+  if (port == null) port = project.findProperty("mlRestPort")
+  if (port == null) port = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/entity-services-dump"
+  collection_filter = "xmi2es"
+  host = host
+  port = port.toInteger()
+}
+
+task _mCopyES(type: Copy) {
+    from "data/entity-services-dump/xmi2es/es/*.json"
+    into "data/entity-services" 
+}
+
+task _mCopyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension/*.ttl"
+    into "data/entity-services-extension" 
+}
+
+task _mCopyGenCode(type: Copy) {
+    from "data/entity-services-dump/xmi2es/gen"
+    into "src/main/ml-modules/root" 
+}
+
+task _mDeleteES(type: Delete) {
+    delete "data/entity-services-dump", "data/entity-services-extension"
+}
+
+task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  def host = project.findProperty("mlHost")
+  if (host == null) host = project.findProperty("mlAppServicesHost")
+  def port = project.findProperty("mlAppServicesPort")
+  if (port == null) port = project.findProperty("mlRestPort")
+  if (port == null) port = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = host
+  port = port.toInteger()
+
+  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_type = "rdf" 
+  output_uri_prefix = "/triplestore"
+}
+
+/*
+This ensures ES model is deployed to FINAL, not STAGING
+*/
+task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/entity-services";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  enabled = project.findProperty("mlFinalPort") != null
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "json"
+  input_file_path = "data/entity-services"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/marklogic.com/entity-services/models/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "http://marklogic.com/entity-services/models"
+  host = mlHost
+  port = mlFinalPort.toInteger()
+}
+
+/*
+ * PRIVATE TASKS: Cookie cutter
+ */
+
+task _cDeleteCutDump(type: Delete) {
+    delete "data/cookieCutter-dump"
+}
+
+task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def modelName = project.findProperty("modelName")
+  if (modelName != null) modelName = '"' + modelName + '"'
+  def entities = project.findProperty("entities") 
+  if (entities != null) entities = '"' + entities + '"'
+  def entitySelect = project.findProperty("entitySelect") 
+  if (entitySelect != null) entitySelect = '"' + entitySelect + '"'
+  def stg = '"' + mlStagingDbName + '"';
+
+def js = "'use strict';\n"
+js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
+js += 'cookie.createEntities(' + modelName + ',' + entitySelect + ',' + entities + ',' + stg + ');\n'
+println js
+  javascript = js;
+}
+
+task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/"
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "plugins"
+  output_file_path = "data/cookieCutter-dump"
+  directory_filter = directoryFilter
+  host = mlHost
+  port = mlFinalPort.toInteger()
+}
+
+task _cPromoteEntities(type: Copy) {
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/plugins/entities"
+    into "plugins/entities" 
+}
+
+task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def modelName = project.findProperty("modelName")
+  if (modelName != null) modelName = '"' + modelName + '"'
+  def entityName = project.findProperty("entityName") 
+  if (entityName != null) entityName = '"' + entityName + '"'
+  def dataFormat = project.findProperty("dataFormat") 
+  if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
+  def pluginFormat = project.findProperty("pluginFormat") 
+  if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
+  def flowName = project.findProperty("flowName") 
+  if (flowName != null) flowName = '"' + flowName + '"'
+  def contentMode = project.findProperty("contentMode") 
+  if (contentMode != null) contentMode = '"' + contentMode + '"'
+  def mappingHints = project.findProperty("mappingHints") 
+  if (mappingHints != null) mappingHints = '"' + mappingHints + '"'
+
+def js = "'use strict';\n"
+js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingHints + ');\n'
+println js
+  javascript = js;
+}
+
+task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/cookieCutter-dump"
+  directory_filter = directoryFilter
+  host = mlHost
+  port = mlFinalPort.toInteger()
+}
+
+task _cPromoteCutHarmonizeFlow(type: Copy) {
+    def harmPath = "plugins/entities/" + project.findProperty("entityName") + "/harmonize"
+    def flowPath = harmPath + "/" + project.findProperty("flowName") 
+    enabled = project.findProperty("overwrite") == "true" || !file(flowPath).exists()
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + flowPath  
+    into flowPath 
+}
+
+/*
+ * PUBLIC TASKS
+ */
+
+/*
+uDeployModel 
+Input: none
+Dependencies: 
+- Your gradle project has the folder data/model
+- Your model is in that folder
+- Your model is XMI
+- Your model ends in .xml
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- Target database has the UML model, the ES model, the ES extensions, findings, generated code
+- Target database has the ES model and its extended triples deployed
+- Your gradle project has entity-services, entity-services-dump, entity-services-extension folders
+- You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas
+*/
+task uIngestModel() {
+  dependsOn '_mDeleteES'
+  dependsOn '_mLoadXMI'
+  dependsOn '_mLoadExcel'
+  dependsOn '_mFetchDescriptors'
+  dependsOn '_mCopyES'
+  dependsOn '_mCopyESExt'
+  dependsOn '_mCopyGenCode'
+  dependsOn '_mLoadExtendedModel'
+  dependsOn 'mlGenerateModelArtifacts'
+  dependsOn '_mDeployESModelToFinal'
+  tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
+  tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
+  tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
+  tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadExcel'
+  tasks.findByName('_mCopyES').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('mlGenerateModelArtifacts').mustRunAfter '_mCopyES'
+  tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mCopyES'
+  tasks.findByName('_mCopyESExt').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mCopyESExt'
+}
+
+/*
+uLoadMappingSpec 
+Input: none
+Dependencies: 
+- Your gradle project has the folder data/mapping
+- Your mapping spec is in that folder
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- Target database has the mapping spec (original Excel plus transformed json)
+*/
+task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir + "/data/mapping"
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  def host = project.findProperty("mlHost")
+  if (host == null) host = project.findProperty("mlAppServicesHost")
+  def port = project.findProperty("mlAppServicesPort")
+  if (port == null) port = project.findProperty("mlRestPort")
+  if (port == null) port = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "binary"
+  input_file_path = regexDir + "/*.xlsx"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/excel-mapper/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = host
+  port = port.toInteger()
+
+  transform_module = "/xmi2es/excelMapper.xqy"
+  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
+  transform_param = "dummy"
+}
+
+/*
+uCreateDHFEntities 
+Input: 
+- modelName - name of UML module file without .xml suffix
+- entities (optional) - CSV of class names representing entities to create
+- entitySelect (optional) - Possible values:
+     "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
+     "all" - All classes are considered entities. Ignore entities specified.
+Dependencies: 
+- Your gradle project is DHF 4.1
+- You have deployed your UML model
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- New plugins created under plugins/entities folder
+*/
+task uCreateDHFEntities() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutEntities'
+  dependsOn '_cFetchEntities'
+  dependsOn '_cPromoteEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
+}
+
+/*
+TODO ...
+*/
+task uCreateDHFHarmonizeFlow() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutHarmonizeFlow'
+  dependsOn '_cFetchCutHarmonizeFlow'
+  dependsOn '_cPromoteCutHarmonizeFlow'
+  tasks.findByName('_cFetchCutHarmonizeFlow').mustRunAfter '_cCutHarmonizeFlow'
+  tasks.findByName('_cFetchCutHarmonizeFlow').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteCutHarmonizeFlow').mustRunAfter '_cFetchCutHarmonizeFlow'
+}
+
+/*
+TODO ...
+*/
+task uCreateConversionModule() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutEntities'
+  dependsOn '_cFetchEntities'
+  dependsOn '_cPromoteEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
+}
+
+/*
+Edit this to enable/disable code generation of mlGenerateModelArtifacts
+*/
+ext {   
+  mlAppConfig {
+    generateInstanceConverter=true
+    generateSchema=false
+    generateDatabaseProperties=true
+    generateExtractionTemplate=false
+    generateSearchOptions=false
+  }
+}
+
+

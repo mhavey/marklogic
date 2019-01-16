@@ -431,6 +431,12 @@ function cutWriter(modelIRI, entity, pluginFormat, dataFormat, mappingHints, bui
 	return tpl;
 }
 
+function cutProperties(dataFormat, template) {
+	var DataFormat = dataFormat;
+	var tpl = eval('`'+template+'`');
+	return tpl;	
+}
+
 function validateRequired(p, desc) {
 	if (p == null) throw "Required parameter " + desc;
 	p = p.trim();
@@ -488,7 +494,7 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB) {
 	}
 }
 
-function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingHints) {
+function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingSpec) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -511,13 +517,6 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 	}
 	*/
 
-	// find the model
-	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
-	if (!doc || doc == null) throw "Model not found *" + modelName + "*";
-	var odoc = doc.toObject();
-	var info = odoc.info;
-	var modelIRI = info.baseUri + "/" +  info.title + "-" + info.version;
-
 	// use this template folder
 	var templateFolder = "/xmi2es/dhfTemplate/" + version + "/harmonize/";
 
@@ -538,11 +537,11 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 
 	// now let's cookie-cut the harmonization flow
 	writeFile(harmonizationFolder, flowName + ".properties", 
-		useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties"), true, modelName, "harmonization");
+		cutProperties(dataFormat,
+			useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties")), true, modelName, "harmonization");
 	writeFile(harmonizationFolder, "collector." + pluginFormat, 
 		useTemplate(cookieFolder + "collector.t" + pluginFormat), true, modelName, "harmonization");
 
-	// TODO - in main we should delete the ioptions in a finally
 	writeFile(harmonizationFolder, "main." + pluginFormat, 
 		useTemplate(cookieFolder + "main.t" + pluginFormat), true, modelName, "harmonization");
 
@@ -561,7 +560,38 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 			useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
 }
 
+function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingSpec) {
+
+	// validate
+	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
+	if (dataFormat == null || ALLOWABLE_FORMATS.indexOf(dataFormat) < 0) throw "Illegal data format *" + dataFormat + "*";
+	if (contentMode == null || ALLOWABLE_CONTENTS.indexOf(contentMode) < 0) throw "Illegal content mode *" + contentMode + "*";
+	modelName = validateRequired(modelName, "modelName");
+	entityName = validateRequired(entityName, "entityName");
+	moduleName = validateRequired(flowName, "moduleName");
+
+	// find the model
+	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
+	if (!doc || doc == null) throw "Model not found *" + modelName + "*";
+	var odoc = doc.toObject();
+	var info = odoc.info;
+	var modelIRI = info.baseUri + "/" +  info.title + "-" + info.version;
+	var modelIRIHash = info.baseUri + "#" +  info.title + "-" + info.version; // cuz ES uses model IRI in a weird way
+
+	// determine the builder block functions implemented
+	var builderFunctions = getBuilderFunctions(modelIRI);
+
+	// create plugins (with harmonization) for each
+	var moduleFolder = "/cookieCutter/" + modelName + "/src/main/ml-modules/" + entityName + "/";
+
+	// now let's cookie-cut the module
+	writeFile(moduleFolder, moduleName + "." + pluginFormat, 
+		cutConversion(modelIRI, info.version, entityName, moduleName, pluginFormat, dataFormat, contentMode, mappingSpec, builderFunctions, 
+			useTemplate("/xmi2es/conversionTemplate/conversion.t" + pluginFormat)), true, modelName, "conversion");
+}
+
 module.exports = {
   createEntities: createEntities,
-  createHarmonizeFlow: createHarmonizeFlow
+  createHarmonizeFlow: createHarmonizeFlow,
+  createConversionModule: createConversionModule
 };

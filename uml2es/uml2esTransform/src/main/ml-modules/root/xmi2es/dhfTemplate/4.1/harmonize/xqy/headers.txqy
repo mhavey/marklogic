@@ -1,6 +1,7 @@
 xquery version "1.0-ml";
 
 ${EntityXHeaderXEnableIn}import module namespace xesgen = "${EntityXGenURI}" at "/${EntityX}/lib.xqy" ;${EntityXHeaderXEnableOut}
+import module namespace util = "http://marklogic.com/xmi2es/util" at "/xmi2es/util" ;
 
 module namespace plugin = "http://marklogic.com/data-hub/plugins";
 
@@ -24,7 +25,7 @@ declare function plugin:create-headers(
 {
   let $lang := ${EntityDataFormat}
   ${EntityXHeaderXEnableIn}
-  let $ioptions := xesgen:getIOptions($id, $options)
+  let $ioptions := util:getIOptions($id, $options)
   return xesgen:setHeaders_${EntityX}($id, $content, $ioptions, $lang)
   ${EntityXHeaderXEnableOut}
   ${EntityXHeaderXDisableIn}return ()${EntityXHeaderXDisableOut}

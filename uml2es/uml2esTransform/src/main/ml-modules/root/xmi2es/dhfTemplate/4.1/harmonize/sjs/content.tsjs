@@ -1,6 +1,7 @@
 'use strict'
 
 const xesgen = require("/${EntityX}/lib.sjs");
+const util = require("/xmi2es/util.sjs");
 
 ${EntityContentEnableDMIn}
 const dm = require('/ext/declarative-mapper.sjs');
@@ -25,7 +26,7 @@ ${EntityContentEnableDMOut}
 */
 function createContent(id, options) {
   let doc = cts.doc(id);
-  let $ioptions := xesgen.setIOptions(id,options);
+  let $ioptions := util.setIOptions(id,options);
 
   let source;
 
