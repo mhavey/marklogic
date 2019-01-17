@@ -84,7 +84,7 @@ Our project uses gradle. Before running, view the settings in gradle.properties.
 
 We will start simple, setting up the basic hub. Run the following:
 
-gradle -PenvironmentName=local -i mlDeploy
+gradle -PenvironmentName=local -i setup mlDeploy
 
 Confirm:
 - No errors in gradle output
@@ -100,15 +100,6 @@ Confirm:
   * xmi2es-examples-hr-final-TRIGGERS
   * xmi2es-examples-hr-staging-SCHEMAS
   * xmi2es-examples-hr-staging-TRIGGERS
-
-### Include the Toolkit
-Next we include in the hub our toolkit's transform and cookie cutter. 
-
-Run the following:
-
-gradle -PenvironmentName=local -i includeXMI2ESTransform mlReloadModules
-
-Confirm:
 - Modules DB (xmi2es-examples-hr-MODULES) contains the following module:
   * /xmi2es/xmi2esTransform.xqy - Main module of the toolkit's transform
 
@@ -116,7 +107,7 @@ Confirm:
 
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -PenvironmentName=local -i ingestModel deployESModelToFinal loadExtendedModel loadMappingSpec
+gradle -PenvironmentName=local -i uDeployModel uLoadMappingSpec
 
 Confirm:
 - Final DB (xmi2es-examples-hr-FINAL) includes the following documents
@@ -142,7 +133,7 @@ Now we create our DHF entity plugins. We leverage's the toolkit's ability to cut
 #### 1. Create DHF Entities
 First, ask the toolkit to create the basic plugins (without any flows). It will infer which classes in the model should be plugins. 
 
-gradle -PenvironmentName=local -i umlCreateEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
+gradle -PenvironmentName=local -i uCreateDHFEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
 
 Confirm:
 TODO
@@ -158,11 +149,11 @@ TODO
 
 Next, ask the toolkit to create harmonization flows that construct content using ES-style code. 
 
-gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
 
-gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+gradle -PenvironmentName=local -i uCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
 
-gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+gradle -PenvironmentName=local -i uCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
 
 And now, for comparison, ask the toolkit to create harmonization flows that construct content using the Declarative Mapper.
 

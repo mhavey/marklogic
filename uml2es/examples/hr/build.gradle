@@ -186,93 +186,154 @@ task runInputMLCP() {
   dependsOn 'loadGlobalDepartment'
 }
 
-task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+task includeXMI2ESTransform(type: Copy) {
+    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
+    into "src/main/ml-modules/root/xmi2es"
+}
+
+task includeModel(type: Copy) {
+    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+    from xmiDir + "/DHFEmployeeSample.xml"
+    into "data/model"
+}
+
+task setup() {
+  dependsOn('includeXMI2ESTransform')
+  dependsOn('includeModel')
+}
+
+//
+// The rest is a copy of the common UML2ES gradle
+//
+
+/*
+ * PRIVATE TASKS: Model deployment
+ */
+
+task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
+  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
   def unixDir = xmiDir.replace('\\', '/');
   def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def files = file(unixDir).list()
+  enabled = files != null && files.length > 0
 
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = xmiDir + "/DHFEmployeeSample.xml"
+  input_file_path = xmiDir + "/*.xml"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
   output_permissions = "rest-reader,read,rest-writer,update"
   output_collections = "xmi2es"
-  host = mlHost
-  port = mlFinalPort.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
   transform_param = "dummy"
 }
 
-task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
+  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model-excel"
+  def unixDir = xmiDir.replace('\\', '/');
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def files = file(unixDir).list()
+  enabled = files != null && files.length > 0
+
   classpath = configurations.mlcp
   command = "IMPORT"
-  host = mlHost
-  port = mlFinalPort.toInteger()
+  document_type = "binary"
+  input_file_path = xmiDir + "/*.xlsx"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/excel/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = myHost
+  port = myPort.toInteger()
+
+  transform_module = "/xmi2es/excel2uml.xqy"
+  transform_namespace = "http://marklogic.com/xmi2es/xlsx"
+  transform_param = "dummy"
+}
+
+task _mFetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/entity-services-dump"
+  collection_filter = "xmi2es"
+  host = myHost
+  port = myPort.toInteger()
+}
+
+task _mCopyES(type: Copy) {
+    from "data/entity-services-dump/xmi2es/es"
+    into "data/entity-services" 
+}
+
+task _mCopyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension"
+    into "data/entity-services-extension" 
+}
+
+task _mCopyGenCode(type: Copy) {
+    from "data/entity-services-dump/xmi2es/gen"
+    into "src/main/ml-modules/root" 
+}
+
+task _mDeleteES(type: Delete) {
+    delete "data/entity-services-dump", "data/entity-services-extension"
+}
+
+task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = myHost
+  port = myPort.toInteger()
 
   input_file_path =  "data/entity-services-extension/*.ttl" 
   input_file_type = "rdf" 
   output_uri_prefix = "/triplestore"
 }
 
-task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "EXPORT"
-  output_file_path = "data/entity-services-dump"
-  collection_filter = "xmi2es"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-}
-
-task copyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/DHFEmployeeSample.json"
-    into "data/entity-services" 
-}
-
-task copyGenCode(type: Copy) {
-    from "data/entity-services-dump/xmi2es/gen"
-    into "src/main/ml-modules/root" 
-}
-
-task copyESExt(type: Copy) {
-    from "data/entity-services-dump/xmi2es/extension/DHFEmployeeSample.ttl"
-    into "data/entity-services-extension" 
-}
-
-task deleteESDump(type: Delete) {
-    delete "data/entity-services-dump"
-}
-
-task includeXMI2ESTransform(type: Copy) {
-    from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
-    into "src/main/ml-modules/root/xmi2es"
-}
-
-task ingestModel() {
-  dependsOn 'deleteESDump'
-  dependsOn 'loadXMI'
-  dependsOn 'fetchDescriptors'
-  dependsOn 'copyES'
-  dependsOn 'copyESExt'
-  dependsOn 'copyGenCode'
-  tasks.findByName('loadXMI').mustRunAfter 'deleteESDump'
-  tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
-  tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
-  tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
-  tasks.findByName('copyGenCode').mustRunAfter 'fetchDescriptors'
-}
-
-// use this instead of the heavy mlGenerateModelArtifacts
-task deployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
+/*
+This ensures ES model is deployed to FINAL, not STAGING
+*/
+task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   def dataDir = "${projectDir}";
   def unixDir = dataDir.replace('\\', '/');
   def regexDir = unixDir+"/data/entity-services";
   def regex = '"' + regexDir + ",'',/,''" + '"'
 
+  enabled = project.findProperty("mlFinalPort") != null
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "json"
@@ -287,37 +348,14 @@ task deployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 /*
-The rest is cookie cutter
-*/
+ * PRIVATE TASKS: Cookie cutter
+ */
 
-task loadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir + "/data/mapping"
-  def regex = '"' + regexDir + ",'',/,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "binary"
-  input_file_path = regexDir + "/*.xlsx"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/excel-mapper/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "xmi2es"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-
-  transform_module = "/xmi2es/excelMapper.xqy"
-  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
-  transform_param = "dummy"
-}
-
-task deleteCutDump(type: Delete) {
+task _cDeleteCutDump(type: Delete) {
     delete "data/cookieCutter-dump"
 }
 
-task cutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
+task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
   def modelName = project.findProperty("modelName")
   if (modelName != null) modelName = '"' + modelName + '"'
   def entities = project.findProperty("entities") 
@@ -333,7 +371,7 @@ println js
   javascript = js;
 }
 
-task fetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
+task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/"
   classpath = configurations.mlcp
   command = "EXPORT"
@@ -344,22 +382,12 @@ task fetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlFinalPort.toInteger()
 }
 
-task promoteEntities(type: Copy) {
+task _cPromoteEntities(type: Copy) {
     from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/plugins/entities"
     into "plugins/entities" 
 }
 
-task umlCreateEntities() {
-  dependsOn 'deleteCutDump'
-  dependsOn 'cutEntities'
-  dependsOn 'fetchEntities'
-  dependsOn 'promoteEntities'
-  tasks.findByName('fetchEntities').mustRunAfter 'cutEntities'
-  tasks.findByName('fetchEntities').mustRunAfter 'deleteCutDump'
-  tasks.findByName('promoteEntities').mustRunAfter 'fetchEntities'
-}
-
-task cutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
+task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
   def modelName = project.findProperty("modelName")
   if (modelName != null) modelName = '"' + modelName + '"'
   def entityName = project.findProperty("entityName") 
@@ -372,17 +400,40 @@ task cutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (flowName != null) flowName = '"' + flowName + '"'
   def contentMode = project.findProperty("contentMode") 
   if (contentMode != null) contentMode = '"' + contentMode + '"'
-  def mappingHints = project.findProperty("mappingHints") 
-  if (mappingHints != null) mappingHints = '"' + mappingHints + '"'
+  def mappingSpec = project.findProperty("mappingSpec") 
+  if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingHints + ');\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ');\n'
 println js
   javascript = js;
 }
 
-task fetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
+task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def modelName = project.findProperty("modelName")
+  if (modelName != null) modelName = '"' + modelName + '"'
+  def entityName = project.findProperty("entityName") 
+  if (entityName != null) entityName = '"' + entityName + '"'
+  def dataFormat = project.findProperty("dataFormat") 
+  if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
+  def pluginFormat = project.findProperty("pluginFormat") 
+  if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
+  def moduleName = project.findProperty("moduleName") 
+  if (moduleName != null) moduleName = '"' + moduleName + '"'
+  def contentMode = project.findProperty("contentMode") 
+  if (contentMode != null) contentMode = '"' + contentMode + '"'
+  def mappingSpec = project.findProperty("mappingSpec") 
+  if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
+
+def js = "'use strict';\n"
+js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
+js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ');\n'
+println js
+  javascript = js;
+}
+
+task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
   classpath = configurations.mlcp
   command = "EXPORT"
@@ -392,7 +443,7 @@ task fetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlFinalPort.toInteger()
 }
 
-task promoteCutHarmonizeFlow(type: Copy) {
+task _cPromoteCutHarmonizeFlow(type: Copy) {
     def harmPath = "plugins/entities/" + project.findProperty("entityName") + "/harmonize"
     def flowPath = harmPath + "/" + project.findProperty("flowName") 
     enabled = project.findProperty("overwrite") == "true" || !file(flowPath).exists()
@@ -400,13 +451,212 @@ task promoteCutHarmonizeFlow(type: Copy) {
     into flowPath 
 }
 
-task umlCreateHarmonizeFlow() {
-  dependsOn 'deleteCutDump'
-  dependsOn 'cutHarmonizeFlow'
-  dependsOn 'fetchCutHarmonizeFlow'
-  dependsOn 'promoteCutHarmonizeFlow'
-  //tasks.findByName('cutCookie').mustRunAfter 'loadHints'
-  tasks.findByName('fetchCutHarmonizeFlow').mustRunAfter 'cutHarmonizeFlow'
-  tasks.findByName('fetchCutHarmonizeFlow').mustRunAfter 'deleteCutDump'
-  tasks.findByName('promoteCutHarmonizeFlow').mustRunAfter 'fetchCutHarmonizeFlow'
+task _cFetchCutConversionModule(type: com.marklogic.gradle.task.MlcpTask) {
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName") + "/"
+  classpath = configurations.mlcp
+  command = "EXPORT"
+  output_file_path = "data/cookieCutter-dump"
+  directory_filter = directoryFilter
+  host = myHost
+  port = myPort.toInteger()
+}
+
+task _cPromoteCutConversionModule(type: Copy) {
+    def convPath = "src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName")
+    enabled = project.findProperty("overwrite") == "true" || !file(convPath).exists()
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + convPath  
+    into convPath 
+}
+
+/*
+ * PUBLIC TASKS
+ */
+
+/*
+uDeployModel : deploys your UML (or even Excel) model as an ES model
+Input: none
+Dependencies: 
+- Your gradle project has the folder data/model
+- Your model is in that folder
+- Your model is XMI
+- Your model ends in .xml
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- Target database has the UML model, the ES model, the ES extensions, findings, generated code
+- Target database has the ES model and its extended triples deployed
+- Your gradle project has entity-services, entity-services-dump, entity-services-extension folders
+- You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas
+*/
+task uDeployModel() {
+  dependsOn '_mDeleteES'
+  dependsOn '_mLoadXMI'
+  dependsOn '_mLoadExcel'
+  dependsOn '_mFetchDescriptors'
+  dependsOn '_mCopyES'
+  dependsOn '_mCopyESExt'
+  dependsOn '_mCopyGenCode'
+  dependsOn '_mLoadExtendedModel'
+  dependsOn 'mlGenerateModelArtifacts'
+  dependsOn '_mDeployESModelToFinal'
+  tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
+  tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
+  tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
+  tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadExcel'
+  tasks.findByName('_mCopyESExt').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('_mCopyES').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('mlGenerateModelArtifacts').mustRunAfter '_mCopyES'
+  tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mCopyES'
+  tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mCopyESExt'
+}
+
+/*
+uLoadMappingSpec : loads your Excel mapping spec for use in cookie cutter codegen
+Input: none
+Dependencies: 
+- Your gradle project has the folder data/mapping
+- Your mapping spec is in that folder
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- Target database has the mapping spec (original Excel plus transformed json)
+*/
+task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir + "/data/mapping"
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "binary"
+  input_file_path = regexDir + "/*.xlsx"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/excel-mapper/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = myHost
+  port = myPort.toInteger()
+
+  transform_module = "/xmi2es/excelMapper.xqy"
+  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
+  transform_param = "dummy"
+}
+
+/*
+uCreateDHFEntities - create DHF plugin entities; a souped-up hubCreateEntity
+Input: 
+- modelName - name of UML module file without .xml suffix
+- entities (optional) - CSV of class names representing entities to create
+- entitySelect (optional) - Possible values:
+     "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
+     "all" - All classes are considered entities. Ignore entities specified.
+Dependencies: 
+- Your gradle project is DHF 4.1
+- You have deployed your UML model
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- New plugins created under plugins/entities folder
+*/
+task uCreateDHFEntities() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutEntities'
+  dependsOn '_cFetchEntities'
+  dependsOn '_cPromoteEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
+}
+
+/*
+uCreateDHFHarmonizeFlow - creates a harmonize flow for the specified entity. A souped-up hubCreateHarmonizeFlow
+Input: 
+- modelName - name of UML module file without .xml suffix
+- entityName - name of the entity. You must already have created this using uCreateDHFEntities
+- dataFormat: xml, json
+- pluginFormat: xqy, sjs
+- flowName: the harmonization flow name
+- contentMode: possible values
+     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
+     dm - Declarative Mapper mode. This feature is not ready yet.
+- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
+- overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
+Dependencies: 
+- Your gradle project is DHF 4.1
+- You have deployed your UML model
+- You have created the entity in question using uCreateDHFEntities
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- New harmonization flow plugins/entities/entityName/harmonize folder
+*/
+task uCreateDHFHarmonizeFlow() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutHarmonizeFlow'
+  dependsOn '_cFetchCutHarmonizeFlow'
+  dependsOn '_cPromoteCutHarmonizeFlow'
+  tasks.findByName('_cFetchCutHarmonizeFlow').mustRunAfter '_cCutHarmonizeFlow'
+  tasks.findByName('_cFetchCutHarmonizeFlow').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteCutHarmonizeFlow').mustRunAfter '_cFetchCutHarmonizeFlow'
+}
+
+/*
+uCreateConversionModule - creates a harmonize flow for the specified entity. A souped up es.instanceConverterGenerate.
+Input: 
+- modelName - name of UML module file without .xml suffix
+- entityName - name of the entity. 
+- dataFormat: xml, json
+- pluginFormat: xqy, sjs
+- moduleName the module name
+- contentMode: possible values
+     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
+     dm - Declarative Mapper mode. This feature is not ready yet.
+- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
+- overwrite: true/false. If true and the module already exists, overwrite it. If you don't want to clobber, set to false.
+Dependencies: 
+- You have deployed your UML model
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort. BUT WE RECOMMEND USING uCreateDHFHarmonizeFlow IF YOU ARE ON DHF.
+Effects:
+- New conversion module in src/main/ml-modules/root/modelName/entityName folder
+*/
+task uCreateConversionModule() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutConversionModule'
+  dependsOn '_cFetchCutConversionModule'
+  dependsOn '_cPromoteCutConversionModule'
+  tasks.findByName('_cFetchCutConversionModule').mustRunAfter '_cCutConversionModule'
+  tasks.findByName('_cFetchCutConversionModule').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteCutConversionModule').mustRunAfter '_cFetchCutConversionModule'
+}
+
+/*
+Edit this to enable/disable code generation of mlGenerateModelArtifacts
+*/
+ext {   
+  def mdb = project.findProperty("mlFinalDbName")
+  if (mdb == null) mdb = project.findProperty("mlAppName" + "-content")
+  mlAppConfig {
+    modelsDatabase=mdb
+    generateInstanceConverter=false
+    generateSchema=false
+    generateDatabaseProperties=false
+    generateExtractionTemplate=false
+    generateSearchOptions=false
+  }
 }

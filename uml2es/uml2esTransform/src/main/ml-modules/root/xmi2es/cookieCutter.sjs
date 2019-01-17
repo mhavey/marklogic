@@ -196,17 +196,17 @@ function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 	}
 }
 
-function cutContent(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, contentMode, mappingHints, builderFunctions, template) {
+function cutContent(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, contentMode, mappingSpec, builderFunctions, template) {
 	// DM for now is for JSON/SJS only. Reject the other combinations.
 	var dmMode = contentMode == "dm";
 	if (dmMode == true && pluginFormat != "sjs") throw "Declarative Mapper supports SJS only";
 	if (dmMode == true && dataFormat != "json") throw "Declarative Mapper supports JSON only";
 
-	if (dmMode == true) return cutContentDM(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template);
-	else return cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template);
+	if (dmMode == true) return cutContentDM(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingSpec, builderFunctions, template);
+	else return cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingSpec, builderFunctions, template);
 }
 
-function cutContentDM(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutContentDM(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingSpec, builderFunctions, template) {
 
 	// These are Javascript template subs. The name of each matches the ${X} sub in the template.
 	// DON'T CHANGE THE NAME.
@@ -244,7 +244,7 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 	return tpl;
 }
 
-function cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, dataFormat, mappingSpec, builderFunctions, template) {
 
 	var EntityContentEnableDMIn = "/*";
 	var EntityContentEnableDMOut = "*/";
@@ -266,7 +266,7 @@ function cutContentES(modelIRI, modelVersion, entity, flowName, pluginFormat, da
 		visitedEntities.push(entity);
 
 		// begin building the function buildEntity_* for the current entity.
-		var ClassDesc = describeClass(modelIRI, nextEntity);
+		var ClassDesc = describeClass(modelIRI, mappingSpec, nextEntity);
 		ContentBuilder += `
 /*
 ${ClassDesc}
@@ -318,7 +318,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 			var attributeIsRequired = attributes[i].attributeIsRequired;
 			var attributeIsArray = attributes[i].attributeIsArray;
 
-			var AttribDesc = describeAttrib(modelIRI, nextEntity, attributes[i]);
+			var AttribDesc = describeAttrib(modelIRI, mappingSpec, nextEntity, attributes[i]);
 			ContentBuilder += `
    /*
    ${SJSAttribDesc}
@@ -385,7 +385,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 	return tpl;
 }
 
-function cutTriples(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutTriples(modelIRI, entity, pluginFormat, dataFormat, mappingSpec, builderFunctions, template) {
 	var hasTripleFunction = builderFunctions.indexOf("setTriples_" + entity) >= 0;
 	var EntityXTripleEnable = hasTripleFunction == true ? "" : "//";
 	var EntityX = entity;
@@ -400,7 +400,7 @@ function cutTriples(modelIRI, entity, pluginFormat, dataFormat, mappingHints, bu
 	return tpl;
 }
 
-function cutHeaders(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutHeaders(modelIRI, entity, pluginFormat, dataFormat, mappingSpec, builderFunctions, template) {
 	var hasHeaderFunction = builderFunctions.indexOf("setHeaders_" + entity) >= 0;
 	var EntityXHeaderEnable = hasHeaderFunction == true ? "" : "//";
 	var EntityX = entity;
@@ -416,7 +416,7 @@ function cutHeaders(modelIRI, entity, pluginFormat, dataFormat, mappingHints, bu
 	return tpl;
 }
 
-function cutWriter(modelIRI, entity, pluginFormat, dataFormat, mappingHints, builderFunctions, template) {
+function cutWriter(modelIRI, entity, pluginFormat, dataFormat, mappingSpec, builderFunctions, template) {
 	var hasWriterFunction = builderFunctions.indexOf("runWriter_" + entity) >= 0;
 	var EntityXWriterEnable = hasWriterFunction == true ? "" : "//";
 	var EntityX = entity;
@@ -546,17 +546,17 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 		useTemplate(cookieFolder + "main.t" + pluginFormat), true, modelName, "harmonization");
 
 	writeFile(harmonizationFolder, "content." + pluginFormat, 
-		cutContent(modelIRI, info.version, entityName, flowName, pluginFormat, dataFormat, contentMode, mappingHints, builderFunctions, 
+		cutContent(modelIRI, info.version, entityName, flowName, pluginFormat, dataFormat, contentMode, mappingSpec, builderFunctions, 
 			useTemplate(cookieFolder + "content.t" + pluginFormat)), true, modelName, "harmonization");
 
 	writeFile(harmonizationFolder, "triples." + pluginFormat, 
-		cutTriples(modelIRI, entityName, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+		cutTriples(modelIRI, entityName, pluginFormat, dataFormat, mappingSpec, builderFunctions, 
 			useTemplate(cookieFolder + "triples.t" + pluginFormat)), true, modelName), "harmonization";
 	writeFile(harmonizationFolder, "headers." + pluginFormat, 
-		cutHeaders(modelIRI, entityName, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+		cutHeaders(modelIRI, entityName, pluginFormat, dataFormat, mappingSpec, builderFunctions, 
 			useTemplate(cookieFolder + "headers.t" + pluginFormat)), true, modelName, "harmonization");
 	writeFile(harmonizationFolder, "writer." + pluginFormat, 
-		cutWriter(modelIRI, entityName, pluginFormat, dataFormat, mappingHints, builderFunctions, 
+		cutWriter(modelIRI, entityName, pluginFormat, dataFormat, mappingSpec, builderFunctions, 
 			useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
 }
 

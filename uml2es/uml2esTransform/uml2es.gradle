@@ -124,16 +124,19 @@ dependencies {
  * PRIVATE TASKS: Model deployment
  */
 
-task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
+ask _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
   def unixDir = xmiDir.replace('\\', '/');
   def regex = '"' + unixDir + ",'',/,''" + '"'
 
-  def host = project.findProperty("mlHost")
-  if (host == null) host = project.findProperty("mlAppServicesHost")
-  def port = project.findProperty("mlAppServicesPort")
-  if (port == null) port = project.findProperty("mlRestPort")
-  if (port == null) port = project.findProperty("mlFinalPort")
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def files = file(unixDir).list()
+  enabled = files != null && files.length > 0
 
   classpath = configurations.mlcp
   command = "IMPORT"
@@ -144,8 +147,8 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/xmi2es/xmi/"
   output_permissions = "rest-reader,read,rest-writer,update"
   output_collections = "xmi2es"
-  host = host
-  port = port.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
@@ -153,15 +156,18 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
-  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
+  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model-excel"
   def unixDir = xmiDir.replace('\\', '/');
   def regex = '"' + unixDir + ",'',/,''" + '"'
 
-  def host = project.findProperty("mlHost")
-  if (host == null) host = project.findProperty("mlAppServicesHost")
-  def port = project.findProperty("mlAppServicesPort")
-  if (port == null) port = project.findProperty("mlRestPort")
-  if (port == null) port = project.findProperty("mlFinalPort")
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def files = file(unixDir).list()
+  enabled = files != null && files.length > 0
 
   classpath = configurations.mlcp
   command = "IMPORT"
@@ -172,8 +178,8 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/xmi2es/excel/"
   output_permissions = "rest-reader,read,rest-writer,update"
   output_collections = "xmi2es"
-  host = host
-  port = port.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 
   transform_module = "/xmi2es/excel2uml.xqy"
   transform_namespace = "http://marklogic.com/xmi2es/xlsx"
@@ -182,27 +188,27 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
 
 task _mFetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
 
-  def host = project.findProperty("mlHost")
-  if (host == null) host = project.findProperty("mlAppServicesHost")
-  def port = project.findProperty("mlAppServicesPort")
-  if (port == null) port = project.findProperty("mlRestPort")
-  if (port == null) port = project.findProperty("mlFinalPort")
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/entity-services-dump"
   collection_filter = "xmi2es"
-  host = host
-  port = port.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 }
 
 task _mCopyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/*.json"
+    from "data/entity-services-dump/xmi2es/es"
     into "data/entity-services" 
 }
 
 task _mCopyESExt(type: Copy) {
-    from "data/entity-services-dump/xmi2es/extension/*.ttl"
+    from "data/entity-services-dump/xmi2es/extension"
     into "data/entity-services-extension" 
 }
 
@@ -216,16 +222,16 @@ task _mDeleteES(type: Delete) {
 }
 
 task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
-  def host = project.findProperty("mlHost")
-  if (host == null) host = project.findProperty("mlAppServicesHost")
-  def port = project.findProperty("mlAppServicesPort")
-  if (port == null) port = project.findProperty("mlRestPort")
-  if (port == null) port = project.findProperty("mlFinalPort")
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   classpath = configurations.mlcp
   command = "IMPORT"
-  host = host
-  port = port.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 
   input_file_path =  "data/entity-services-extension/*.ttl" 
   input_file_type = "rdf" 
@@ -359,20 +365,20 @@ task _cPromoteCutHarmonizeFlow(type: Copy) {
     into flowPath 
 }
 
-task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
-  def host = project.findProperty("mlHost")
-  if (host == null) host = project.findProperty("mlAppServicesHost")
-  def port = project.findProperty("mlAppServicesPort")
-  if (port == null) port = project.findProperty("mlRestPort")
-  if (port == null) port = project.findProperty("mlFinalPort")
+task _cFetchCutConversionModule(type: com.marklogic.gradle.task.MlcpTask) {
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName") + "/"
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/cookieCutter-dump"
   directory_filter = directoryFilter
-  host = host
-  port = port.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 }
 
 task _cPromoteCutConversionModule(type: Copy) {
@@ -402,7 +408,7 @@ Effects:
 - Your gradle project has entity-services, entity-services-dump, entity-services-extension folders
 - You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas
 */
-task uIngestModel() {
+task uDeployModel() {
   dependsOn '_mDeleteES'
   dependsOn '_mLoadXMI'
   dependsOn '_mLoadExcel'
@@ -417,11 +423,11 @@ task uIngestModel() {
   tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadExcel'
+  tasks.findByName('_mCopyESExt').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mCopyES').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('mlGenerateModelArtifacts').mustRunAfter '_mCopyES'
   tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mCopyES'
-  tasks.findByName('_mCopyESExt').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mCopyESExt'
 }
 
@@ -442,11 +448,11 @@ task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
   def regexDir = unixDir + "/data/mapping"
   def regex = '"' + regexDir + ",'',/,''" + '"'
 
-  def host = project.findProperty("mlHost")
-  if (host == null) host = project.findProperty("mlAppServicesHost")
-  def port = project.findProperty("mlAppServicesPort")
-  if (port == null) port = project.findProperty("mlRestPort")
-  if (port == null) port = project.findProperty("mlFinalPort")
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   classpath = configurations.mlcp
   command = "IMPORT"
@@ -457,8 +463,8 @@ task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/xmi2es/excel-mapper/"
   output_permissions = "rest-reader,read,rest-writer,update"
   output_collections = "xmi2es"
-  host = host
-  port = port.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 
   transform_module = "/xmi2es/excelMapper.xqy"
   transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
@@ -557,13 +563,14 @@ task uCreateConversionModule() {
 Edit this to enable/disable code generation of mlGenerateModelArtifacts
 */
 ext {   
+  def mdb = project.findProperty("mlFinalDbName")
+  if (mdb == null) mdb = project.findProperty("mlAppName" + "-content")
   mlAppConfig {
-    generateInstanceConverter=true
+    modelsDatabase=mdb
+    generateInstanceConverter=false
     generateSchema=false
-    generateDatabaseProperties=true
+    generateDatabaseProperties=false
     generateExtractionTemplate=false
     generateSearchOptions=false
   }
 }
-
-
