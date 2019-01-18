@@ -149,19 +149,19 @@ TODO
 
 Next, ask the toolkit to create harmonization flows that construct content using ES-style code. 
 
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json
 
-gradle -PenvironmentName=local -i uCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json
 
-gradle -PenvironmentName=local -i uCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es 
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json
 
 And now, for comparison, ask the toolkit to create harmonization flows that construct content using the Declarative Mapper.
 
-gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDM -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+gradle -PenvironmentName=local -i umlCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDM -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
 
-gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+gradle -PenvironmentName=local -i umlCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
 
-gradle -PenvironmentName=local -i umlCreateHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm
+gradle -PenvironmentName=local -i umlCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm
 
 Also, for comparison, DHF generated: 
 

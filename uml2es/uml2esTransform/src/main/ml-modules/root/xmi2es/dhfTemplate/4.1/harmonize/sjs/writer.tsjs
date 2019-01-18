@@ -1,4 +1,4 @@
-const xesgen = require("/${EntityX}/lib.sjs");
+const xesgen = require("/${ModelName}/lib.sjs");
 const util = require("/xmi2es/util.sjs");
 
 /*~

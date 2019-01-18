@@ -124,7 +124,7 @@ dependencies {
  * PRIVATE TASKS: Model deployment
  */
 
-ask _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
+task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
   def unixDir = xmiDir.replace('\\', '/');
   def regex = '"' + unixDir + ",'',/,''" + '"'
@@ -207,9 +207,9 @@ task _mCopyES(type: Copy) {
     into "data/entity-services" 
 }
 
-task _mCopyESExt(type: Copy) {
-    from "data/entity-services-dump/xmi2es/extension"
-    into "data/entity-services-extension" 
+task _mCopyGenCode(type: Copy) {
+    from "data/entity-services-dump/xmi2es/gen"
+    into "src/main/ml-modules/root/modelgen" 
 }
 
 task _mCopyGenCode(type: Copy) {

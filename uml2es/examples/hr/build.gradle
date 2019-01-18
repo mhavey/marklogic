@@ -300,7 +300,7 @@ task _mCopyESExt(type: Copy) {
 
 task _mCopyGenCode(type: Copy) {
     from "data/entity-services-dump/xmi2es/gen"
-    into "src/main/ml-modules/root" 
+    into "src/main/ml-modules/root/modelgen" 
 }
 
 task _mDeleteES(type: Delete) {
@@ -322,6 +322,18 @@ task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
   input_file_path =  "data/entity-services-extension/*.ttl" 
   input_file_type = "rdf" 
   output_uri_prefix = "/triplestore"
+}
+
+task _mRemoveOldExtendedModel(type: com.marklogic.gradle.task.ServerEvalTask) {
+
+  def files = file("data/entity-services-extension").list().join(",")
+def js = "'use strict';\n"
+js += 'const util = require("/xmi2es/util.sjs");\n'
+js += 'util.removeOldXES('"' + files + '"');\n'
+println js
+  javascript = js;
+
+  javascript = '"' + files + '"'
 }
 
 /*
@@ -502,6 +514,7 @@ task uDeployModel() {
   dependsOn '_mCopyES'
   dependsOn '_mCopyESExt'
   dependsOn '_mCopyGenCode'
+  dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
   dependsOn 'mlGenerateModelArtifacts'
   dependsOn '_mDeployESModelToFinal'
@@ -515,6 +528,7 @@ task uDeployModel() {
   tasks.findByName('mlGenerateModelArtifacts').mustRunAfter '_mCopyES'
   tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mCopyES'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mCopyESExt'
+  tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
 }
 
 /*

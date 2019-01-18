@@ -160,10 +160,22 @@ function makeXESComparable(source) {
   return spaths.sort().join("\n")
 }
 
+function removeOldXES(ttlNamesCSV) {
+  var files = ttlNamesCSV.split(",");
+  for (var i = 0; i < files.length; i++) {
+    if (fn.endsWith(files[i], ".ttl")) {
+      var len = files[i].length;
+      var graphName = files[i].substring(0,".ttl".length)
+      sem.graphDelete(sem.iri(graphName));
+    }
+  }
+}
+
 module.exports = {
   getIOptions: getIOptions,
   setIOptions: setIOptions,
   removeIOptions: removeIOptions,  
   makeESComparable: makeESComparable,
-  makeXESComparable:makeXESComparable
+  makeXESComparable:makeXESComparable,
+  removeOldXES: removeOldXES
 };

@@ -1,4 +1,4 @@
-const xesgen = require("/${EntityX}/lib.sjs");
+const xesgen = require("/${ModelName}/lib.sjs");
 
 ${EntityContentEnableDMIn}
 const dm = require('/ext/declarative-mapper.sjs');
