@@ -107,7 +107,7 @@ Confirm:
 
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -PenvironmentName=local -i uDeployModel uLoadMappingSpec
+gradle -PenvironmentName=local -i -PmodelName=DHFEmployeeSample uDeployModel uLoadMappingSpec
 
 Confirm:
 - Final DB (xmi2es-examples-hr-FINAL) includes the following documents
@@ -157,11 +157,11 @@ gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmploye
 
 And now, for comparison, ask the toolkit to create harmonization flows that construct content using the Declarative Mapper.
 
-gradle -PenvironmentName=local -i umlCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDM -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDM -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
 
-gradle -PenvironmentName=local -i umlCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
 
-gradle -PenvironmentName=local -i umlCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm
 
 Also, for comparison, DHF generated: 
 

@@ -1,3 +1,7 @@
+/*
+${ModelDesc}
+*/
+
 const xesgen = require("/${ModelName}/lib.sjs");
 
 ${EntityContentEnableDMIn}
@@ -16,7 +20,8 @@ ${EntityContentEnableDMOut}
 var options = {};
 
 function createContent(source) {
-  return buildContent_${EntityX}(source, options);
+  var id = "dontcare";
+  return buildContent_${EntityX}(id, source, options, options);
 }
 
 ${ContentBuilder}

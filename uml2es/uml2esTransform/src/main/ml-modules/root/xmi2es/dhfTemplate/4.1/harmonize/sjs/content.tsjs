@@ -1,3 +1,7 @@
+/*
+${ModelDesc}
+*/
+
 'use strict'
 
 const xesgen = require("/${ModelName}/lib.sjs");

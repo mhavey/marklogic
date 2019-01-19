@@ -125,8 +125,8 @@ dependencies {
  */
 
 task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model"
-  def unixDir = xmiDir.replace('\\', '/');
+  def srcDir = new File("${projectDir}").getAbsolutePath()
+  def unixDir = srcDir.replace('\\', '/') + "/data/model"
   def regex = '"' + unixDir + ",'',/,''" + '"'
 
   def myHost = project.findProperty("mlHost")
@@ -135,13 +135,17 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
-  def files = file(unixDir).list()
-  enabled = files != null && files.length > 0
+  def fullModelName = null;
+  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".xml"
+  def fdir = file(unixDir)
+  def files = null
+  if (fdir != null) files = fdir.list()
+  enabled = fullModelName != null && files != null && files.contains(fullModelName)
 
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "xml"
-  input_file_path = xmiDir + "/*.xml"
+  input_file_path = unixDir + "/" + fullModelName
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/xmi/"
@@ -156,8 +160,8 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
-  def xmiDir = new File("${projectDir}").getAbsolutePath() + "/data/model-excel"
-  def unixDir = xmiDir.replace('\\', '/');
+  def srcDir = new File("${projectDir}").getAbsolutePath() 
+  def unixDir = srcDir.replace('\\', '/') + "/data/model-excel"
   def regex = '"' + unixDir + ",'',/,''" + '"'
 
   def myHost = project.findProperty("mlHost")
@@ -166,13 +170,17 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
-  def files = file(unixDir).list()
-  enabled = files != null && files.length > 0
+  def fullModelName = null;
+  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".xlsx"
+  def fdir = file(unixDir)
+  def files = null
+  if (fdir != null) files = fdir.list()
+  enabled = fullModelName != null && files != null && files.contains(fullModelName)
 
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "binary"
-  input_file_path = xmiDir + "/*.xlsx"
+  input_file_path = unixDir + "/" + fullModelName
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/excel/"
@@ -207,14 +215,14 @@ task _mCopyES(type: Copy) {
     into "data/entity-services" 
 }
 
-task _mCopyGenCode(type: Copy) {
-    from "data/entity-services-dump/xmi2es/gen"
-    into "src/main/ml-modules/root/modelgen" 
+task _mCopyESExt(type: Copy) {
+    from "data/entity-services-dump/xmi2es/extension"
+    into "data/entity-services-extension" 
 }
 
 task _mCopyGenCode(type: Copy) {
     from "data/entity-services-dump/xmi2es/gen"
-    into "src/main/ml-modules/root" 
+    into "src/main/ml-modules/root/modelgen" 
 }
 
 task _mDeleteES(type: Delete) {
@@ -222,36 +230,62 @@ task _mDeleteES(type: Delete) {
 }
 
 task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
+  def srcDir = new File("${projectDir}").getAbsolutePath() 
+  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services-extension"
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
   def myPort = project.findProperty("mlAppServicesPort")
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
+  def fullModelName = null;
+  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".ttl"
+  enabled = fullModelName != null
+
   classpath = configurations.mlcp
   command = "IMPORT"
   host = myHost
   port = myPort.toInteger()
 
-  input_file_path =  "data/entity-services-extension/*.ttl" 
+  input_file_path = unixDir + "/" + fullModelName
   input_file_type = "rdf" 
   output_uri_prefix = "/triplestore"
+  output_graph = project.findProperty("modelName")
+}
+
+task _mRemoveOldExtendedModel(type: com.marklogic.gradle.task.ServerEvalTask) {
+
+  def graphName = project.findProperty("modelName")
+  enabled = graphName != null
+
+def js = "'use strict';\n"
+js += 'declareUpdate();'
+js += 'const sem = require("/MarkLogic/semantics.xqy");\n'
+js += 'sem.graphDelete(sem.iri("' + graphName + '"));\n'
+  javascript = js;
 }
 
 /*
 This ensures ES model is deployed to FINAL, not STAGING
 */
 task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/entity-services";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+  def srcDir = new File("${projectDir}").getAbsolutePath()
+  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services"
+  def regex = '"' + unixDir + ",'',/,''" + '"'
 
-  enabled = project.findProperty("mlFinalPort") != null
+  def fullModelName = null;
+  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".json"
+  def fdir = file(unixDir)
+  def files = null
+  if (fdir != null) files = fdir.list()
+  enabled = fullModelName != null && files != null && files.contains(fullModelName) && project.findProperty("mlFinalPort") != null
+
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "json"
-  input_file_path = "data/entity-services"
+  input_file_path = unixDir + "/" + fullModelName
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/marklogic.com/entity-services/models/"
@@ -394,7 +428,7 @@ task _cPromoteCutConversionModule(type: Copy) {
 
 /*
 uDeployModel : deploys your UML (or even Excel) model as an ES model
-Input: none
+Input: modelName (XMI or Excel filename without suffix)
 Dependencies: 
 - Your gradle project has the folder data/model
 - Your model is in that folder
@@ -416,6 +450,7 @@ task uDeployModel() {
   dependsOn '_mCopyES'
   dependsOn '_mCopyESExt'
   dependsOn '_mCopyGenCode'
+  dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
   dependsOn 'mlGenerateModelArtifacts'
   dependsOn '_mDeployESModelToFinal'
@@ -429,6 +464,7 @@ task uDeployModel() {
   tasks.findByName('mlGenerateModelArtifacts').mustRunAfter '_mCopyES'
   tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mCopyES'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mCopyESExt'
+  tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
 }
 
 /*
@@ -443,10 +479,9 @@ Effects:
 - Target database has the mapping spec (original Excel plus transformed json)
 */
 task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir + "/data/mapping"
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+  def srcDir = new File("${projectDir}").getAbsolutePath()
+  def unixDir = srcDir.replace('\\', '/') + "/data/mapping"
+  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
@@ -457,7 +492,7 @@ task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
   classpath = configurations.mlcp
   command = "IMPORT"
   document_type = "binary"
-  input_file_path = regexDir + "/*.xlsx"
+  input_file_path = unixDir + "/*.xlsx"
   input_file_type = "documents"
   output_uri_replace = regex
   output_uri_prefix = "/xmi2es/excel-mapper/"

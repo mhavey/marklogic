@@ -170,165 +170,200 @@ function useTemplate(name) {
 
 function getIndent(i) {
 	var indent = "";
-	for (var i = 0; i <= indent; i++) indent += "   ";
+	for (var ii = 0; ii < i; ii++) indent += "   ";
 	return indent;	
 }
 
-function mappingValue(v, indent) {
-	if (!v || v == null) return "";
-	if (Array.isArray()) {
-		if (v.length == 0) return "";
-		var sindent = getIndent(indent + 1);
-		var vi = v[0];
-		var desc = `${vi}`;
-		for (var i = 1; i < v.length; i++) {
-			vi = v[i];
+function render(obj, indent) {
+  var sindent = getIndent(indent);
+  var r = ``;
+
+  // array
+  if (Array.isArray(obj)) {
+    if (obj.length > 0) {
+      for (var i = 0; i < obj.length; i++) {
+        var val = obj[i];
+        if (val !== Object(val)) {
+          r  += `
+${sindent} ${val}`;
+        }
+        else {
+            r  += render(val, indent);
+        }
+      }
+    }  
+  }
+  else {
+    // object
+    for (var prop in obj) {
+      if (obj.hasOwnProperty(prop)) {
+        if (obj[prop] && obj[prop] != null) {
+          var val = obj[prop];
+          if (val !== Object(val)) {
+          }
+          else {
+            val = render(val, indent+1);
+          }
+          r  += `
+${sindent} ${prop} : ${val}`;
+        }
+      }
+    }
+  }
+  return r;
+}
+
+function discoverModel(input) {
+
+}
+
+function discoverClass(input, entityName) {
+	
+}
+
+function discoverAttribute(input, entityName, attributeName) {
+	
+}
+
+function checkIfRDFList(res) {
+  return (res.length == 2 && res[0].p == "http://www.w3.org/1999/02/22-rdf-syntax-ns#first" && res[1].p == "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");  
+}
+
+function runXESQuery(subjectIRI) {
+  var query = `select ?p ?o where {<${subjectIRI}> ?p ?o } order by ?p`;
+  return sem.sparql(query).toArray();
+}
+
+function describeFacts(subjectIRI) {
+  var res = runXESQuery(subjectIRI);
+  var isList = checkIfRDFList(res);
+  if (isList == true) {
+    var list = [];
+    while(true) {
+      if (checkIfRDFList(res) == false)  throw "no way";
+      if (sem.isBlank(res[0].o)) {
+        list.push(describeFacts(""+res[0].o));
+      }
+      else {
+        list.push(""+res[0].o);
+      } 
+
+      if (res[1].o == "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil") return list;
+      subjectIRI = ""+ res[1].o;
+    	res = runXESQuery(subjectIRI);
+    }
+    return list;
+  }
+  else {
+  	var valueMap = {};
+	  for (var r of res) {
+		  var pred = ""+r.p;
+		  var obj;
+
+      // skip these
+      if (pred.startsWith("http://marklogic.com/entity-services#")) continue;
+      if (pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") continue;
+      
+  		// xes properties
+	  	if (pred.startsWith("http://marklogic.com/xmi2es/xes#")) {
+			  pred = fn.substringAfter(pred, "http://marklogic.com/xmi2es/xes#");
+			  if (sem.isBlank(r.o)) obj = describeFacts(r.o);
+			  else obj = "" + r.o;
+			}
+      else {
+			  obj = "" + r.o;        
+      }
+      
+      if (!valueMap[pred]) {
+        valueMap[pred] = [];
+      }
+      valueMap[pred].push(obj);
+		}
+    return valueMap;
+  }
+}
+
+function describeModel(input) {
+	var modelIRI = input.modelIRI;
+	var desc = `Model ${modelIRI} is stereotyped in the model as follows:`;
+	desc += render(describeFacts(modelIRI), 0);
+	if (input.mappingURI && input.mappingObj) {
+		desc += `
+The model also has the specified mapping facts:`;
+		desc += render({
+			"Mapping URI": input.mappingURI,
+			"Overall Mapping Source": input.mappingObj.mapping.source,
+			"Overall Mapping Notes": input.mappingObj.mapping.notes
+		}, 0);
+
+		if (input.discovery == true) {
+			input.discoveryReport = {};
+			discoverModel(input);
+		}
+	}
+	return desc;
+}
+
+function describeClass(input, entityName) {
+	var desc = `Class ${entityName} is stereotyped in the model as follows:`;
+	desc += render(describeFacts(input.modelIRI + "/" + entityName), 0);
+	if (input.mappingURI && input.mappingObj) {
+		var entity = input.mappingObj.entities[entityName];
+		if (entity) {
 			desc += `
-${sindent}${vi}`;
+The class also has the specified mapping facts:`;
+			desc += render({
+				"Mapping Source": entity.source,
+				"Mapping Notes": entity.notes,
+				"Mapping Collections For Discovery": entity.discoveryCollections,
+				"Mapping URI Patterns For Discovery": entity.discoveryURIPatterns,
+				"Mapping Sample Data For Discovery": entity.discoverySampleData
+			}, 0);
+
+			if (input.discovery == true) {
+				discoverClass(input, entityName);
+				desc += render(input.discoveryReport.entities[entityName], 0);
+			}
 		}
-		return desc;
-	}
-	else return v;
-}
-
-function describeClassMapping(entityName, mappingURI, mappingObj, indent) {
-	var sindent = getIndent(indent);
-	var overallMappingSource = mappingValue(mappingObj.mapping.source, indent);
-	var overallMappingNotes = mappingValue(mappingObj.mapping.notes, indent);
-	var desc = `
-${sindent}- Mapping URI: ${mappingURI}
-${sindent}- Overall Mapping Source: ${overallMappingSource}
-${sindent}- Overall Mapping Notes: ${overallMappingNotes}`;
-
-	var entity = mappingObj.entities[entityName];
-	if (entity) {
-		var mappingSource = mappingValue(entity.source, indent);
-		var mappingNotes = mappingValue(entity.notes, indent);
-		var mappingCollections = mappingValue(entity.discoveryCollections, indent);
-		var mappingURIPatterns = mappingValue(entity.discoveryURIPatterns, indent);
-		var mappingSampleData = mappingValue(entity.discoverySampleData, indent);
-		// TODO - some basic class-level discovery results
-		desc += `
-${sindent}- Mapping Source: ${mappingSource}
-${sindent}- Mapping Notes: ${mappingNotes}
-${sindent}- Mapping Collections For Discovery: ${mappingCollections}
-${sindent}- Mapping URI Patterns For Discovery: ${mappingURIPatterns}
-${sindent}- Mapping Sample Data For Discovery: ${mappingSampleData}`;
 	}
 	return desc;
 }
 
-function describeAttribMapping(entityName, attributeName, mappingURI, mappingObj, indent) {
-	var entity = mappingObj.entities[entityName];
-	if (!entity) return "";
-
-	// I want - the attribute itself plus any attribute that begins with attribute.x
-	var attributes = [];
-xdmp.log("ATT IS *" + attributeName + "*");
-	for (var a in entity.attributes) {
-		var sa = ""+a;
-xdmp.log("CONSIDER *" + sa + "*");
-		if (sa == attributeName || fn.startsWith(sa, attributeName + ".")) attributes.push(sa);
-	}
-	attributes = attributes.sort();
-xdmp.log("ATTRIBS *" + JSON.stringify(attributes) + "*");
-	var desc = ``;
-	for (var i = 0; i < attributes.length; i++) {
-		var thisAttribName = attributes[i];
-		var attribute = entity.attributes[thisAttribName];
-
-		var sindent = getIndent(indent);
-		var mapping = mappingValue(attribute.mapping, indent);
-		var mappingNotes = mappingValue(attribute.notes, indent);
-		var mappingDiscovery = mappingValue(attribute.discoverySampleData, indent);
-		var mappingAKA = mappingValue(attribute.discoveryAKA, indent);
-		desc += `
-${sindent}- Attribute: ${thisAttribName}
-${sindent}- Attribute Mapping: ${mapping}
-${sindent}- Mapping Attribute Notes: ${mappingNotes}
-${sindent}- Mapping Attribute Sample Data For Discovery: ${mappingDiscovery}
-${sindent}- Mapping Attribute AKA For Discovery: ${mappingAKA}`;
-	}
-
-	return desc;
-}
-
-function predWalk(o, indent) {
-	var res = sem.sparql(`select ?p ?o where {<${o}> ?p ?o } order by ?p`);
-	var comment = "";
-	var sindent = getIndent(indent);
-	for (var r of res) {
-		var pred = ""+r.p;
-		var obj = ""+r.o;
-
-		// list stuff
-		if (obj == "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil") continue;
-		else if (pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#first") pred = "";
-		else if (pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest") {
-			pred = "";
-			obj = predWalk(r.o, indent);
-		}
-
-		// non-list
-		else if (pred.startsWith("http://marklogic.com/xmi2es/xes#")) {
-			pred = fn.substringAfter(pred, "http://marklogic.com/xmi2es/xes#");
-			if (sem.isBlank(r.o)) obj = predWalk(r.o, indent+1);
-		}
-		comment += `
-${sindent}- ${pred} ${obj}`;
-	}
-	return comment;	
-}
-
-function describeFacts(subjectIRI, indent) {
-	var sindent =getIndent(indent);
-	var res = sem.sparql(`select ?p ?o where {<${subjectIRI}> ?p ?o } order by ?p`);
-	var comment = "";
-	for (var r of res) {
-		var pred = ""+r.p;
-		var obj = ""+r.o;
-
-		if (pred.startsWith("http://marklogic.com/entity-services#")) continue;
-		if (pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") continue;
-		if (pred.startsWith("http://marklogic.com/xmi2es/xes#")) {
-			pred = fn.substringAfter(pred, "http://marklogic.com/xmi2es/xes#");
-			if (sem.isBlank(r.o)) obj = predWalk(r.o, indent + 1);
-		}
-		comment += 
-`
-${sindent}- ${pred} ${obj}`;
-	}
-	if (comment.trim() == "") comment = `
-${sindent}None`;	
-	return comment;
-}
-
-function describeClass(modelIRI, entityName, mappingURI, mappingObj) {
-	var sindent = getIndent(0);
-	var desc = `
-${sindent}Class ${entityName} has the following facts:`;
-	desc += describeFacts(modelIRI + "/" + entityName, 0);
-	if (mappingURI && mappingObj) {
-		desc += describeClassMapping(entityName, mappingURI, mappingObj, 0);		
-	}
-
-	desc += 
-`
-${sindent}Class is part of model ${modelIRI}, which itself has the following facts:`;
-	desc += describeFacts(modelIRI, 0);
-	return desc;
-}
-
-function describeAttrib(modelIRI, entityName, attribute, mappingURI, mappingObj) {
-	var sindent = getIndent(1);
-	var attributeName = attribute.attributeName;
+function describeAttrib(input, entityName, attributeName) {
 	var desc = 
-`
-${sindent}Attribute ${attributeName} has the following facts:`;
-	desc += describeFacts(modelIRI + "/" + entityName + "/" + attributeName, 1);
-	if (mappingURI && mappingObj) {
-		desc += describeAttribMapping(entityName, attributeName, mappingURI, mappingObj, 1);		
+`Attribute ${attributeName} is stereotyped in the model as follows:`;
+	desc += render(describeFacts(input.modelIRI + "/" + entityName + "/" + attributeName), 1);
+	if (input.mappingURI && input.mappingObj) {
+		var entity = input.mappingObj.entities[entityName];
+		if (entity) {
+			// I want - the attribute itself plus any attribute that begins with attribute.x
+			var attributes = [];
+			for (var a in entity.attributes) {
+				var sa = ""+a;
+				if (sa == attributeName || fn.startsWith(sa, attributeName + ".")) attributes.push(sa);
+			}
+			attributes = attributes.sort();	
+
+			if (attributes.length > 0) {
+				desc += `
+   The attribute also has the specified mapping facts:`;
+   			for (var i = 0; i < attributes.length; i++) {
+   				var attr = entity.attributes[attributes[i]];
+				desc += render({
+					"Model Path": attributes[i],
+					"Source Mapping": attr.mapping,
+					"Mapping Attribute Notes": attr.notes,
+					"Mapping Attribute Sample Data For Discovery":  attr.discoverySampleData,
+					"Mapping Attribute AKA For Discovery": attr.discoveryAKA}, 1);
+				}
+				if (input.discovery == true) {
+					discoverAttribute(input, entityName, attributes[i]);
+					desc += render(input.discoveryReport.entities[entityName].attributes[attributes[i]], 1);
+				}
+   			}
+		}
 	}
+
 	return desc;
 }
 
@@ -352,38 +387,39 @@ function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 	}
 }
 
-function cutContent(modelIRI, modelVersion, modelName, entityName, flowName, pluginFormat, dataFormat, contentMode, mappingSpec, builderFunctions, template) {
+function cutContent(input, template) {
 	// DM for now is for JSON/SJS only. Reject the other combinations.
-	var dmMode = contentMode == "dm";
-	if (dmMode == true && pluginFormat != "sjs") throw "Declarative Mapper supports SJS only";
-	if (dmMode == true && dataFormat != "json") throw "Declarative Mapper supports JSON only";
+	var dmMode = input.contentMode == "dm";
+	if (dmMode == true && input.pluginFormat != "sjs") throw "Declarative Mapper supports SJS only";
+	if (dmMode == true && input.dataFormat != "json") throw "Declarative Mapper supports JSON only";
 
 	// open mapping spec
-	var mappingObj;
-	var mappingURI;
-	if (mappingSpec && mappingSpec.trim() != "") {
-		mappingURI = mappingSpec.trim();
-		if (mappingURI.endsWith(".xlsx")) {
-			var len = mappingURI.length;
-			mappingURI = mappingURI.substring(1, len - "xlsx".length) + "json"
+	if (input.mappingSpec && input.mappingSpec.trim() != "") {
+		xdmp.log("*" + input.mappingSpec+ "*");
+		input.mappingURI = input.mappingSpec.trim();
+		if (input.mappingURI.endsWith(".xlsx")) {
+			var len = input.mappingURI.length;
+			input.mappingURI = input.mappingURI.substring(0, len - "xlsx".length) + "json"
 		}
-		mappingObj = cts.doc(mappingURI).toObject();
+		xdmp.log("*" + input.mappingURI + "*");
+		input.mappingObj = cts.doc(input.mappingURI).toObject();
 	}
 
-	if (dmMode == true) return cutContentDM(modelIRI, modelVersion, modelName, entityName, flowName, pluginFormat, dataFormat, mappingURI, mappingObj, builderFunctions, template);
-	else return cutContentES(modelIRI, modelVersion, modelName, entityName, flowName, pluginFormat, dataFormat, mappingURI, mappingObj, builderFunctions, template);
+	if (dmMode == true) return cutContentDM(input, template);
+	else return cutContentES(input, template);
 }
 
-function cutContentDM(modelIRI, modelVersion, modelName, entityName, flowName, pluginFormat, dataFormat, mappingURI, mappingObj, builderFunctions, template) {
+function cutContentDM(input, template) {
 
 	// These are Javascript template subs. The name of each matches the ${X} sub in the template.
 	// DON'T CHANGE THE NAME.
+	var ModelDesc = "Hi";
 	var EntityContentEnableDMIn = "";
 	var EntityContentEnableDMOut = "";
-	var EntityX = entityName;
-	var ModelName = modelName;
-	var ModelGenURI = modelIRI;
-	var EntityXContentDMMapper = "/dm/mapper/" + entity + "/" + flowName + ".json";
+	var EntityX = input.entityName;
+	var ModelName = input.modelName;
+	var ModelGenURI = input.modelIRI;
+	var EntityXContentDMMapper = "/dm/mapper/" + input.entityName + "/" + input.flowName + ".json";
 	var ContentBuilder = `
 function buildContent_${EntityX}(id, source, options, ioptions) {
    mapper = getDMMapper(options);
@@ -393,7 +429,7 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 	var dmTemplate = {};
 	dmTemplate.config = {"format": "JSON"};
 	dmTemplate.config.template = {};
-	dmTemplate.config.template[entity] = {};
+	dmTemplate.config.template[input.entityName] = {};
 
 	// walk the entity and map its attributes; 
 	// pay attention to calculated attributes; they need to be vars
@@ -413,22 +449,25 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 	return tpl;
 }
 
-function cutContentES(modelIRI, modelVersion, modelName, entityName, flowName, pluginFormat, dataFormat, mappingURI, mappingObj, builderFunctions, template) {
+function cutContentES(input, template) {
 
 	var EntityContentEnableDMIn = "/*";
 	var EntityContentEnableDMOut = "*/";
 	var EntityXContentEnable = "";
 	var EntityXContentXEnableIn = "";
 	var EntityXContentXEnableOut = "";
-	var EntityX = entityName;
-	var ModelGenURI = modelIRI;
-	var ModelName = modelName;
+	var EntityX = input.entityName;
+	var ModelGenURI = input.modelIRI;
+	var ModelName = input.modelName;
 	var ContentBuilder = "";
 	var ContentXBuilder = "";
 	var EntityXContentDMMapper = "";
+	var modelVersion = input.modelVersion;
+
+	var ModelDesc = describeModel(input);
 
 	// Introspect the model: what are the entities and attributes that make up the mapping
-	var entities = [entityName];
+	var entities = [input.entityName];
 	var visitedEntities = [];
 	while (entities.length > 0) {
 		var nextEntity = entities[0];
@@ -436,7 +475,7 @@ function cutContentES(modelIRI, modelVersion, modelName, entityName, flowName, p
 		visitedEntities.push(nextEntity);
 
 		// begin building the function buildEntity_* for the current entity.
-		var ClassDesc = describeClass(modelIRI, nextEntity, mappingURI, mappingObj);
+		var ClassDesc = describeClass(input, nextEntity);
 		ContentBuilder += `
 /*
 ${ClassDesc}
@@ -481,14 +520,14 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
    )
 `;
 		//  now we need to map each attribute		
-		var attributes = orderAttributes(getAttributes(modelIRI, nextEntity));
+		var attributes = orderAttributes(getAttributes(input.modelIRI, nextEntity));
 		for (var i = 0; i < attributes.length; i++) {
 			var attributeName = attributes[i].attributeName;
 			var attributeType = attributes[i].attributeType;
 			var attributeIsRequired = attributes[i].attributeIsRequired;
 			var attributeIsArray = attributes[i].attributeIsArray;
 
-			var AttribDesc = describeAttrib(modelIRI, nextEntity, attributes[i], mappingURI, mappingObj);
+			var AttribDesc = describeAttrib(input, nextEntity, attributeName);
 			ContentBuilder += `
    /*
    ${AttribDesc}
@@ -555,14 +594,14 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 	return tpl;
 }
 
-function cutTriples(modelIRI, modelName, entityName, pluginFormat, dataFormat, builderFunctions, template) {
-	var hasTripleFunction = builderFunctions.indexOf("setTriples_" + entityName) >= 0;
+function cutTriples(input, template) {
+	var hasTripleFunction = input.builderFunctions.indexOf("setTriples_" + input.entityName) >= 0;
 	var EntityXTripleEnable = hasTripleFunction == true ? "" : "//";
-	var EntityX = entityName;
+	var EntityX = input.entityName;
 	var EntityXTripleDisable = hasTripleFunction == false ? "" : "//";
 	var EntityXTripleXEnableIn = hasTripleFunction == true ? "" : "(:";
-	var ModelGenURI = modelIRI;
-	var ModelName = modelName;
+	var ModelGenURI = input.modelIRI;
+	var ModelName = input.modelName;
 	var EntityXTripleXEnableOut = hasTripleFunction == true ? "" : ":)";
 	var EntityXTripleXDisableIn = hasTripleFunction == false ? "" : "(:";
 	var EntityXTripleXDisableOut = hasTripleFunction == false ? "" : ":)";
@@ -571,31 +610,31 @@ function cutTriples(modelIRI, modelName, entityName, pluginFormat, dataFormat, b
 	return tpl;
 }
 
-function cutHeaders(modelIRI, modelName, entityName, pluginFormat, dataFormat, builderFunctions, template) {
-	var hasHeaderFunction = builderFunctions.indexOf("setHeaders_" + entityName) >= 0;
+function cutHeaders(input, template) {
+	var hasHeaderFunction = input.builderFunctions.indexOf("setHeaders_" + input.entityName) >= 0;
 	var EntityXHeaderEnable = hasHeaderFunction == true ? "" : "//";
-	var EntityX = entityName;
+	var EntityX = input.entityName;
 	var EntityXHeaderDisable = hasHeaderFunction == false ? "" : "//";
 	var EntityXHeaderXEnableIn = hasHeaderFunction == true ? "" : "(:";
-	var ModelGenURI = modelIRI;
-	var ModelName = modelName;
+	var ModelGenURI = input.modelIRI;
+	var ModelName = input.modelName;
 	var EntityXHeaderXEnableOut =hasHeaderFunction == true? "" : ":)";
 	var EntityXHeaderXDisableIn = hasHeaderFunction == false ? "" : "(:";
 	var EntityXHeaderXDisableOut = hasHeaderFunction == false ? "" : ":)";
-	var EntityDataFormat = dataFormat;
+	var EntityDataFormat = input.dataFormat;
 
 	var tpl = eval('`'+template+'`');
 	return tpl;
 }
 
-function cutWriter(modelIRI, modelName, entityName, pluginFormat, dataFormat, builderFunctions, template) {
-	var hasWriterFunction = builderFunctions.indexOf("runWriter_" + entityName) >= 0;
+function cutWriter(input, template) {
+	var hasWriterFunction = input.builderFunctions.indexOf("runWriter_" + input.entityName) >= 0;
 	var EntityXWriterEnable = hasWriterFunction == true ? "" : "//";
-	var EntityX = entityName;
+	var EntityX = input.entityName;
 	var EntityXWriterDisable = hasWriterFunction == false ? "" : "//";
 	var EntityXWriterXEnableIn = hasWriterFunction == true ? "" : "(:";
-	var ModelGenURI = modelIRI;
-	var ModelName = modelName;
+	var ModelGenURI = input.modelIRI;
+	var ModelName = input.modelName;
 	var EntityXWriterXEnableOut = hasWriterFunction == true ? "" : ":)";
 	var EntityXWriterXDisableIn = hasWriterFunction == false ? "" : "(:";
 	var EntityXWriterXDisableOut = hasWriterFunction == false ? "" : ":)";
@@ -604,8 +643,8 @@ function cutWriter(modelIRI, modelName, entityName, pluginFormat, dataFormat, bu
 	return tpl;
 }
 
-function cutProperties(dataFormat, template) {
-	var DataFormat = dataFormat;
+function cutProperties(input, template) {
+	var DataFormat = input.dataFormat;
 	var tpl = eval('`'+template+'`');
 	return tpl;	
 }
@@ -667,7 +706,7 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB) {
 	}
 }
 
-function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingSpec) {
+function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingSpec, discover) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -709,31 +748,37 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 	var cookieFolder = templateFolder + pluginFormat + "/";
 
 	// now let's cookie-cut the harmonization flow
+	var input = {
+		modelIRI: modelIRI,
+		modelName: modelName,
+		entityName: entityName,
+		pluginFormat: pluginFormat,
+		dataFormat: dataFormat,
+		contentMode: contentMode,
+		mappingSpec: mappingSpec,
+		discover: discover,
+		builderFunctions: builderFunctions,
+		moduleName: flowName, 
+		harmonizationMode: true
+	};
 	writeFile(harmonizationFolder, flowName + ".properties", 
-		cutProperties(dataFormat,
-			useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties")), true, modelName, "harmonization");
+		cutProperties(input, useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties")), 
+		true, modelName, "harmonization");
 	writeFile(harmonizationFolder, "collector." + pluginFormat, 
 		useTemplate(cookieFolder + "collector.t" + pluginFormat), true, modelName, "harmonization");
-
 	writeFile(harmonizationFolder, "main." + pluginFormat, 
 		useTemplate(cookieFolder + "main.t" + pluginFormat), true, modelName, "harmonization");
-
 	writeFile(harmonizationFolder, "content." + pluginFormat, 
-		cutContent(modelIRI, info.version, modelName, entityName, flowName, pluginFormat, dataFormat, contentMode, mappingSpec, builderFunctions, 
-			useTemplate(cookieFolder + "content.t" + pluginFormat)), true, modelName, "harmonization");
-
+		cutContent(input, useTemplate(cookieFolder + "content.t" + pluginFormat)), true, modelName, "harmonization");
 	writeFile(harmonizationFolder, "triples." + pluginFormat, 
-		cutTriples(modelIRI, modelName, entityName, pluginFormat, dataFormat, builderFunctions, 
-			useTemplate(cookieFolder + "triples.t" + pluginFormat)), true, modelName), "harmonization";
+		cutTriples(input, useTemplate(cookieFolder + "triples.t" + pluginFormat)), true, modelName), "harmonization";
 	writeFile(harmonizationFolder, "headers." + pluginFormat, 
-		cutHeaders(modelIRI, modelName, entityName, pluginFormat, dataFormat, builderFunctions, 
-			useTemplate(cookieFolder + "headers.t" + pluginFormat)), true, modelName, "harmonization");
+		cutHeaders(input, useTemplate(cookieFolder + "headers.t" + pluginFormat)), true, modelName, "harmonization");
 	writeFile(harmonizationFolder, "writer." + pluginFormat, 
-		cutWriter(modelIRI, modelName, entityName, pluginFormat, dataFormat, builderFunctions, 
-			useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
+		cutWriter(input, useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
 }
 
-function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingSpec) {
+function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingSpec, discover) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -757,10 +802,23 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 	// create plugins (with harmonization) for each
 	var moduleFolder = "/cookieCutter/" + modelName + "/src/main/ml-modules/" + entityName + "/";
 
+	var input = {
+		modelIRI: modelIRI,
+		modelName: modelName,
+		entityName: entityName,
+		pluginFormat: pluginFormat,
+		dataFormat: dataFormat,
+		contentMode: contentMode,
+		mappingSpec: mappingSpec,
+		discover: discover,
+		builderFunctions: builderFunctions,
+		moduleName: moduleName, 
+		harmonizationMode: false
+	};
 	// now let's cookie-cut the module; it's the same approach as content module of harmonization
 	writeFile(moduleFolder, moduleName + "." + pluginFormat, 
-		cutContent(modelIRI, info.version, modelName, entityName, moduleName, pluginFormat, dataFormat, contentMode, mappingSpec, builderFunctions, 
-			useTemplate("/xmi2es/conversionTemplate/conversion.t" + pluginFormat)), true, modelName, "conversion");
+		cutContent(inputuseTemplate("/xmi2es/conversionTemplate/conversion.t" + pluginFormat)), 
+		true, modelName, "conversion");
 }
 
 module.exports = {
