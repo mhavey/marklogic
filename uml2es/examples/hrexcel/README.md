@@ -46,9 +46,10 @@ Confirm:
 
 Run the following to load the Excel HR model:
 
-gradle -PenvironmentName=local -i loadExcel
+gradle -PenvironmentName=local -PmodelName=HRExcel -i uDeployModel
 
 Confirm:
+TODO
 - Content DB includes several documents created when loading the Excel, including:
 	* /xmi2es/es/HRExcel.json - the ES model from the Excel
 	* /xmi2es/extension/HRExcel.ttl - the extended ES model from the Excel
@@ -62,9 +63,10 @@ Check the /xmi2es/findings/HRExcel.xml file. This indicates whether there were a
 
 For comparison, we will load the HR UML model from examples/hr. Run the following:
 
-gradle -PenvironmentName=local -i loadUML
+gradle -PenvironmentName=local -PmodelName=DHFEmployeeSample -i uDeployModel
 
 Confirm:
+TODO
 - Content DB now has, in addition to the documents created in the previous step, the following documents
 	* /xmi2es/es/DHFEmployeeSample.json	 - the ES model from the UML
 	* /xmi2es/extension/DHFEmployeeSample.ttl - the extended ES model from the UML
