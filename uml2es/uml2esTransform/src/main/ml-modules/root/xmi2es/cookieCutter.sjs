@@ -185,7 +185,7 @@ function render(obj, indent) {
         var val = obj[i];
         if (val !== Object(val)) {
           r  += `
-${sindent} ${val}`;
+${sindent}${val}`;
         }
         else {
             r  += render(val, indent);
@@ -205,7 +205,7 @@ ${sindent} ${val}`;
             val = render(val, indent+1);
           }
           r  += `
-${sindent} ${prop} : ${val}`;
+${sindent} ${prop}:${val}`;
         }
       }
     }
@@ -214,6 +214,7 @@ ${sindent} ${prop} : ${val}`;
 }
 
 function discoverModel(input) {
+	// thiis is mainly building common data structures for later use
 
 }
 

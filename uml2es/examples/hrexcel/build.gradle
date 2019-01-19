@@ -47,6 +47,18 @@ task includeXMI2ESTransform(type: Copy) {
     into "src/main/ml-modules/root/xmi2es"
 }
 
+task includeModel(type: Copy) {
+    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+    from xmiDir + "/DHFEmployeeSample.xml"
+    into "data/model"
+}
+
+task setup() {
+  dependsOn('includeXMI2ESTransform')
+  dependsOn('includeModel')
+}
+
+
 task loadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   def xmiDir = new File("${projectDir}").getAbsolutePath()
   def unixDir = xmiDir.replace('\\', '/');

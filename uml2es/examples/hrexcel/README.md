@@ -37,7 +37,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i includeXMI2ESTransform mlDeploy
+gradle -PenvironmentName=local -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-hrexcel.
