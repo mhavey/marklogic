@@ -5,7 +5,7 @@ In this example, we build a data model using an Excel spreadsheet. No UML! ... W
 
 Our toolkit has the generic capability to generate an Entity Services model from an Excel document that follows the template, which you can find here: (../../excel/uml2es-excel-template.xlsx). In this example, we use that template to build a human resources data model of employees, departments, and their relationships. Our example shows how to transform the Excel model into Entity Services by running a gradle task. 
 
-Our spreadsheet is HRExcel.xlsx. Here is a snapshot of it 
+Our spreadsheet is data/model-execl/HRExcel.xlsx. Here is a snapshot of it 
 
 ![HRExcel](HRExcel.png) 
 
@@ -49,7 +49,6 @@ Run the following to load the Excel HR model:
 gradle -PenvironmentName=local -PmodelName=HRExcel -i uDeployModel
 
 Confirm:
-TODO
 - Content DB includes several documents created when loading the Excel, including:
 	* /xmi2es/es/HRExcel.json - the ES model from the Excel
 	* /xmi2es/extension/HRExcel.ttl - the extended ES model from the Excel
@@ -66,7 +65,6 @@ For comparison, we will load the HR UML model from examples/hr. Run the followin
 gradle -PenvironmentName=local -PmodelName=DHFEmployeeSample -i uDeployModel
 
 Confirm:
-TODO
 - Content DB now has, in addition to the documents created in the previous step, the following documents
 	* /xmi2es/es/DHFEmployeeSample.json	 - the ES model from the UML
 	* /xmi2es/extension/DHFEmployeeSample.ttl - the extended ES model from the UML
