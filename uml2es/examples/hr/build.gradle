@@ -366,6 +366,12 @@ task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   def fdir = file(unixDir)
   def files = null
   if (fdir != null) files = fdir.list()
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = ""
+  def myPort = project.findProperty("mlFinalPort")
+  if (myPort == null) myPort = "0"
+
   enabled = fullModelName != null && files != null && files.contains(fullModelName) && project.findProperty("mlFinalPort") != null
 
   classpath = configurations.mlcp
@@ -377,8 +383,8 @@ task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/marklogic.com/entity-services/models/"
   output_permissions = "rest-reader,read,rest-writer,update"
   output_collections = "http://marklogic.com/entity-services/models"
-  host = mlHost
-  port = mlFinalPort.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 }
 
 /*
@@ -396,7 +402,7 @@ task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (entities != null) entities = '"' + entities + '"'
   def entitySelect = project.findProperty("entitySelect") 
   if (entitySelect != null) entitySelect = '"' + entitySelect + '"'
-  def stg = '"' + mlStagingDbName + '"';
+  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
@@ -407,13 +413,19 @@ println js
 
 task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/"
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = ""
+  def myPort = project.findProperty("mlFinalPort")
+  if (myPort == null) myPort = "0"
+
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "plugins"
   output_file_path = "data/cookieCutter-dump"
   directory_filter = directoryFilter
-  host = mlHost
-  port = mlFinalPort.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 }
 
 task _cPromoteEntities(type: Copy) {
@@ -470,12 +482,18 @@ println js
 
 task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = ""
+  def myPort = project.findProperty("mlFinalPort")
+  if (myPort == null) myPort = "0"
+
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/cookieCutter-dump"
   directory_filter = directoryFilter
-  host = mlHost
-  port = mlFinalPort.toInteger()
+  host = myHost
+  port = myPort.toInteger()
 }
 
 task _cPromoteCutHarmonizeFlow(type: Copy) {
