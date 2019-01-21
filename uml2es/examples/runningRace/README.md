@@ -38,18 +38,26 @@ Confirm:
 
 ### Transform UML to ES
 
-Run the following:
+Now we deploy our three running race UML models. They end up as Entity Services models in MarkLogic! 
 
-gradle -PenvironmentName=local -i loadXMI
+First, the MagicDraw model:
+
+gradle -i -PmodelName=RunningRace uDeployModel
+
+Next the EMF and Papyrus models:
+
+gradle -i -PmodelName=RunningRaceEMF uDeployModel
+
+gradle -i -PmodelName=RunningRacePapyrus uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the XMI files, including:
-	* /xmi2es/es/RunningRace.json - ES model
-	* /xmi2es/es/RunningRaceEMF.json - ES model
-	* /xmi2es/es/RunningRacePapyrus.json - ES model
-	* /xmi2es/findings/RunningRace.xml - findings during the transform
-	* /xmi2es/findings/RunningRaceEMF.xml - findings during the transform
-	* /xmi2es/findings/RunningRacePapyrus.xml - findings during the transform
+	* /marklogic.com/entity-services/models/RunningRace.json - ES model based on MagicDraw UML model
+	* /marklogic.com/entity-services/models/RunningRaceEMF.json - ES model based on EMF UML model
+	* /marklogic.com/entity-services/models/RunningRacePapyrus.json - ES model based on Papyrus UML model
+	* /xmi2es/findings/RunningRace.xml - findings during the transform from MagicDraw to ES
+	* /xmi2es/findings/RunningRaceEMF.xml - findings during the transform from EMF to ES
+	* /xmi2es/findings/RunningRacePapyrus.xml - findings during the transform from Papyrus to ES
 
 Check each of the findings documents: /xmi2es/findings/RunningRace.xml, /xmi2es/findings/RunningRaceEMF.xml, /xmi2es/findings/RunningRacePapyrus.xml. Verify there are no issues reported in any of them.
 

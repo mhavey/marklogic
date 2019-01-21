@@ -49,37 +49,23 @@ Confirm:
   * /xmi2es/loadMovieTransformation.xqy - MLCP transform: on ingest of movie source data invokes ES converter module
 
 ### Transform UML to ES
-Next, move our UML model into ML as an ES model.
+Next, we move our UML model into ML as an ES model.
 
 gradle -PenvironmentName=local -i -PmodelName=IMDBMovie uDeployModel
 
-TODO ... 
-
 Confirm:
 - Content DB has the following documents
-  * /xmi2es/es/IMDBMovie.json (The ES model descriptor in JSON form)
+  * /marklogic.com/entity-services/models/IMDBMovie.json (The ES model)
   * /xmi2es/extension/IMDBMovie.ttl (Semantic triples that extend our model)
   * /xmi2es/extension/IMDBMovie.txt (A text summary of our model extension)
   * /xmi2es/findings/IMDBMovie.xml (Problems found during transformation)
   * /xmi2es/xmi/IMDBMovie.xml (The original UML model as an XMI document)
 - Your gradle directory structure under data/entity-services-dump has the same documents as above.
 - Schemas DB still contains just /MovieModel-0.0.1.tdex - our "pre-cooked" TDE template
-- File IMDBMovie.json exists in gradle's data/entity-services directory. This is our ES model descriptor to be deployed.
-- File IMDBMovie.ttl exists in gradle's data/entity-services-extension directory. This is our ES model extension to be deployed.
-
-
 
 Check /xmi2es/findings/IMDBMovie.xml for issues during transform. It should not indicate any issues.
 
 Notice we made use of the extended model definition. Specifically, we pasted the contents of /xmi2es/extension/IMDBMovie.txt as a block comment into our conversion module plugins/ext/entity-services/IMDBMovie-0.0.1.xqy. We refer back to that comment in several points in the code, showing that our implementation references facts from the extended model.
-
-#### Deploy Entity Services Model and Associated Artifacts
-TODO - this is gone
-
-
-Confirm:
-- Final DB now has the following document
-  * /marklogic.com/entity-services/models/IMDBMovie.json
 
 - In Query Console, open a tab of type SPARQL, point to the content DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
 
@@ -101,7 +87,7 @@ Deploy these artifacts: DB indexes, modules and schemas. IT IS VERY IMPORTANT TO
 
 Run the following:
 
-gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGeneratedTDE mlDeployDatabases mlReloadModules mlReloadSchemas
+gradle -PenvironmentName=local -i useGeneratedDBConfig deleteGenerated mlDeployDatabases mlReloadModules mlReloadSchemas
 
 Confirm:
 - Content DB now has element range indexes

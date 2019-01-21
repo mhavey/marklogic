@@ -124,7 +124,6 @@ task deleteGenerated(type: Delete) {
   delete "src/main/ml-schemas/tde/MovieModel-0.0.1.tdex"
   delete "src/main/ml-schemas/tde/MovieModel-0.0.1-GENERATED.tdex"
   delete "src/main/ml-schemas/MovieModel-0.0.1-GENERATED.tdex"
-  delete "src/main/ml-config/databases/content-database.json"
   delete "src/main/ml-config/databases/content-database-GENERATED.json"
   delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy"
   delete "src/main/ml-modules/options/MovieModel.xml"

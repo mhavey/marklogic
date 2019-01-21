@@ -1,125 +1,26 @@
 /*
-	Gradle tasks for UML2ES Toolkit. Use this in your project. 
-	You can either:
-	- copy bits and pieces of it into your own gradle build file
-	- use this as the basis for your gradle build file; build on it
-	- keep it as is and call it to run just the UML2ES tasks; 
-	  you will also have another gradle build file with the rest of your tasks
+  Gradle tasks for UML2ES Toolkit. Use this in your project. 
+  You can either:
+  - copy bits and pieces of it into your own gradle build file
+  - use this as the basis for your gradle build file; build on it
+  - keep it as is and call it to run just the UML2ES tasks; 
+    you will also have another gradle build file with the rest of your tasks
 
-	Tasks that begin with "_" are private. Don't call them; they are called internally.
-	Tasks that begin with "u" are public. Call them!
+  Tasks that begin with "_" are private. Don't call them; they are called internally.
+  Tasks that begin with "u" are public. Call them!
 */
-
-/*
-USE THIS SETUP BLOCK IF YOUR PROJECT IS NON-DHF
-*/
-
-buildscript {
-	repositories {
-		jcenter{url "http://jcenter.bintray.com/"}
-		mavenLocal()
-		maven { url "http://plugins.gradle.org/m2" }
-	}
-	dependencies {
-		classpath "com.marklogic:ml-gradle:3.4.0"
-		classpath "net.saliman:gradle-properties-plugin:1.4.6"
-	}
-}
-
-apply plugin: "net.saliman.properties"
-apply plugin: "com.marklogic.ml-gradle"
-
-repositories {
-	jcenter{url "http://jcenter.bintray.com/"}
-
-	// Needed for mlcp dependencies
-	maven { url "http://plugins.gradle.org/m2" }
-	maven { url "http://developer.marklogic.com/maven2/" }
-
-	// Needed for hadoop dependencies for mlcp
-	maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
-}
-
-configurations {
-  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
-  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
-  // shown below.  Need to force to use certain version of xml-apis library.
-  mlcp {
-      resolutionStrategy {
-        force "xml-apis:xml-apis:1.4.01"
-      }
-    }
-}
-
-dependencies {
-  mlcp "com.marklogic:mlcp:9.0.6"
-  mlcp "org.apache.commons:commons-csv:1.2"
-  mlcp files("lib")
-}
-
-/* 
- USE THIS SETUP BLOCK IF YOUR PROJECT IS ON DHF 4.1
 
 buildscript {
   repositories {
-    maven {url 'http://developer.marklogic.com/maven2/'}
+    jcenter{url "http://jcenter.bintray.com/"}
+    mavenLocal()
+    maven { url "http://plugins.gradle.org/m2" }
+  }
+  dependencies {
+    classpath "com.marklogic:ml-gradle:3.4.0"
+    classpath "net.saliman:gradle-properties-plugin:1.4.6"
   }
 }
-
-plugins {
-    id 'java'
-    id 'eclipse'
-    id 'idea'
-
-    // This plugin allows you to create different environments
-    // for your gradle deploy. Each environment is represented
-    // by a gradle-${env}.properties file
-    // See https://github.com/stevesaliman/gradle-properties-plugin
-    // specify the env on the command line with:
-    // gradle -PenvironmentName=x ...
-    id 'net.saliman.properties' version '1.4.6'
-
-    // This gradle plugin extends the ml-gradle plugin with
-    // commands that make the Data Hub Framework do its magic
-    id 'com.marklogic.ml-data-hub' version '4.1.0'
-}
-
-repositories {
-    jcenter()
-    maven {url 'http://developer.marklogic.com/maven2/'}
-
-    // Needed for mlcp dependencies
-    maven { url "http://plugins.gradle.org/m2" }
-    maven { url "http://developer.marklogic.com/maven2/" }
-
-    // Needed for hadoop dependencies for mlcp
-    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
-}
-
-configurations {
-  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
-  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
-  // shown below.  Need to force to use certain version of xml-apis library.
-  mlcp {
-      resolutionStrategy {
-        force "xml-apis:xml-apis:1.4.01"
-      }
-    }
-}
-
-dependencies {
-    // this allows you to write custom java code that depends
-    // on the Data Hub Framework library
-    compile 'com.marklogic:marklogic-data-hub:4.1.0'
-    compile 'com.marklogic:marklogic-xcc:9.0.7'
-
-    mlcp "com.marklogic:mlcp:9.0.6"
-    mlcp "org.apache.commons:commons-csv:1.2"
-    mlcp files("lib")
-}
-
-*/
-
 
 /*
  * PRIVATE TASKS: Model deployment
@@ -617,7 +518,7 @@ task uCreateConversionModule() {
 
 /*
 Edit this to enable/disable code generation of mlGenerateModelArtifacts
-*/
+
 ext {   
   def mdb = project.findProperty("mlFinalDbName")
   if (mdb == null) mdb = project.findProperty("mlAppName" + "-content")
@@ -630,3 +531,4 @@ ext {
     generateSearchOptions=false
   }
 }
+*/

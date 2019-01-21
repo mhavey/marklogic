@@ -42,7 +42,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i clearGenerated includeXMI2ESTransform mlDeploy
+gradle -PenvironmentName=local -i deleteGenerated setup mlDeploy
 
 Confirm:
 - Content DB is empty
@@ -58,7 +58,7 @@ Next, move our UML model into ML as an ES model. Let's divide this into two part
 
 We will load our UML model and transform it to Entity Services format. Run the following:
 
-gradle -PenvironmentName=local -i ingestModel
+gradle -PenvironmentName=local -i -PmodelName=BlockFactory uDeployModel
 
 Confirm:
 - Content DB has the following documents
