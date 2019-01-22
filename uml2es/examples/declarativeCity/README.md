@@ -93,7 +93,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i includeXMI2ESTransform mlDeploy
+gradle -PenvironmentName=local -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-dmcity.
@@ -102,14 +102,13 @@ Confirm:
 
 Run the following to load the model:
 
-gradle -PenvironmentName=local -i loadXMI
+gradle -PenvironmentName=local -i -PmodelName=DeclarativeCity uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the XMI, including:
-	* /xmi2es/es/DeclarativeCity.json - the ES model
+	* /marklogic.com/entity-services/models/DeclarativeCity.json - the ES model
 	* /xmi2es/extension/DeclarativeCity.ttl - the extended ES model
 	* /xmi2es/findings/DeclarativeCity.xml - findings during the transform
-	* /xmi2es/xmi/DeclarativeCity.xml - the original Papyrus model (XMI)
 
 Check the /xmi2es/findings/DeclarativeCity.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 

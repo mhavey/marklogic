@@ -62,29 +62,15 @@ gradle -PenvironmentName=local -i -PmodelName=BlockFactory uDeployModel
 
 Confirm:
 - Content DB has the following documents
-  * /xmi2es/es/BlockFactory.json (The ES model descriptor in JSON form)
+  * /marklogic.com/entity-services/models/BlockFactory.json (The ES model descriptor in JSON form)
   * /xmi2es/extension/BlockFactory.ttl (Semantic triples that extend our model)
   * /xmi2es/extension/BlockFactory.txt (A text summary of our model extension)
   * /xmi2es/findings/BlockFactory.xml (Problems found during transformation)
-  * /xmi2es/findings/BlockFactory.xml (Findings during transform)
-  * /xmi2es/xmi/BlockFactory.xml (The original UML model as an XMI document)
 - Your gradle directory structure under data/entity-services-dump has the same documents as above.
-- File BlockFactory.json exists in gradle's data/entity-services directory. This is our ES model descriptor to be deployed.
-- File BlockFactory.ttl exists in gradle's data/entity-services-extension directory. This is our ES model extension to be deployed.
 
 Check /xmi2es/findings/BlockFactory.xml for issues during transform. It should not indicate any issues.
 
 Notice we made use of the extended model definition. Specifically, we pasted the contents of /xmi2es/extension/BlockFactory.txt as a block comment into our conversion module plugins/ext/entity-services/BlockFactory-0.0.1.xqy. We refer back to that comment in several points in the code, showing that our implementation references facts from the extended model.
-
-#### Deploy Entity Services Model and Associated Artifacts
-
-Next, generate ES artifacts. Run the following:
-
-gradle -PenvironmentName=local -i mlgen loadExtendedModel
-
-Confirm:
-- Content DB now has the following document
-  * /marklogic.com/entity-services/models/BlockFactory.json
 
 - In Query Console, open a tab of type SPARQL, point to the content DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
 

@@ -50,7 +50,7 @@ gradle -PenvironmentName=local -PmodelName=HRExcel -i uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the Excel, including:
-	* /xmi2es/es/HRExcel.json - the ES model from the Excel
+	* /marklogic.com/entity-services/models/HRExcel.json - the ES model from the Excel
 	* /xmi2es/extension/HRExcel.ttl - the extended ES model from the Excel
 	* /xmi2es/findings/HRExcel.xml - findings during the transform of the Excel
 	* /xmi2es/excel/HRExcel.xlsx - Original Excel file
@@ -66,7 +66,7 @@ gradle -PenvironmentName=local -PmodelName=DHFEmployeeSample -i uDeployModel
 
 Confirm:
 - Content DB now has, in addition to the documents created in the previous step, the following documents
-	* /xmi2es/es/DHFEmployeeSample.json	 - the ES model from the UML
+	* /marklogic.com/entity-services/models/DHFEmployeeSample.json	 - the ES model from the UML
 	* /xmi2es/extension/DHFEmployeeSample.ttl - the extended ES model from the UML
 	* /xmi2es/findings/DHFEmployeeSample.xml - findings during the transform of the UML.
 	* /xmi2es/xmi/DHFEmployeeSample.xml - the original UML model in XMI form.
