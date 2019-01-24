@@ -17,7 +17,14 @@ buildscript {
     maven { url "http://plugins.gradle.org/m2" }
   }
   dependencies {
-    classpath "com.marklogic:ml-gradle:3.4.0"
+//    if (project.findProperty("mlFinalPort") == null) {
+//println "VANILLA!"
+//      classpath "com.marklogic:ml-gradle:3.4.0"      
+//    } else {      
+//println "DHF!!"
+      classpath 'com.marklogic:marklogic-data-hub:4.1.0'
+      classpath 'com.marklogic:ml-gradle:3.10.2'
+//    }
     classpath "net.saliman:gradle-properties-plugin:1.4.6"
   }
 }
@@ -270,10 +277,12 @@ task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (contentMode != null) contentMode = '"' + contentMode + '"'
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
+  def discover = project.findProperty("discover") 
+  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ');\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ',' + discover + ',' + stg + ');\n'
 println js
   javascript = js;
 }
@@ -294,10 +303,11 @@ task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
   def discover = project.findProperty("discover") 
+  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover + ');\n'
+js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover +  ',' + stg + ');\n'
 println js
   javascript = js;
 }

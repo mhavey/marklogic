@@ -9,6 +9,8 @@ const ALLOWABLE_FORMATS = ["xml", "json"];
 const ALLOWABLE_SELECTS = ["all", "infer"];
 const ALLOWABLE_CONTENTS = ["es", "dm"];
 
+const DISCOVERY_LIMIT = 10;
+
 function getAttributes(modelIRI, entityName) {
 	var entity = modelIRI + "/" + entityName;
   var res = sem.sparql(`
@@ -205,7 +207,7 @@ ${sindent}${val}`;
             val = render(val, indent+1);
           }
           r  += `
-${sindent} ${prop}:${val}`;
+${sindent} ${prop} : ${val}`;
         }
       }
     }
@@ -213,13 +215,175 @@ ${sindent} ${prop}:${val}`;
   return r;
 }
 
-function discoverModel(input) {
-	// thiis is mainly building common data structures for later use
-
+function queryStaging(input, cmd, vars) {
+	return xdmp.eval(cmd, vars, {"database": xdmp.database(input.stagingDB)});
 }
 
+function wordsFromString(searchTerm) {
+	var words = [];
+	cts.tokenize(searchTerm).toArray().forEach(function (word) {
+		if ( fn.deepEqual(sc.name(sc.type(word)), fn.QName("http://marklogic.com/cts", "word"))) {
+			if (words.indexOf(word) < 0) words.push(word.valueOf());
+		}
+	});
+	return words;
+}
+
+function discoverModel(input) {
+	// this is mainly building common data structures for later use
+	// for example, if we want spell check on collections
+	// or if we want a lexicon of element names across documents!
+	// for now we keep it simple and use just uri and collection lexicons
+}
+
+// Check for documents similar to my class
 function discoverClass(input, entityName) {
-	
+
+	if (!input.discoveryReport.entities) input.discoveryReport.entities = {};
+	var report = {}
+	input.discoveryReport.entities[entityName] = report;
+	var entity = input.mappingObj.entities[entityName];	
+
+	// 
+	// Step 1 - Prepare data queries
+	// 
+	var dataChecks = [];
+	if (entity.discoverySampleData == null) entity.discoverySampleData = [];
+	entity.discoverySampleData =  Array.isArray(entity.discoverySampleData) ? entity.discoverySampleData : [entity.discoverySampleData];
+	var sampleData = entity.discoverySampleData;
+	var attribSampleData = entity.attributes;
+	for (var a in entity.attributes) {
+		var attrib = entity.attributes[a];
+		if (attrib.discoverySampleData == null) attrib.discoverySampleData = [];
+		attrib.discoverySampleData =  Array.isArray(attrib.discoverySampleData) ? attrib.discoverySampleData : [attrib.discoverySampleData];
+		sampleData = sampleData.concat(attrib.discoverySampleData);
+	}
+	for (var i = 0; i < sampleData.length; i++) {
+		if (sampleData[i] == null) continue;
+		var sdi =sampleData[i].trim();
+		if (sdi == "") continue;
+		dataChecks.push(cts.wordQuery(sdi, ["case-insensitive"]));
+		dataChecks.push(cts.wordQuery("* *" + sdi + "* *", ["case-insensitive"]));
+	}
+	var dataQuery = dataChecks.length > 0 ? cts.orQuery(dataChecks) : cts.trueQuery();
+	var elemQuery = cts.elementQuery(xs.QName(entityName), cts.andQuery([]));
+	xdmp.log("discoverClass *" + entityName + "* has dataQuery " + dataQuery, "info");
+	xdmp.log("discoverClass *" + entityName + "* has elemQuery " + elemQuery, "info");
+
+	var evars = {
+		"dataQuery": dataQuery,
+		"elemQuery": elemQuery,
+		"className": entityName
+	};
+
+	// 
+	// 2. collection discovery
+	// 
+	if (entity.discoveryCollections == null) entity.discoveryCollections = [];
+	entity.discoveryCollections =  Array.isArray(entity.discoveryCollections) ? entity.discoveryCollections : [entity.discoveryCollections];
+	var collCandidates = [entityName].concat(entity.discoveryCollections);
+	var collNames = [];
+	var collData = [];
+	var collElem = [];
+	for (var i = 0; i < collCandidates.length; i++) {
+		evars.candidate = collCandidates[i];
+		collNames = collNames.concat(queryStaging(input, 
+			'cts.collectionMatch("*" + candidate + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
+			evars).toArray());
+		collData = collData.concat(queryStaging(input, 
+			'cts.collectionMatch("*" + candidate + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
+			evars).toArray());
+		collElem = collElem.concat(queryStaging(input, 
+			'cts.collectionMatch("*" + candidate + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)', 
+			evars).toArray());
+	}
+	var collReport = 
+	report["Matching Collections"] = {
+		"By Name": Array.from(new Set(collNames)), 
+		"Containing Sample Data": Array.from(new Set(collData)), 
+		"Containing Root Element": Array.from(new Set(collElem))
+	};
+
+	//
+	// 2. directory/URI discovery
+	//
+	var dirClassD = [];
+	var dirClassDData = [];
+	var dirClassDElem = [];
+	var dirPattern = [];
+	var dirPatternData = [];
+	var dirPatternElem = [];
+	for (var i = 0; i < entity.discoverySampleData; i++) {
+		evars.sampleDataWords = wordFromString(entity.discoverySampleData[i]).join("*");
+		dirClassD = dirClassD.concat(queryStaging(input, 
+			'cts.uriMatch("*" + className + "*" + sampleDataWords + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
+			evars).toArray());
+		dirClassD = dirClassD.concat(queryStaging(input, 
+			'cts.uriMatch("*" + sampleDataWords + "*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
+			evars).toArray());
+		dirClassDData = dirClassDData.concat(queryStaging(input, 
+			'cts.uriMatch("*" + className + "*" + sampleDataWords + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
+			evars).toArray());
+		dirClassDData = dirClassDData.concat(queryStaging(input, 
+			'cts.uriMatch("*" + sampleDataWords + "*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
+			evars).toArray());
+		dirClassDElem = dirClassDElem.concat(queryStaging(input, 
+			'cts.uriMatch("*" + className + "*" + sampleDataWords + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)',
+			evars).toArray());
+		dirClassDElem = dirClassDElem.concat(queryStaging(input, 
+			'cts.uriMatch("*" + sampleDataWords + "*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)',
+			evars).toArray());
+	};
+	if (entity.discoveryURIPatterns == null) entity.discoveryURIPatterns = [];
+	entity.discoveryURIPatterns =  Array.isArray(entity.discoveryURIPatterns) ? entity.discoveryURIPatterns : [entity.discoveryURIPatterns];
+	for (var i = 0; i < entity.discoveryURIPatterns; i++) {
+		evars.pattern = entity.discoveryURIPatterns[i];
+		dirPattern = dirPattern.concat(queryStaging(input, 
+			'cts.uriMatch(pattern, ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
+			evars).toArray());
+		dirPatternData = dirPatternData.concat(queryStaging(input, 
+			'cts.uriMatch(pattern, ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
+			evars).toArray());
+		dirPatternElem = dirPatternElem.concat(queryStaging(input, 
+			'cts.uriMatch(pattern, ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)',
+			evars).toArray());
+	};
+	report["Matching URIs"] =  {
+		"URI Based On Class Name": {
+			"Just URI": Array.from(new Set(queryStaging(input, 
+				'cts.uriMatch("*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])', 
+			evars))),
+			"Containing Sample Data": Array.from(new Set(queryStaging(input, 
+				'cts.uriMatch("*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)', 
+			evars))),
+			"Containing Root Element": Array.from(new Set(queryStaging(input, 
+				'cts.uriMatch("*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)', 
+			evars)))
+		},
+		"URI Based On Class Name Plus Sample Data": {
+			"Just URI": Array.from(new Set(dirClassD)),
+			"Containing Sample Data": Array.from(new Set(dirClassDData)),
+			"Containing Root Element": Array.from(new Set(dirClassDElem))
+		},
+		"URI Sample Pattern": {
+			"Just URI": Array.from(new Set(dirPattern)),
+			"Containing Sample Data": Array.from(new Set(dirPatternData)),
+			"Containing Root Element": Array.from(new Set(dirPatternElem))
+		}
+	};
+
+	//
+	// 3. look for any URIs that match the data query
+	//
+	report["Documents Containing Data"] = Array.from(new Set(queryStaging(input, 
+		'cts.uris(null, ["limit=' + DISCOVERY_LIMIT + '"], dataQuery)', 
+		evars)));
+	report["Documents Containing Root Element"] = Array.from(new Set(queryStaging(input, 
+		'cts.uris(null, ["limit=' + DISCOVERY_LIMIT + '"], elemQuery)', 
+		evars)));
+
+	xdmp.log("discoverClass *" + entityName + "* has report " + JSON.stringify(report), "info");
+
 }
 
 function discoverAttribute(input, entityName, attributeName) {
@@ -241,7 +405,7 @@ function describeFacts(subjectIRI) {
   if (isList == true) {
     var list = [];
     while(true) {
-      if (checkIfRDFList(res) == false)  throw "no way";
+      if (checkIfRDFList(res) == false) throw "no way";
       if (sem.isBlank(res[0].o)) {
         list.push(describeFacts(""+res[0].o));
       }
@@ -297,7 +461,7 @@ The model also has the specified mapping facts:`;
 			"Overall Mapping Notes": input.mappingObj.mapping.notes
 		}, 0);
 
-		if (input.discovery == true) {
+		if (input.discover == true) {
 			input.discoveryReport = {};
 			discoverModel(input);
 		}
@@ -321,9 +485,11 @@ The class also has the specified mapping facts:`;
 				"Mapping Sample Data For Discovery": entity.discoverySampleData
 			}, 0);
 
-			if (input.discovery == true) {
+			if (input.discover == true) {
 				discoverClass(input, entityName);
-				desc += render(input.discoveryReport.entities[entityName], 0);
+xdmp.log("ATTEMPT TO RENDER :" + JSON.stringify(input.discoveryReport.entities[entityName]));
+xdmp.log("GIVES :" + render(input.discoveryReport.entities[entityName], 0));
+				desc +=  JSON.stringify(input.discoveryReport.entities[entityName], null, 2); /*render(input.discoveryReport.entities[entityName], 0); */
 			}
 		}
 	}
@@ -357,7 +523,7 @@ function describeAttrib(input, entityName, attributeName) {
 					"Mapping Attribute Sample Data For Discovery":  attr.discoverySampleData,
 					"Mapping Attribute AKA For Discovery": attr.discoveryAKA}, 1);
 				}
-				if (input.discovery == true) {
+				if (input.discover == true && 1 == 3) {
 					discoverAttribute(input, entityName, attributes[i]);
 					desc += render(input.discoveryReport.entities[entityName].attributes[attributes[i]], 1);
 				}
@@ -481,7 +647,7 @@ function cutContentES(input, template) {
 /*
 ${ClassDesc}
 */
-function buildEntity_${nextEntity}(id,source,options,ioptions) {
+function buildContent_${nextEntity}(id,source,options,ioptions) {
    // now check to see if we have XML or json, then create a node clone from the root of the instance
    if (source instanceof Element || source instanceof ObjectNode) {
       let instancePath = '/*:envelope/*:instance';
@@ -497,14 +663,14 @@ function buildEntity_${nextEntity}(id,source,options,ioptions) {
 
    var ret = {
       '$type': '${nextEntity}',
-      '$version': '${modelVersion}',
+      '$version': '${modelVersion}'
    };
 `;
 		ContentXBuilder += `
 (:
 ${ClassDesc}
 :)
-declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions) {
+declare function plugin:buildContent_${nextEntity}($id,$source,$options,$ioptions) {
    let $source :=
       if ($source/*:envelope and $source/node() instance of element()) then
          $source/*:envelope/*:instance/node()
@@ -517,7 +683,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
    let $model := json:object()
    let $_ := (
       map:put($model, '$type', '${nextEntity}'),
-      map:put($model, '$version', '${modelVersion}'),
+      map:put($model, '$version', '${modelVersion}')
    )
 `;
 		//  now we need to map each attribute		
@@ -541,10 +707,10 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 			if (attributes[i].attributeIsCalculated == true) {
 
 				ContentBuilder += `
-   xesgen.doCalculation_${nextEntity}_${attributeName}(id, ret, ioptions) {
+   xesgen.doCalculation_${nextEntity}_${attributeName}(id, ret, ioptions) 
 `;
 				ContentXBuilder += `
-   let $_ := xesgen:doCalculation_${nextEntity}_${attributeName}($id, $model, $ioptions) {
+   let $_ := xesgen:doCalculation_${nextEntity}_${attributeName}($id, $model, $ioptions) 
 `;
 			}
 			else if (attributes[i].attributeIsExcluded == true) {}
@@ -563,12 +729,12 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 					ContentBuilder += `
    ret["${attributeName}"] = [];
    while (1 == 1) {
-      ret["${attributeName}"].push(buildEntity_${entity2}(id,source,options,ioptions));
+      ret["${attributeName}"].push(buildContent_${entity2}(id,source,options,ioptions));
    }
 `;
 					ContentXBuilder += `
    let $_ := map:put($model, "${attributeName}", json:array())
-   for $x in 1 to 1 return json:array-push(map:get($model, "${attributeName}"), plugin:buildEntity_${entity2}($id,$source,$options,$ioptions)))
+   let $_ := for $x in 1 to 1 return json:array-push(map:get($model, "${attributeName}"), plugin:buildContent_${entity2}($id,$source,$options,$ioptions))
 `;
 				}
 				else {
@@ -577,7 +743,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
    }
 `;
 					ContentXBuilder += `
-   let $_ := map:put($model, "${attributeName}", plugin:buildEntity_${entity2}($id,$source,$options,$ioptions))
+   let $_ := map:put($model, "${attributeName}", plugin:buildContent_${entity2}($id,$source,$options,$ioptions))
 `;
 				}
 			}
@@ -586,7 +752,7 @@ declare function plugin:buildEntity_${nextEntity}($id,$source,$options,$ioptions
 		ContentBuilder += `
    return ret;
 }`;
-		ContentBuilder += `
+		ContentXBuilder += `
    return $model
 };`;
 	}
@@ -707,7 +873,7 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB) {
 	}
 }
 
-function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingSpec, discover) {
+function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingSpec, discover, stagingDB) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -750,6 +916,7 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 
 	// now let's cookie-cut the harmonization flow
 	var input = {
+		modelVersion: info.version,
 		modelIRI: modelIRI,
 		modelName: modelName,
 		entityName: entityName,
@@ -757,11 +924,13 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 		dataFormat: dataFormat,
 		contentMode: contentMode,
 		mappingSpec: mappingSpec,
-		discover: discover,
+		discover: (discover && discover == true || discover == "true"),
+		stagingDB: stagingDB,
 		builderFunctions: builderFunctions,
 		moduleName: flowName, 
 		harmonizationMode: true
 	};
+
 	writeFile(harmonizationFolder, flowName + ".properties", 
 		cutProperties(input, useTemplate(cookieFolder + "XFlow_" + pluginFormat + ".properties")), 
 		true, modelName, "harmonization");
@@ -779,7 +948,7 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 		cutWriter(input, useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
 }
 
-function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingSpec, discover) {
+function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingSpec, discover, stagingDB) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -804,6 +973,7 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 	var moduleFolder = "/cookieCutter/" + modelName + "/src/main/ml-modules/" + entityName + "/";
 
 	var input = {
+		modelVersion: info.version,
 		modelIRI: modelIRI,
 		modelName: modelName,
 		entityName: entityName,
@@ -811,7 +981,8 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 		dataFormat: dataFormat,
 		contentMode: contentMode,
 		mappingSpec: mappingSpec,
-		discover: discover,
+		discover: (discover && discover == true || discover == "true"),
+		stagingDB: stagingDB,
 		builderFunctions: builderFunctions,
 		moduleName: moduleName, 
 		harmonizationMode: false

@@ -732,7 +732,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, ioptions) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
-			'($id as xs:string, $envelope as item(), $options as map:map) as empty-sequence() {'))
+			'($id as xs:string, $envelope as item(), $ioptions as map:map) as empty-sequence() {'))
 
 		(: URI :)
 		let $tXURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI) and contains(sem:subject/text(), $classIRI)]

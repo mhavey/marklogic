@@ -1,9 +1,9 @@
 xquery version "1.0-ml";
 
-${EntityXTripleXEnableIn}import module namespace xesgen = "${ModelGenURI}" at "/${ModelName}/lib.xqy" ;${EntityXTripleXEnableOut}
-import module namespace util = "http://marklogic.com/xmi2es/util" at "/xmi2es/util" ;
-
 module namespace plugin = "http://marklogic.com/data-hub/plugins";
+
+${EntityXTripleXEnableIn}import module namespace xesgen = "${ModelGenURI}" at "/modelgen/${ModelName}/lib.xqy" ;${EntityXTripleXEnableOut}
+import module namespace util = "http://marklogic.com/xmi2es/util" at "/xmi2es/util.xqy" ;
 
 declare namespace es = "http://marklogic.com/entity-services";
 

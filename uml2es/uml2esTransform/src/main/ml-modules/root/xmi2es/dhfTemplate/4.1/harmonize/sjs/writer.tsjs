@@ -1,4 +1,4 @@
-const xesgen = require("/${ModelName}/lib.sjs");
+const xesgen = require("/modelgen/${ModelName}/lib.sjs");
 const util = require("/xmi2es/util.sjs");
 
 /*~
@@ -12,7 +12,9 @@ const util = require("/xmi2es/util.sjs");
  */
 function write(id, envelope, options) {
   ${EntityXWriterEnable}xesgen.runWriter_${EntityX}(id, envelope, util.getIOptions(id,options));
+      util.removeIOptions(id,options);
   ${EntityXWriterDisable}xdmp.documentInsert(id, envelope, xdmp.defaultPermissions(), options.entity);
+  util.removeIOptions(id,options);
 }
 
 module.exports = write;

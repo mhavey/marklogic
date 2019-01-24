@@ -1,7 +1,3 @@
-(:
-${ModelDesc}
-:)
-
 xquery version "1.0-ml";
 
 module namespace plugin = "http://marklogic.com/data-hub/plugins";

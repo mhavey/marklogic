@@ -7,7 +7,7 @@ xquery version '1.0-ml';
 module namespace conv
     = 'http://com.marklogic.es.uml.movie#conv-0.0.1';
 
-import module namespace xesgen = "${ModelGenURI}" at "/${ModelName}/lib.xqy" ;
+import module namespace xesgen = "${ModelGenURI}" at "/modelgen/${ModelName}/lib.xqy" ;
 
 declare option xdmp:mapping 'false';
 

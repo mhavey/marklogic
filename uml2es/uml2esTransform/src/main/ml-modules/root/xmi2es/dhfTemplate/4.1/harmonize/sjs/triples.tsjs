@@ -1,4 +1,4 @@
-${EntityXTripleEnable}const xesgen = require("/${ModelName}/lib.sjs");
+${EntityXTripleEnable}const xesgen = require("/modelgen/${ModelName}/lib.sjs");
 const util = require("/xmi2es/util.sjs");
 
 /*

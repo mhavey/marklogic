@@ -68,7 +68,7 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "json"
+  document_type = "xml"
   input_file_path =  "data/hr/GlobalCorp/employee/EmployeeTable.csv"
   input_file_type ="delimited_text" 
 
@@ -97,7 +97,7 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "json"
+  document_type = "xml"
   input_file_path =  "data/hr/GlobalCorp/employee/SalaryTable.csv"
   input_file_type ="delimited_text" 
 
@@ -202,10 +202,6 @@ task setup() {
   dependsOn('includeModel')
 }
 
-//
-// The rest is a copy of the common UML2ES gradle
-//
-
 /*
  * PRIVATE TASKS: Model deployment
  */
@@ -220,6 +216,9 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   def myPort = project.findProperty("mlAppServicesPort")
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def tparam = "dummy"  
+  if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam = '{"lax": "true"}'
 
   def fullModelName = null;
   if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".xml"
@@ -242,7 +241,7 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 
   transform_module = "/xmi2es/xmi2esTransform.xqy"
   transform_namespace ="http://marklogic.com/xmi2es"
-  transform_param = "dummy"
+  transform_param = tparam
 }
 
 task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
@@ -255,6 +254,9 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   def myPort = project.findProperty("mlAppServicesPort")
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def tparam = "dummy"  
+  if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam = '{"lax": "true"}'
 
   def fullModelName = null;
   if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".xlsx"
@@ -277,7 +279,7 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
 
   transform_module = "/xmi2es/excel2uml.xqy"
   transform_namespace = "http://marklogic.com/xmi2es/xlsx"
-  transform_param = "dummy"
+  transform_param = tparam
 }
 
 task _mFetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
@@ -448,10 +450,12 @@ task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (contentMode != null) contentMode = '"' + contentMode + '"'
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
+  def discover = project.findProperty("discover") 
+  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ');\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ',' + discover + ',' + stg + ');\n'
 println js
   javascript = js;
 }
@@ -472,10 +476,11 @@ task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
   def discover = project.findProperty("discover") 
+  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover + ');\n'
+js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover +  ',' + stg + ');\n'
 println js
   javascript = js;
 }
@@ -533,7 +538,9 @@ task _cPromoteCutConversionModule(type: Copy) {
 
 /*
 uDeployModel : deploys your UML (or even Excel) model as an ES model
-Input: modelName (XMI or Excel filename without suffix)
+Input: 
+- modelName (XMI or Excel filename without suffix)
+- lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)
 Dependencies: 
 - Your gradle project has the folder data/model
 - Your model is in that folder

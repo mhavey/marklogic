@@ -140,11 +140,11 @@ Confirm:
 ### Create Harmonization Flows
 We also ask the toolkit for generate harmonization flows. We need three harmonization flows: one to build a Department from Global source data, one to build an Employee from Global source data, and one to build an Employee from ACME source data. We will use the toolkit's DHF cookie cutter to generate harmonizations for each. Run the following:
 
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -Pdiscovery=true
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -Pdiscover=true
 
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -Pdiscovery=true
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -Pdiscover=true
 
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -Pdiscovery=true
+gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -Pdiscover=true
 
 Confirm:
 TODO : ...

@@ -19,8 +19,6 @@ import module namespace triples = "http://marklogic.com/data-hub/plugins" at "tr
 (: include the writer module which persists your envelope into MarkLogic :)
 import module namespace writer = "http://marklogic.com/data-hub/plugins" at "writer.xqy";
 
-import module namespace util = "http://marklogic.com/xmi2es/util" at "/xmi2es/util" ;
-
 declare option xdmp:mapping "false";
 
 (:~
@@ -34,32 +32,24 @@ declare function plugin:main(
   $id as xs:string,
   $options as map:map)
 {
-  try {
-    let $content-context := dhf:content-context()
-    let $content := dhf:run($content-context, function() {
-      content:create-content($id, $options)
-    })
+  let $content-context := dhf:content-context()
+  let $content := dhf:run($content-context, function() {
+    content:create-content($id, $options)
+  })
 
-    let $header-context := dhf:headers-context($content)
-    let $headers := dhf:run($header-context, function() {
-      headers:create-headers($id, $content, $options)
-    })
+  let $header-context := dhf:headers-context($content)
+  let $headers := dhf:run($header-context, function() {
+    headers:create-headers($id, $content, $options)
+  })
 
-    let $triple-context := dhf:triples-context($content, $headers)
-    let $triples := dhf:run($triple-context, function() {
-      triples:create-triples($id, $content, $headers, $options)
-    })
+  let $triple-context := dhf:triples-context($content, $headers)
+  let $triples := dhf:run($triple-context, function() {
+    triples:create-triples($id, $content, $headers, $options)
+  })
 
-    let $envelope := dhf:make-envelope($content, $headers, $triples, map:get($options, "dataFormat"))
-    let $_ := util:removeIOptions($id,$options)
-    return
-      (: writers must be invoked this way.
-       see: https://github.com/marklogic/marklogic-data-hub/wiki/dhf-lib#run-writer :)
-      dhf:run-writer(xdmp:function(xs:QName("writer:write")), $id, $envelope, $options)  
-  }
-  catch($e) {
-    (: removeIOptions if exception  :)
-    let $_ := util:removeIOptions($id,$options)
-    fn:error(xs.QName("ERROR"), $e)
-  }
+  let $envelope := dhf:make-envelope($content, $headers, $triples, map:get($options, "dataFormat"))
+  return
+    (: writers must be invoked this way.
+     see: https://github.com/marklogic/marklogic-data-hub/wiki/dhf-lib#run-writer :)
+    dhf:run-writer(xdmp:function(xs:QName("writer:write")), $id, $envelope, $options)
 };
