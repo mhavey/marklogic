@@ -174,6 +174,7 @@ Confirm:
 We have two Excel mapping spec documents in data/mapping folder. One has mapping instructions for Global, the other has mapping instructions for ACME. We'll make use of these when generating the harmonization code. For now, load them into MarkLogic. Run the following:
 
 gradle -b uml2es4dhf.gradle -Pdiscover=true -PspecName=acme-mapping uLoadMappingSpec
+
 gradle -b uml2es4dhf.gradle -Pdiscover=true -PspecName=global-mapping uLoadMappingSpec
 
 Confirm:
@@ -229,31 +230,18 @@ FINAL now contains:
   - 5 documents in Department collection
   - 1002 documents in Employee collection
 
+### Extra Credit: Compare Cookie-Cutter Harmonizations with DHF ES Harmonizations
+Data Hub Framework, like our toolkit, can generate harmonization code that produces content based on an Entity Services model. Let's use DHF's hubCreaeHarmonizeFlow task to create an Employee harmonization. 
 
-### Extra Credit: More Harmonizations 
-TODO ... And now, for comparison, we'll generate other sorts f ... ask the toolkit to create harmonization flows that construct content using the Declarative Mapper.
-
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDM -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
-
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
-
-gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeDMAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm
-
-Also, for comparison, DHF generated: 
-
-gradle -PenvironmentName=local -i hubCreateHarmonizeFlow -PflowName=harmonizeDHF -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml  -PuseES=true
-
-gradle -PenvironmentName=local -i hubCreateHarmonizeFlow -PflowName=harmonizeDHF -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml  -PuseES=true
+gradle -PenvironmentName=local -i hubCreateHarmonizeFlow -PflowName=sampleHarmonizeDHF -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PuseES=true
 
 Confirm:
-THIS PART IS TODO 
+- Check in local project for new folder plugins/entities/Employee/harmonize/sampleHarmonizeDHF
+- Using your favorite diff tool, or by eyeballing, compare this newly generated code with our toolkit's code in plugins/entities/Employee/harmonize/harmonizeESGlobal. Here are the main differences:
+  * In sampleHarmonizeDHF, writer.xqy is boilerplate code. In harmonizeESGlobal, writer.xqy uses stereotypes in the model to deteremine how to write the document (i.e., which URI, collections, permissions, and so on). HarmonizeESGlobal calls the previously-generated function xesgen:runWriter_Employee to do this. 
+  * In sampleHarmonizeDHF, triples.xqy and headers.xqy is boilerplate code. In harmonizeESGlobal, these modules use stereotypes from the model to determine how to produce the headers and triples sections of the envelope. They call previously-generated functions xesgen:setHeaders_Employee and xesgen:setTriples_Employee respectively. 
+  * In sampleHarmonizeDHF content.xqy constructs, on a field-by-field basis, content that conforms to the ES model. HarmonizeESGlobal does this too, but it also embeds in the comments helpful information from the model itself (e.g., stereotypes), from the mapping spec produced by the source system SME, and from the data discovery process. Additionally, HarmonizeESGlobal populates calculated attributes. For example, the call xesgen:doCalculation_Employee_empLabel sets the value of the employee label. This value doesn't appear in the envelope instance, but it is needed for headers and triples generation.
 
-
-
-
-- In your local gradle project you now have a folder called data/cookieCutter-dump. This contains generated DHF plugins and harmonization flows for the Employee and Department classes.
-- In your gradle plugins folder, the plugins from cookieCutter-dump have been copied. If you run an mlReloadModules, gradle will deploy these plugins to the hub modules database.
-- In the final database xmi2es-examples-hr-FINAL), the code from cookieCutter-dump exists as text documents in the collections cookieCutter and DHFEmployeeSample.
 
 ## Explore the Data
 In Query Console, import the workspace XMI2ESHR.xml. In each tab, try the query to explore an aspect of the data.

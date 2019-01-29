@@ -110,15 +110,7 @@ declare function plugin:create-content(
       /hr/employee/global/596.xml
 :)
 declare function plugin:buildContent_Employee($id,$source,$options,$ioptions) {
-   let $source :=
-      if ($source/*:envelope and $source/node() instance of element()) then
-         $source/*:envelope/*:instance/node()
-      else if ($source/*:envelope) then
-         $source/*:envelope/*:instance
-      else if ($source/instance) then
-         $source/instance
-      else
-         $source
+   let $source := $source//es:instance
    let $model := json:object()
    let $_ := (
       map:put($model, '$type', 'Employee'),
@@ -169,6 +161,8 @@ declare function plugin:buildContent_Employee($id,$source,$options,$ioptions) {
     ,
     Similar to physical predicate in candidate document: 
 :)
+let $_ := xdmp:log("GOTTOFIRSTNAME *" || $id || "*" || string($source/firstName) || "*")
+
    let $_ := map:put($model, "firstName", string($source/firstName)) (: type: string, req'd: true, array: false :)
 
    (:
