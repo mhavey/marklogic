@@ -16,9 +16,9 @@ You use a third-party UML tool, along with a set of MarkLogic stereotypes, to bu
 
 ## What's In It?
 The toolkit consists of the following parts:
-- [uml2esTransform](uml2esTransform): MarkLogic server-side modules to map UML to Entity Services.
+- [uml2esTransform](uml2esTransform): MarkLogic server-side modules to map UML to Entity Services, plus a UML-to-ES gradle build file to incorporate into your build.
 - [umlProfile](umlProfile): A UML profile containing stereotypes for MarkLogic Entity Services. Use this profile to include Entity Services configuration to your UML model.
-- [excel](excel): You can build your model in Excel as an alternative to UML! The toolkit provides an [Excel template](excel/uml2es-excel-template.xlsx) for this purpose. See [examples/hrexcel](examples/hrexcel) for a detailed example of how to use it.
+- [excel](excel): You can build your model in Excel as an alternative to UML! The toolkit provides an [Excel template](excel/uml2es-excel-template.xlsx) for this purpose. See [examples/hrexcel](examples/hrexcel) for a detailed example of how to use it. Also included is a [mapping spreadsheet](excel.uml2es-excel-mapping-template.xlsx). See [examples/hr](examples/hr) for a detailed example of how to use it. 
 - [examples](examples): Numerous examples showing the use of UML (and Excel) data models for MarkLogic. Highlights: modeling for Entity Services and Template-Driven Extraction; modeling complex document relationships using UML relationships; the UML toolkit and Data Hub; the Data Hub "cookie cutter"; mixed models (documents + semantics); logical vs. physical; generating MarkLogic code from the UML model; using ml-gradle to run the transformation of UML to Entity Services as part of your build. 
 
 ## How We Expect You Will Use This Toolkit
