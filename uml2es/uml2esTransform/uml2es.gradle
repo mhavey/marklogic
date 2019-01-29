@@ -303,11 +303,10 @@ task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
   def discover = project.findProperty("discover") 
-  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover +  ',' + stg + ');\n'
+js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover  + ');\n'
 println js
   javascript = js;
 }

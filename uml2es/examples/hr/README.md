@@ -107,7 +107,10 @@ Confirm:
 
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -PenvironmentName=local -i -PmodelName=DHFEmployeeSample uDeployModel uLoadMappingSpec
+gradle -PenvironmentName=local -i -PmodelName=DHFEmployeeSample uDeployModel 
+
+gradle -Pdiscover=true -PspecName=acme-mapping uLoadMappingSpec
+gradle -Pdiscover=true -PspecName=global-mapping uLoadMappingSpec
 
 Confirm:
 - Final DB (xmi2es-examples-hr-FINAL) includes the following documents

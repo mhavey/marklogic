@@ -3,13 +3,12 @@
 declareUpdate();
 
 const sem = require("/MarkLogic/semantics.xqy");
+const discovery = require("/xmi2es/discovery.sjs");
 
 const ALLOWABLE_PLUGINS = ["xqy", "sjs"];
 const ALLOWABLE_FORMATS = ["xml", "json"];
 const ALLOWABLE_SELECTS = ["all", "infer"];
 const ALLOWABLE_CONTENTS = ["es", "dm"];
-
-const DISCOVERY_LIMIT = 10;
 
 function getAttributes(modelIRI, entityName) {
 	var entity = modelIRI + "/" + entityName;
@@ -170,224 +169,15 @@ function useTemplate(name) {
 	return ""+doc;
 }
 
-function getIndent(i) {
-	var indent = "";
-	for (var ii = 0; ii < i; ii++) indent += "   ";
-	return indent;	
-}
-
-function render(obj, indent) {
-  var sindent = getIndent(indent);
-  var r = ``;
-
-  // array
-  if (Array.isArray(obj)) {
-    if (obj.length > 0) {
-      for (var i = 0; i < obj.length; i++) {
-        var val = obj[i];
-        if (val !== Object(val)) {
-          r  += `
-${sindent}${val}`;
-        }
-        else {
-            r  += render(val, indent);
-        }
-      }
-    }  
-  }
-  else {
-    // object
-    for (var prop in obj) {
-      if (obj.hasOwnProperty(prop)) {
-        if (obj[prop] && obj[prop] != null) {
-          var val = obj[prop];
-          if (val !== Object(val)) {
-          }
-          else {
-            val = render(val, indent+1);
-          }
-          r  += `
-${sindent} ${prop} : ${val}`;
-        }
-      }
-    }
-  }
-  return r;
-}
-
-function queryStaging(input, cmd, vars) {
-	return xdmp.eval(cmd, vars, {"database": xdmp.database(input.stagingDB)});
-}
-
-function wordsFromString(searchTerm) {
-	var words = [];
-	cts.tokenize(searchTerm).toArray().forEach(function (word) {
-		if ( fn.deepEqual(sc.name(sc.type(word)), fn.QName("http://marklogic.com/cts", "word"))) {
-			if (words.indexOf(word) < 0) words.push(word.valueOf());
-		}
-	});
-	return words;
-}
-
-function discoverModel(input) {
-	// this is mainly building common data structures for later use
-	// for example, if we want spell check on collections
-	// or if we want a lexicon of element names across documents!
-	// for now we keep it simple and use just uri and collection lexicons
-}
-
-// Check for documents similar to my class
-function discoverClass(input, entityName) {
-
-	if (!input.discoveryReport.entities) input.discoveryReport.entities = {};
-	var report = {}
-	input.discoveryReport.entities[entityName] = report;
-	var entity = input.mappingObj.entities[entityName];	
-
-	// 
-	// Step 1 - Prepare data queries
-	// 
-	var dataChecks = [];
-	if (entity.discoverySampleData == null) entity.discoverySampleData = [];
-	entity.discoverySampleData =  Array.isArray(entity.discoverySampleData) ? entity.discoverySampleData : [entity.discoverySampleData];
-	var sampleData = entity.discoverySampleData;
-	var attribSampleData = entity.attributes;
-	for (var a in entity.attributes) {
-		var attrib = entity.attributes[a];
-		if (attrib.discoverySampleData == null) attrib.discoverySampleData = [];
-		attrib.discoverySampleData =  Array.isArray(attrib.discoverySampleData) ? attrib.discoverySampleData : [attrib.discoverySampleData];
-		sampleData = sampleData.concat(attrib.discoverySampleData);
+function render(obj) {
+	// TODO - future; prune
+	var jsons = JSON.stringify(obj, null, 2).replace(/[\[\]\{\}\"]+/g,"").split("\n");
+	var nonblank = [];
+	for (var i = 0; i < jsons.length; i++) {
+		if (jsons[i].trim() == "") continue;
+		nonblank.push(jsons[i]);
 	}
-	for (var i = 0; i < sampleData.length; i++) {
-		if (sampleData[i] == null) continue;
-		var sdi =sampleData[i].trim();
-		if (sdi == "") continue;
-		dataChecks.push(cts.wordQuery(sdi, ["case-insensitive"]));
-		dataChecks.push(cts.wordQuery("* *" + sdi + "* *", ["case-insensitive"]));
-	}
-	var dataQuery = dataChecks.length > 0 ? cts.orQuery(dataChecks) : cts.trueQuery();
-	var elemQuery = cts.elementQuery(xs.QName(entityName), cts.andQuery([]));
-	xdmp.log("discoverClass *" + entityName + "* has dataQuery " + dataQuery, "info");
-	xdmp.log("discoverClass *" + entityName + "* has elemQuery " + elemQuery, "info");
-
-	var evars = {
-		"dataQuery": dataQuery,
-		"elemQuery": elemQuery,
-		"className": entityName
-	};
-
-	// 
-	// 2. collection discovery
-	// 
-	if (entity.discoveryCollections == null) entity.discoveryCollections = [];
-	entity.discoveryCollections =  Array.isArray(entity.discoveryCollections) ? entity.discoveryCollections : [entity.discoveryCollections];
-	var collCandidates = [entityName].concat(entity.discoveryCollections);
-	var collNames = [];
-	var collData = [];
-	var collElem = [];
-	for (var i = 0; i < collCandidates.length; i++) {
-		evars.candidate = collCandidates[i];
-		collNames = collNames.concat(queryStaging(input, 
-			'cts.collectionMatch("*" + candidate + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
-			evars).toArray());
-		collData = collData.concat(queryStaging(input, 
-			'cts.collectionMatch("*" + candidate + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
-			evars).toArray());
-		collElem = collElem.concat(queryStaging(input, 
-			'cts.collectionMatch("*" + candidate + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)', 
-			evars).toArray());
-	}
-	var collReport = 
-	report["Matching Collections"] = {
-		"By Name": Array.from(new Set(collNames)), 
-		"Containing Sample Data": Array.from(new Set(collData)), 
-		"Containing Root Element": Array.from(new Set(collElem))
-	};
-
-	//
-	// 2. directory/URI discovery
-	//
-	var dirClassD = [];
-	var dirClassDData = [];
-	var dirClassDElem = [];
-	var dirPattern = [];
-	var dirPatternData = [];
-	var dirPatternElem = [];
-	for (var i = 0; i < entity.discoverySampleData; i++) {
-		evars.sampleDataWords = wordFromString(entity.discoverySampleData[i]).join("*");
-		dirClassD = dirClassD.concat(queryStaging(input, 
-			'cts.uriMatch("*" + className + "*" + sampleDataWords + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
-			evars).toArray());
-		dirClassD = dirClassD.concat(queryStaging(input, 
-			'cts.uriMatch("*" + sampleDataWords + "*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
-			evars).toArray());
-		dirClassDData = dirClassDData.concat(queryStaging(input, 
-			'cts.uriMatch("*" + className + "*" + sampleDataWords + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
-			evars).toArray());
-		dirClassDData = dirClassDData.concat(queryStaging(input, 
-			'cts.uriMatch("*" + sampleDataWords + "*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
-			evars).toArray());
-		dirClassDElem = dirClassDElem.concat(queryStaging(input, 
-			'cts.uriMatch("*" + className + "*" + sampleDataWords + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)',
-			evars).toArray());
-		dirClassDElem = dirClassDElem.concat(queryStaging(input, 
-			'cts.uriMatch("*" + sampleDataWords + "*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)',
-			evars).toArray());
-	};
-	if (entity.discoveryURIPatterns == null) entity.discoveryURIPatterns = [];
-	entity.discoveryURIPatterns =  Array.isArray(entity.discoveryURIPatterns) ? entity.discoveryURIPatterns : [entity.discoveryURIPatterns];
-	for (var i = 0; i < entity.discoveryURIPatterns; i++) {
-		evars.pattern = entity.discoveryURIPatterns[i];
-		dirPattern = dirPattern.concat(queryStaging(input, 
-			'cts.uriMatch(pattern, ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])',
-			evars).toArray());
-		dirPatternData = dirPatternData.concat(queryStaging(input, 
-			'cts.uriMatch(pattern, ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)',
-			evars).toArray());
-		dirPatternElem = dirPatternElem.concat(queryStaging(input, 
-			'cts.uriMatch(pattern, ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)',
-			evars).toArray());
-	};
-	report["Matching URIs"] =  {
-		"URI Based On Class Name": {
-			"Just URI": Array.from(new Set(queryStaging(input, 
-				'cts.uriMatch("*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"])', 
-			evars))),
-			"Containing Sample Data": Array.from(new Set(queryStaging(input, 
-				'cts.uriMatch("*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], dataQuery)', 
-			evars))),
-			"Containing Root Element": Array.from(new Set(queryStaging(input, 
-				'cts.uriMatch("*" + className + "*", ["case-insensitive", "limit=' + DISCOVERY_LIMIT + '"], elemQuery)', 
-			evars)))
-		},
-		"URI Based On Class Name Plus Sample Data": {
-			"Just URI": Array.from(new Set(dirClassD)),
-			"Containing Sample Data": Array.from(new Set(dirClassDData)),
-			"Containing Root Element": Array.from(new Set(dirClassDElem))
-		},
-		"URI Sample Pattern": {
-			"Just URI": Array.from(new Set(dirPattern)),
-			"Containing Sample Data": Array.from(new Set(dirPatternData)),
-			"Containing Root Element": Array.from(new Set(dirPatternElem))
-		}
-	};
-
-	//
-	// 3. look for any URIs that match the data query
-	//
-	report["Documents Containing Data"] = Array.from(new Set(queryStaging(input, 
-		'cts.uris(null, ["limit=' + DISCOVERY_LIMIT + '"], dataQuery)', 
-		evars)));
-	report["Documents Containing Root Element"] = Array.from(new Set(queryStaging(input, 
-		'cts.uris(null, ["limit=' + DISCOVERY_LIMIT + '"], elemQuery)', 
-		evars)));
-
-	xdmp.log("discoverClass *" + entityName + "* has report " + JSON.stringify(report), "info");
-
-}
-
-function discoverAttribute(input, entityName, attributeName) {
-	
+	return nonblank.join("\n");
 }
 
 function checkIfRDFList(res) {
@@ -397,6 +187,68 @@ function checkIfRDFList(res) {
 function runXESQuery(subjectIRI) {
   var query = `select ?p ?o where {<${subjectIRI}> ?p ?o } order by ?p`;
   return sem.sparql(query).toArray();
+}
+
+function buildOrderedMatchList(lists) {
+	var ret = [];
+	// combine the lists
+	for (var i = 0; i < lists.length; i++) {
+		for (var j = 0; j < lists[i].length; j++) {
+			if (ret.length == 7) break;
+			if (ret.indexOf(lists[i][j]) >= 0) break;
+			ret.push(lists[i][j]);
+		}
+	}
+	return ret;
+}
+
+function showViewEntityDiscovery(input, entityName) {
+
+	var res = fn.subsequence(sem.sparql(`
+SELECT ?doc (COUNT(?placeholder) AS ?numMatches)
+WHERE{
+  ?doc <http://marklogic.com/xmi2es/discovery/attributeMatchesModel> ?placeholder 
+}
+GROUP BY ?doc
+ORDER BY DESC(?numMatches)
+`,
+		{}, [], sem.store(null, cts.documentQuery(input.reportURI))), 1, 4);
+	var ret = {
+		"Documents whose structure resembles the model": res.toArray(),
+		"Possible collections": buildOrderedMatchList([
+			input.report.entities[entityName].collectionDiscovery.withData,
+			input.report.entities[entityName].collectionDiscovery.byName]),
+		"Possible URIs": buildOrderedMatchList([
+			input.report.entities[entityName].uriDiscovery.className.withData,
+			input.report.entities[entityName].uriDiscovery.withData,
+			input.report.entities[entityName].allURIs
+			])
+	};
+	return ret;
+}
+
+function showViewAttributeDiscovery(input, entityName, attributeName) {
+	var splits = attributeName.split(".");
+	if (splits.length > 1) attributeName = splits[0];
+	var ret = {
+		"Similar to physical attribute in candidate document": 
+			fn.subsequence(sem.sparql(`
+select ?document ?physicalName where {
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/attribute> "${attributeName}" .
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/physical> ?physicalName .
+	?document <http://marklogic.com/xmi2es/discovery/attributeMatchesModel> ?placeholder
+	}`,
+			{}, [], sem.store(null, cts.documentQuery(input.reportURI))), 1, 4).toArray(),
+		"Similar to physical predicate in candidate document": 
+			fn.subsequence(sem.sparql(`
+select ?document ?physicalName where {
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/attribute> "${attributeName}" .
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/physical> ?physicalName .
+	?document <http://marklogic.com/xmi2es/discovery/predicateMatchesModel> ?placeholder
+	}`,
+			{}, [], sem.store(null, cts.documentQuery(input.reportURI))), 1, 4).toArray()
+	};
+	return ret;
 }
 
 function describeFacts(subjectIRI) {
@@ -450,56 +302,49 @@ function describeFacts(subjectIRI) {
 
 function describeModel(input) {
 	var modelIRI = input.modelIRI;
-	var desc = `Model ${modelIRI} is stereotyped in the model as follows:`;
-	desc += render(describeFacts(modelIRI), 0);
+	var descJ = {};
+	descJ[`Model ${modelIRI} is stereotyped in the model as follows:`] = describeFacts(modelIRI);
 	if (input.mappingURI && input.mappingObj) {
-		desc += `
-The model also has the specified mapping facts:`;
-		desc += render({
+		descJ["The model also has the specified mapping facts:"] = {
 			"Mapping URI": input.mappingURI,
 			"Overall Mapping Source": input.mappingObj.mapping.source,
 			"Overall Mapping Notes": input.mappingObj.mapping.notes
-		}, 0);
+		};
 
-		if (input.discover == true) {
-			input.discoveryReport = {};
-			discoverModel(input);
+		if (input.discovery == true) {
+			descJ["Comments below include discovery findings. See the full report at this URI:"] = input.reportURI;
 		}
 	}
-	return desc;
+	return render(descJ);
 }
 
 function describeClass(input, entityName) {
-	var desc = `Class ${entityName} is stereotyped in the model as follows:`;
-	desc += render(describeFacts(input.modelIRI + "/" + entityName), 0);
+	var descJ = {};
+	descJ[`Class ${entityName} is stereotyped in the model as follows:`] = 
+		describeFacts(input.modelIRI + "/" + entityName);
 	if (input.mappingURI && input.mappingObj) {
 		var entity = input.mappingObj.entities[entityName];
 		if (entity) {
-			desc += `
-The class also has the specified mapping facts:`;
-			desc += render({
+			descJ["The class also has the specified mapping facts"]= {
 				"Mapping Source": entity.source,
 				"Mapping Notes": entity.notes,
 				"Mapping Collections For Discovery": entity.discoveryCollections,
 				"Mapping URI Patterns For Discovery": entity.discoveryURIPatterns,
 				"Mapping Sample Data For Discovery": entity.discoverySampleData
-			}, 0);
+			};
 
-			if (input.discover == true) {
-				discoverClass(input, entityName);
-xdmp.log("ATTEMPT TO RENDER :" + JSON.stringify(input.discoveryReport.entities[entityName]));
-xdmp.log("GIVES :" + render(input.discoveryReport.entities[entityName], 0));
-				desc +=  JSON.stringify(input.discoveryReport.entities[entityName], null, 2); /*render(input.discoveryReport.entities[entityName], 0); */
+			if (input.discovery == true) {
+				descJ["Discovery found the following:"] = showViewEntityDiscovery(input, entityName);
 			}
 		}
 	}
-	return desc;
+	return render(descJ);
 }
 
 function describeAttrib(input, entityName, attributeName) {
-	var desc = 
-`Attribute ${attributeName} is stereotyped in the model as follows:`;
-	desc += render(describeFacts(input.modelIRI + "/" + entityName + "/" + attributeName), 1);
+	var descJ = {};
+	descJ[`Attribute ${attributeName} is stereotyped in the model as follows:`] = 
+		describeFacts(input.modelIRI + "/" + entityName + "/" + attributeName);
 	if (input.mappingURI && input.mappingObj) {
 		var entity = input.mappingObj.entities[entityName];
 		if (entity) {
@@ -510,29 +355,29 @@ function describeAttrib(input, entityName, attributeName) {
 				if (sa == attributeName || fn.startsWith(sa, attributeName + ".")) attributes.push(sa);
 			}
 			attributes = attributes.sort();	
-
 			if (attributes.length > 0) {
-				desc += `
-   The attribute also has the specified mapping facts:`;
-   			for (var i = 0; i < attributes.length; i++) {
-   				var attr = entity.attributes[attributes[i]];
-				desc += render({
-					"Model Path": attributes[i],
-					"Source Mapping": attr.mapping,
-					"Mapping Attribute Notes": attr.notes,
-					"Mapping Attribute Sample Data For Discovery":  attr.discoverySampleData,
-					"Mapping Attribute AKA For Discovery": attr.discoveryAKA}, 1);
-				}
-				if (input.discover == true && 1 == 3) {
-					discoverAttribute(input, entityName, attributes[i]);
-					desc += render(input.discoveryReport.entities[entityName].attributes[attributes[i]], 1);
+				var attribArr = [];
+				descJ["The attribute also has the specified mapping facts:"] = attribArr;
+	   			for (var i = 0; i < attributes.length; i++) {
+					var attr = entity.attributes[attributes[i]];
+					attribArr.push({
+						"Model Path": attributes[i],
+						"Source Mapping": attr.mapping,
+						"Mapping Attribute Notes": attr.notes,
+						"Mapping Attribute Sample Data For Discovery":  attr.discoverySampleData,
+						"Mapping Attribute AKA For Discovery": attr.discoveryAKA
+					});	
+					if (input.discovery == true) {
+						descJ["Discovery found the following:"] = showViewAttributeDiscovery(input, entityName, attributes[i]);
+					}
 				}
    			}
 		}
 	}
 
-	return desc;
+	return render(descJ);
 }
+
 
 function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 	var contentNode =content;
@@ -561,17 +406,14 @@ function cutContent(input, template) {
 	if (dmMode == true && input.dataFormat != "json") throw "Declarative Mapper supports JSON only";
 
 	// open mapping spec
-	if (input.mappingSpec && input.mappingSpec.trim() != "") {
-		xdmp.log("*" + input.mappingSpec+ "*");
-		input.mappingURI = input.mappingSpec.trim();
-		if (input.mappingURI.endsWith(".xlsx")) {
-			var len = input.mappingURI.length;
-			input.mappingURI = input.mappingURI.substring(0, len - "xlsx".length) + "json"
-		}
-		xdmp.log("*" + input.mappingURI + "*");
+	if (input.mappingURI && input.mappingURI != "") {
+		input.mappingURI = discovery.getMappingDocURI(input.mappingURI);
 		input.mappingObj = cts.doc(input.mappingURI).toObject();
+		if (input.discovery == true) {
+			input.reportURI = discovery.getReportURI(input.mappingURI);
+			input.report = cts.doc(input.reportURI).toObject();			
+		}
 	}
-
 	if (dmMode == true) return cutContentDM(input, template);
 	else return cutContentES(input, template);
 }
@@ -696,13 +538,13 @@ declare function plugin:buildContent_${nextEntity}($id,$source,$options,$ioption
 
 			var AttribDesc = describeAttrib(input, nextEntity, attributeName);
 			ContentBuilder += `
-   /*
-   ${AttribDesc}
-   */`;
+/*
+${AttribDesc}
+*/`;
 			ContentXBuilder += `
-   (:
-   ${AttribDesc}
-   :)`;
+(:
+${AttribDesc}
+:)`;
 
 			if (attributes[i].attributeIsCalculated == true) {
 
@@ -873,7 +715,7 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB) {
 	}
 }
 
-function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingSpec, discover, stagingDB) {
+function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, flowName, contentMode, mappingURI, stagingDB) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -914,6 +756,8 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 	var harmonizationFolder = "/cookieCutter/" + modelName + "/plugins/entities/" + entityName + "/harmonize/" + flowName + "/";
 	var cookieFolder = templateFolder + pluginFormat + "/";
 
+	if (mappingURI) mappingURI = mappingURI.trim();
+
 	// now let's cookie-cut the harmonization flow
 	var input = {
 		modelVersion: info.version,
@@ -923,9 +767,9 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 		pluginFormat: pluginFormat,
 		dataFormat: dataFormat,
 		contentMode: contentMode,
-		mappingSpec: mappingSpec,
-		discover: (discover && discover == true || discover == "true"),
-		stagingDB: stagingDB,
+		mappingURI: mappingURI,
+		discovery: mappingURI ? discovery.hasDiscovery(mappingURI) : false,
+		discoveryDB: stagingDB,
 		builderFunctions: builderFunctions,
 		moduleName: flowName, 
 		harmonizationMode: true
@@ -948,7 +792,7 @@ function createHarmonizeFlow(modelName, entityName, dataFormat, pluginFormat, fl
 		cutWriter(input, useTemplate(cookieFolder + "writer.t" + pluginFormat)), true, modelName, "harmonization");
 }
 
-function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingSpec, discover, stagingDB) {
+function createConversionModule(modelName, entityName, dataFormat, pluginFormat, moduleName, contentMode, mappingURI) {
 
 	// validate
 	if (pluginFormat == null || ALLOWABLE_PLUGINS.indexOf(pluginFormat) < 0) throw "Illegal plugin format *" + pluginFormat + "*";
@@ -972,6 +816,8 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 	// create plugins (with harmonization) for each
 	var moduleFolder = "/cookieCutter/" + modelName + "/src/main/ml-modules/" + entityName + "/";
 
+	if (mappingURI) mappingURI = mappingURI.trim();
+
 	var input = {
 		modelVersion: info.version,
 		modelIRI: modelIRI,
@@ -980,9 +826,8 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 		pluginFormat: pluginFormat,
 		dataFormat: dataFormat,
 		contentMode: contentMode,
-		mappingSpec: mappingSpec,
-		discover: (discover && discover == true || discover == "true"),
-		stagingDB: stagingDB,
+		mappingURI: mappingURI,
+		discovery: mappingURI ? discovery.hasDiscovery(mappingURI) : false,
 		builderFunctions: builderFunctions,
 		moduleName: moduleName, 
 		harmonizationMode: false

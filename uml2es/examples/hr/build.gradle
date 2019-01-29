@@ -389,6 +389,57 @@ task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   port = myPort.toInteger()
 }
 
+task _mLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
+  def srcDir = new File("${projectDir}").getAbsolutePath()
+  def unixDir = srcDir.replace('\\', '/') + "/data/mapping"
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  def fullSpecName = null;
+  if (project.findProperty("specName") != null) fullSpecName = project.findProperty("specName") + ".xlsx"
+  def fdir = file(unixDir)
+  def files = null
+  if (fdir != null) files = fdir.list()
+  enabled = fullSpecName != null && files != null && files.contains(fullSpecName)
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "binary"
+  input_file_path = unixDir + "/" + fullSpecName
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = "/xmi2es/excel-mapper/"
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = "xmi2es"
+  host = myHost
+  port = myPort.toInteger()
+
+  transform_module = "/xmi2es/excelMapper.xqy"
+  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
+  transform_param = "dummy"
+}
+
+task _mDiscover(type: com.marklogic.gradle.task.ServerEvalTask) {
+  def discover = project.findProperty("discover")
+  def mappingURI = '"/xmi2es/excel-mapper/' + project.findProperty("specName") + '.xlsx"'
+  def discoveryDB = ""
+  if (project.findProperty("mlStagingDbName") != null) discoveryDB = '"' + project.findProperty("mlStagingDbName") + '"'
+  else discoveryDB = '"' + project.findProperty("mlAppName") + "-content"
+
+  enabled = discover != null && discover == "true"
+
+def js = "'use strict';\n"
+js += 'const discover = require("/xmi2es/discovery.sjs");\n'
+js += 'discover.discoverFromMapping(' + mappingURI + ',' +  discoveryDB + ');\n'
+println js
+  javascript = js;
+}
+
 /*
  * PRIVATE TASKS: Cookie cutter
  */
@@ -450,12 +501,11 @@ task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (contentMode != null) contentMode = '"' + contentMode + '"'
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
-  def discover = project.findProperty("discover") 
   def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ',' + discover + ',' + stg + ');\n'
+js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ',' +  stg + ');\n'
 println js
   javascript = js;
 }
@@ -475,12 +525,10 @@ task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
   if (contentMode != null) contentMode = '"' + contentMode + '"'
   def mappingSpec = project.findProperty("mappingSpec") 
   if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
-  def discover = project.findProperty("discover") 
-  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + discover +  ',' + stg + ');\n'
+js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + ');\n'
 println js
   javascript = js;
 }
@@ -581,7 +629,10 @@ task uDeployModel() {
 
 /*
 uLoadMappingSpec : loads your Excel mapping spec for use in cookie cutter codegen
-Input: none
+Input: 
+- specName = mandatory (Excel filename without suffix)
+- discover = true/false; default false
+- discoveryDB = default: content DB (non-DHF), staging DB (DHF0)
 Dependencies: 
 - Your gradle project has the folder data/mapping
 - Your mapping spec is in that folder
@@ -590,33 +641,13 @@ Dependencies:
 Effects:
 - Target database has the mapping spec (original Excel plus transformed json)
 */
-task uLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
-  def srcDir = new File("${projectDir}").getAbsolutePath()
-  def unixDir = srcDir.replace('\\', '/') + "/data/mapping"
-  def regex = '"' + unixDir + ",'',/,''" + '"'
-
-  def myHost = project.findProperty("mlHost")
-  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
-  def myPort = project.findProperty("mlAppServicesPort")
-  if (myPort == null) myPort = project.findProperty("mlRestPort")
-  if (myPort == null) myPort = project.findProperty("mlFinalPort")
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "binary"
-  input_file_path = unixDir + "/*.xlsx"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/excel-mapper/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "xmi2es"
-  host = myHost
-  port = myPort.toInteger()
-
-  transform_module = "/xmi2es/excelMapper.xqy"
-  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
-  transform_param = "dummy"
+task uLoadMappingSpec() {
+  dependsOn '_mLoadMappingSpec'
+  dependsOn '_mDiscover'
+  tasks.findByName('_mDiscover').mustRunAfter '_mLoadMappingSpec'
 }
+
+
 
 /*
 uCreateDHFEntities - create DHF plugin entities; a souped-up hubCreateEntity
@@ -656,7 +687,6 @@ Input:
           incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
      dm - Declarative Mapper mode. This feature is not ready yet.
 - mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
-- discover: true/false - Discover possible mappings
 - overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
 Dependencies: 
 - Your gradle project is DHF 4.1
