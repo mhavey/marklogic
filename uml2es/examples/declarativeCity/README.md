@@ -102,7 +102,7 @@ Confirm:
 
 Run the following to load the model:
 
-gradle -PenvironmentName=local -i -PmodelName=DeclarativeCity uDeployModel
+gradle -b uml2es.gradle -PenvironmentName=local -i -PmodelName=DeclarativeCity uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the XMI, including:

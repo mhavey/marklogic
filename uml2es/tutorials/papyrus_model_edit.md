@@ -116,7 +116,7 @@ You now follow the same approach as the numerous [examples](../examples) of this
 - The first step is to review and modify gradle.properties; set suitable values for hostname, ports, username/password, and application name. 
 - Next copy your Papyrus model to the gradle/data/model directory. Papyrus saves the model in the file PapyrusPerson.uml in the MyPapyrusProject of your Eclipse workspace. Copy that file to the gradle/data/model directory. Rename the file PapyrusPerson.xml. 
 - Setup your database and deploy the transform by running: gradle -i setup mlDeploy
-- Load your model by running gradle -i -PmodelName=PapyrusPerson uDeployModel
+- Load your model by running gradle -b uml2es.gradle -i -PmodelName=PapyrusPerson uDeployModel
 - In QueryConsole explore the database xmi2es-tutorial-content. Your Entity Services descriptor is /xmi2es/es/PapyrusPerson.json (or /marklogic.com/entity-services/models/PapyrusPerson.json). Notice how it aligns with the Papyrus model:
  
 ![Project in Papyrus - ES model](pap_model_es.png)

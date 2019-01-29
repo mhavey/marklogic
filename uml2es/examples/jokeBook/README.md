@@ -33,7 +33,7 @@ Confirm:
 ### Transform UML to ES
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -PenvironmentName=local -i -PmodelName=JokeBook uDeployModel 
+gradle -b uml2es.gradle -PenvironmentName=local -i -PmodelName=JokeBook uDeployModel 
 
 Confirm:
 - Content DB has the following documents

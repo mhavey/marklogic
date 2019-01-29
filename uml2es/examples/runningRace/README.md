@@ -42,13 +42,13 @@ Now we deploy our three running race UML models. They end up as Entity Services 
 
 First, the MagicDraw model:
 
-gradle -i -PmodelName=RunningRace uDeployModel
+gradle -i -b uml2es.gradle -PmodelName=RunningRace uDeployModel
 
 Next the EMF and Papyrus models:
 
-gradle -i -PmodelName=RunningRaceEMF uDeployModel
+gradle -i -b uml2es.gradle  -PmodelName=RunningRaceEMF uDeployModel
 
-gradle -i -PmodelName=RunningRacePapyrus uDeployModel
+gradle -i -b uml2es.gradle  -PmodelName=RunningRacePapyrus uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the XMI files, including:

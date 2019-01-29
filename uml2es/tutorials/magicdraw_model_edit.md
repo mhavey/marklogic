@@ -120,7 +120,7 @@ You now follow the same approach as the numerous [examples](../examples) of this
 - The first step is to review and modify gradle.properties; set suitable values for hostname, ports, username/password, and application name. 
 - Next copy your MagicDraw model that you saved in XML form above to the gradle/data/model directory. 
 - Setup your database and deploy the transform by running: gradle -i setup mlDeploy
-- Load your model by running gradle -i -PmodelName=MyMLModel uDeployModel
+- Load your model by running gradle -b uml2es.gradle -i -PmodelName=MyMLModel uDeployModel
 - In QueryConsole explore the database xmi2es-tutorial-content. Your Entity Services descriptor is /xmi2es/es/MyMLModel.json (or /marklogic.com/entity-services/models/MyMLModel.json). Notice how it aligns with the MagicDraw model:
 
 ![Project in MagicDraw - ES model](md_project_es.png)

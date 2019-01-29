@@ -13,8 +13,6 @@ The toolkit provides a gradle build file containing all model deployment and cod
 
 Details of the task interface, including task input, are given in the build file.
 
-(TODO: in future, these tasks will be packaged in a plugin. For now, they're in a build file.)
-
 The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit show this gradle build in action. 
 
 The mega tutorial [../tutorials/runningRaceStartToFinish.md](../tutorials/runningRaceStartToFinish.md) demonstrates the gradle build as key ingredient in a soup-to-nuts modeling example for DHF. Please go through this tutorial to see how to:

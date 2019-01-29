@@ -53,9 +53,15 @@ task includeModel(type: Copy) {
     into "data/model"
 }
 
+task includeUGradle(type: Copy) {
+    from "../../uml2esTransform/uml2es.gradle"
+    into "."
+}
+
 task setup() {
   dependsOn('includeXMI2ESTransform')
   dependsOn('includeModel')
+  dependsOn('includeUGradle')
 }
 
 task ingestMovieData
@@ -129,24 +135,6 @@ task deleteGenerated(type: Delete) {
   delete "src/main/ml-modules/options/MovieModel.xml"
 }
 
-apply from : '../../uml2esTransform/uml2es.gradle'
-
-
-/*
-Edit this to enable/disable code generation of mlGenerateModelArtifacts
-*/
-ext {   
-  def mdb = project.findProperty("mlFinalDbName")
-  if (mdb == null) mdb = project.findProperty("mlAppName" + "-content")
-  mlAppConfig {
-    modelsDatabase=mdb
-    generateInstanceConverter=true
-    generateSchema=false
-    generateDatabaseProperties=true
-    generateExtractionTemplate=true
-    generateSearchOptions=true
-  }
-}
 
 
 
