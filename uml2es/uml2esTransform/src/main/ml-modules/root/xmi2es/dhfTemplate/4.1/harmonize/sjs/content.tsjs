@@ -30,7 +30,7 @@ ${EntityContentEnableDMOut}
 */
 function createContent(id, options) {
   let doc = cts.doc(id);
-  let $ioptions := util.setIOptions(id,options);
+  let ioptions = util.setIOptions(id,options);
 
   let source;
 
