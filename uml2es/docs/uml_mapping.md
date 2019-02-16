@@ -43,7 +43,7 @@ Pros:
 - If you started with separate models but want to merge them into one model, most UML tools make this task easy to accomplish. MagicDraw's Import From option allows you to import one model into another. Papyrus allows you to reintegrate a submodel into a model. 
 
 Cons: 
-- Toolkit ignores your internal package structure. Ensure you stereotype only at the model level. Ensure your class names are distinct across the whole model.
+- Toolkit ignores your internal package structure. Ensure you stereotype at the model, not the package, level. Ensure your class names are distinct across the whole model.
 
 ### 2. Several Models Linked by UML Tool
 
