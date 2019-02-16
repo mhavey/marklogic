@@ -31,7 +31,10 @@ A real-world data model consists of many classes. It is sometimes necessary to s
 - If there are multiple data architects working on the overall model, splitting the model into multiple files enables developers to work in parallel. 
 
 There are several ways to attack this:
-1. Use just one model, but split it into several packages. Dividing into several packages addresses makes the model easier to comprehend. Additionally, assuming the project uses a source code control with advanced branch and merge capabilities, like Git, this approach allows different designers to work on different packages in parallel. Remember also that UML the class diagram is just a view of the classes. I can create several diagrams depicting different aspects of the model. Put simply, a single model doesn't mean a single large diagram!
+
+### 1. One Model, Several Packages and Diagrams
+
+Use just one model, but split it into several packages. Dividing into several packages addresses makes the model easier to comprehend. Additionally, assuming the project uses a source code control with advanced branch and merge capabilities, like Git, this approach allows different designers to work on different packages in parallel. Remember also that UML the class diagram is just a view of the classes. I can create several diagrams depicting different aspects of the model. Put simply, a single model doesn't mean a single large diagram!
 
 Pros: 
 
@@ -42,7 +45,9 @@ Pros:
 Cons: 
 - Toolkit ignores your internal package structure. Ensure you stereotype only at the model level. Ensure your class names are distinct across the whole model.
 
-2. Build several models linked by the UML tool. Suppose model M contains class C. In model N, I want class D to contain an attribute that refers to class C. UML tools support this by allowing package import:
+### 2. Several Models Linked by UML Tool
+
+Build several models linked by the UML tool. Suppose model M contains class C. In model N, I want class D to contain an attribute that refers to class C. UML tools support this by allowing package import:
 
 - In model M, I ensure class C belongs to a package. 
 - In model N, I import the package from model M that contains class C. I can now deal with class C as if it were part of model N! In particular, I can draw an aggregation relationship between class D and class C! D contains C, even though D and C come from different models!
@@ -59,8 +64,9 @@ Cons:
 - The old big modeling approach. Try to avoid the need for this. Smaller models!
 - Complex to deploy. Is each UML model a separate ES model, or are all UML models merged to one ES model? Hard to sort out namespaces, dependencies. 
 
+### 3. Several Models Linked by External Reference
 
-3. Build several models, but loosely couple them by having classes in different models refer to each other by named external reference. Suppose model M (whose base URI is "http://modelM") has class C. In model N, I want class D to contain an attribute, A, whose type is class C. In approach 2, we would use the tool's import capability to import into model N the package in model M that contains class C. In approach 3, we forgo the the import and stereotype attribute A as being an external reference to C. To do this we stereotype attribute A as esProperty. Within this stereotype, we give the value of the externalRef tag as "http://modelM/C". [See <http://docs.marklogic.com/guide/entity-services/models#id_15972> for more on how external references are defined in Entity Services.]
+Build several models, but loosely couple them by having classes in different models refer to each other by named external reference. Suppose model M (whose base URI is "http://modelM") has class C. In model N, I want class D to contain an attribute, A, whose type is class C. In approach 2, we would use the tool's import capability to import into model N the package in model M that contains class C. In approach 3, we forgo the the import and stereotype attribute A as being an external reference to C. To do this we stereotype attribute A as esProperty. Within this stereotype, we give the value of the externalRef tag as "http://modelM/C". [See <http://docs.marklogic.com/guide/entity-services/models#id_15972> for more on how external references are defined in Entity Services.]
 
 Pros:
 
@@ -74,6 +80,7 @@ Cons:
 - Does not leverage the tool's package import capability to mix and match classes from different models.
 - Your application must decide how to process this reference. 
 
+### Recommendation
 
 We recommended the first approach. The first approach is demonstrated in the mega tutorial: [../tutorials/runningRaceStartToFinish.md](../tutorials/runningRaceStartToFinish.md) 
 
