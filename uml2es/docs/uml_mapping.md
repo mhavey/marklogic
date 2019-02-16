@@ -40,7 +40,7 @@ Pros:
 
 - Simple, understandable
 - Allows parallel design. [The model is an XMI structure whose packages are separate, independent branches of the XML tree. It is straightforward to manage parallel development of the model when it resides in a Git repo. See <https://eclipsesource.com/blogs/2015/04/13/collaborative-modeling-with-papyrus-emf-compare-and-egit/>.]
-- If you started with separate models but want to merge them into one model, most UML tools make this task easy to accomplish. MagicDraw allows you to import one model into another. Papyrus allows you to reintegrate a submodel into a model. 
+- If you started with separate models but want to merge them into one model, most UML tools make this task easy to accomplish. MagicDraw's Import From option allows you to import one model into another. Papyrus allows you to reintegrate a submodel into a model. 
 
 Cons: 
 - Toolkit ignores your internal package structure. Ensure you stereotype only at the model level. Ensure your class names are distinct across the whole model.
@@ -54,7 +54,7 @@ Build several models linked by the UML tool. Suppose model M contains class C. I
 
 Pros:
 
-- UML tools support and encourage this approach. 
+- UML tools support and encourage this approach. In MagicDraw, it's the Use Project option. In Papyrus, it's the ability to import a package in Model Explorer.
 - The UML standard allows it. 
 - Flexibility of mix and match.
 - Developers can work in parallel
