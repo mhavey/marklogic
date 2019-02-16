@@ -58,6 +58,30 @@ The following table describes each stereotype:
 |semantic|Attribute|semProperty|predicate|iri|1|Here you specify a semantic property of the document instance of your class. The transform's code generator adds a triple, expressing this property, to the document envelope. The subject of the property is the semIRI of your document instance; you must designate one of the attributes as semIRI. As for the predicate of the property, you specify that in the predicate tag. The object of the property is the value of the attribute unless you define qualifiedObject_sPO. Assuming you don't define qualifiedObject_sPO, the value is either a literal or an IRI. It is an IRI if the attribute's type is IRI or if the attribute is a reference to another object; if it is a reference to another object, that object's class must have a semIRI.  If the attribute's type is string, boolean, real, or integer, the object of the triple is a literal of that type.|
 |semantic|Attribute|semProperty|qualifiedObject_sPO|CSV xipany?,xipany,xipany|0..*|If you define this tag, the object of the semantic property is a qualified object, or a set of triples that describes the complex structure of the object. Use this when your property needs a qualified relation pattern. The way it works is as follows: the transform's code generator assigns as the object of the property a blank node. In your tag, you specify one or more predicate/object combinations for that blank node. The blank node itself is just a placeholder; what the stereotype is stating is that the document instance of the class has a property whose object is a thing that can be described with the specified predicates and objects. The tag is qualifiedObject_sPO. It is a CSV of predicate-object. You can also specify subject-object-predicate if your subject is something other than the blank node. The [JokeBook example](../examples/jokeBook) shows the use of this experimental stereotype.|
 
+## UML Model vs Package
+In UML, a model can contain packages. A class can belong directly to the model or it can belong to a package within the model. In mapping UML to ES, this toolkit treats all classes as belonging directly to the model. It ignores the internal package structure of the model. 
+
+Hence, never stereotype at the package level! Always stereotype at the model level! Model stereotypes documented above include: esModel (which defines the model's base URI and version); xmlNamespace; xImplHints; and semPrefixes. Always define these at the model level!
+
+Also, the toolkit requires class names to be unique over the whole model. Although UML allows you to define classes with the same name belonging to different packages, the toolkit will flag this as an error; it will not attempt to map a class whose name is the same as another class it has already mapped.
+
+Suppose you define your UML model as follows:
+
+- Model M (With esModel defined)
+	* Class 1 
+	* Package 1 (With esModel overridden. Oh oh! Toolkit will ignore.)
+		* Class 2 
+	* Package 2 
+		* Class 2 (Oh oh! Toolkit ignores because it saw class with same name in Package 1.)
+		* Class 3 
+
+The toolkit produces an ES model defined as follows:
+- Model-level definition based on Model M stereotypes. Ignores Package 1 stereotypes
+- Classes:
+	* Class 1
+	* Class 2 (from Package 1, but ignores Package 2)
+	* Class 3
+
 ## Musical Types
 The stereotype tags follow the "musical" grammar. "Musical" stands for MarkLogic UML Stereotype IRI and Concat language. Here are the types:
 
