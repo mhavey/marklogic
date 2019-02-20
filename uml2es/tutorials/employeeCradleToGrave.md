@@ -9,6 +9,8 @@ There is more than one cook in the kitchen. In a real-world project different pe
 
 ## Step 1: Standup a MarkLogic Environment and Source Code Repo (Build Person)
 
+<details><summary>View this section</summary>
+<p>
 We get started by having you, in the role of build person, setup a basic data hub on MarkLogic. You will also create a source code repository with a folder structure in which different project artifacts are stored. 
 
 There are two pre-requisites for running this step of the tutorial:
@@ -60,6 +62,8 @@ gradle -i mlDeploy
 When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-STAGING, xmi2es-tutorials-FINAL, and xmi2es-tutorials-MODULES. Check in admin console you have these.
 
 ![Step 2 - folder structure](images/emp_setup2.png)
+</p>
+</details>
 
 ## Step 2: Design UML Model for Employee Hub (Data Architect)
 
