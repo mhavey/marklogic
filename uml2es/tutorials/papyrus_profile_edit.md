@@ -15,49 +15,49 @@ The second way is to use the full Papyrus profile diagram editor to graphically 
 
 Open Eclipse. Import into your workspace the ML profile Eclipse project as follows. From the File menu select Import | General | Existing Projects Into Workspace. 
 
-![Import project](pap_profile2_import.png)
+![Import project](images/pap_profile2_import.png)
 
 Click Next. In the Import Projects dialog, make sure "Select root directory" is selected. Use the Browse button to locate the ML profile Eclipse project in your local copy of the toolkit. It can be found in [uml2es/umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse//MLProfileProject). 
 
-![Import project - profile project](pap_profile2_import2.png)
+![Import project - profile project](images/pap_profile2_import2.png)
 
 Click Finish. You should now see the project in the Project Explorer pane in the upper-right corner of Eclipse.
 
-![Imported project - profile project](pap_profile2_import_done.png)
+![Imported project - profile project](images/pap_profile2_import_done.png)
 
 ### Editing the profile
 
 Double-click on the file MLProfile.profile.uml to open it in the EMF UML editor. If you expand it a few levels, you see that is is divided into three subpackages: es, sem, xes.
 
-![Papyrus profle in editor](pap_profile_editor.png)
+![Papyrus profle in editor](images/pap_profile_editor.png)
 
 Let's add a new stereotype to the sem subpackage. Right-click the sem package, and select New Child | Owned Stereotype | Stereotype. 
 
-![Papyrus profile - new Element](pap_profile_newelem.png)
+![Papyrus profile - new Element](images/pap_profile_newelem.png)
 
 In the properties panel, type the name. We will call it semYippee.
 
-![Papyrus profile - yippee](pap_profile_yippee.png)
+![Papyrus profile - yippee](images/pap_profile_yippee.png)
 
 You should decide whether the stereotype applies to UML packages, classes, properties, or some combination of these. Let's configure semYippee to apply to properties. Select the stereotype and from the main Eclipse menu select UML Editor | Stereotype | Create Extension.
 
-![Papyrus profile - extension](pap_profile_extension.png)
+![Papyrus profile - extension](images/pap_profile_extension.png)
 
 In the Create Extensions window, under Choice Pattern enter "property". Then under Choices select UML::Property and click Add to move it to the right side.
 
-![Papyrus profile - extension property to add](pap_profile_extension2.png)
+![Papyrus profile - extension property to add](images/pap_profile_extension2.png)
 
-![Papyrus profile - extension property added](pap_profile_extension3.png)
+![Papyrus profile - extension property added](images/pap_profile_extension3.png)
 
 When done click OK.
 
 The last step is to "define" the profile. This is a one-click step that is important for technical reasons. Refer to the links below for more. To perform this step, right-click on the node labeled MarkLogicEntityServicesProfile under UML. Delete it. 
 
-![Papyrus profile - delete the anno](pap_profile_deleteanno.png)
+![Papyrus profile - delete the anno](images/pap_profile_deleteanno.png)
 
 Then select the node labelled "<Profile>Marklogic Entity Services Profile". From main Eclipse menu select UML Editor | Profile | Define. 
 
-![Papyrus profile - define](pap_profile_define.png)
+![Papyrus profile - define](images/pap_profile_define.png)
 
 In the dialog click OK. Done!!
 

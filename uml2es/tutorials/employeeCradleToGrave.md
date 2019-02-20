@@ -43,7 +43,7 @@ Copy into the main folder employeeHub your initial build file [employeeHubLab/st
 
 When you are done, you should have the following folder structure:
 
-![Step 1 - folder structure](emp_setup1.png)
+![Step 1 - folder structure](images/emp_setup1.png)
 
 Now let's initialize the hub. In a command prompt navigate to your employeeHub folder and run the following:
 
@@ -59,9 +59,115 @@ gradle -i mlDeploy
 
 When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-STAGING, xmi2es-tutorials-FINAL, and xmi2es-tutorials-MODULES. Check in admin console you have these.
 
-![Step 2 - folder structure](emp_setup2.png)
+![Step 2 - folder structure](images/emp_setup2.png)
 
+## Step 2: Design UML Model for Employee Hub (Data Architect)
 
+Next you get to play the role of data architect. You will use the UML modeling tool Papyrus to design a class model for employees. The file containing your model resides in the employeeHub folder the build person (performed convincingly by you) created in Step 1. 
+
+Pre-requisite: You need Papyrus. If you don't have Papyrus, install it. See [How to install Papyrus](papyrus_install.md) for instructions.
+
+Open Papyrus in a new workspace. The location of the workspace on your local machine is unimportant. 
+
+To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. In Step 1 you copied it from the UML2ES clone to employeeHub/data/papyrus/MLProfileProject. To import into Papyrus, from the File menu select Import | General | Existing Projects Into Workspace. 
+
+![Import profile project](images/pap_profile2_import.png)
+
+Click Next. In the Import Projects dialog, make sure "Select root directory" is selected. Use the Browse button to locate the ML profile in employeeHub/data/papyrus/MLProfileProject. 
+
+![Import profile project](images/emp_setup3.png)
+
+Click Finish. You should now see the project in the Project Explorer pane in the upper-right corner of Eclipse.
+
+![Imported project - DONE](pap_profile2_import_done.png)
+
+### Create a new project
+
+Open Eclipse. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
+
+![New project in Papyrus](pap_model_create.png)
+
+Click Next. In the Diagram Language window, select UML.
+
+![New project in Papyrus](pap_model_uml.png)
+
+Click Next. In the next window enter the project name as MyPapyrusProject.
+
+![New project in Papyrus](pap_model_name.png)
+
+Click finish.
+
+In Project Explorer, you will see the new project. Papyrus created a dummy model for you called model. Delete it by right-clicking on it and selecting Delete.
+
+![New project in Papyrus](pap_model_delete.png)
+
+### Building a Simple Model
+
+In Project Explorer, right-click on Model and select New | Other. In the selection wizard screen select "Papyrus Model". 
+
+![Project in Papyrus - new model](pap_model_new.png)
+
+Click Next. For diagram language, select UML.
+
+![Project in Papyrus - new model UML](pap_model_uml.png)
+
+Click Next. For filename, enter PapyrusPerson.di
+
+![Project in Papyrus - new model name](pap_model_name.png)
+
+In the next page, for "Root model element name" type Person. For "Diagram Kind", select Class Diagram. Check "A UML Model With Primitive Types". For "Choose a profile to apply" click Browse Workspace. Select MLProfileProject/MLProfile.profile.uml.
+
+![Project in Papyrus - new model UML](pap_model_options.png)
+
+Click Finish..
+
+You will now see the PapyrusPerson canvas open in the center panel. From the Palette on the right class, choose Class. Drag it onto the canvas. It creates a class called Class1.
+
+![Project in Papyrus - new class](pap_model_class.png)
+
+In the bottom panel, select Properties. Change the name of the class to Person.
+
+![Project in Papyrus - person class](pap_model_person.png)
+
+In the canvas, hover over the Person class. From the bar select Add Property Class Attribute Label.
+
+![Project in Papyrus - person class new attribute](pap_model_attribute.png)
+
+It creates an attribute called Attribute1. Select the attribute and in the properties change the name to "id" and the type to String (under UML Primitives).
+
+![Project in Papyrus - id attribute](pap_model_id.png)
+
+Create three additional attributes. Name them firstName, lastName, and hobbies. Make each a String. The multiplicity of each should be 1, except hobbies, which should have multiplicity 0..*. When done, your model should look like this:
+
+![Project in Papyrus - remaining attributes](pap_model_person2.png)
+
+### Stereotyping the Model
+
+To help map this to Entity Services, we'll add a few stereotypes to our model. 
+
+First we will make the id attribute a primary key. To do this, select the id attribute. In the Properties panel select Profile. Click the + button above Applied Stereotypes. From the list of applicable stereotypes select PK and click the arrow to move it to Applied Stereotypes.
+
+![Project in Papyrus - id PK](pap_model_idpk.png)
+
+Click OK. The class now looks like this.
+
+![Project in Papyrus - person with id PK](pap_model_person3.png)
+
+Using a similar approach, add the elementRangeIndex stereotype to firstName, lastName, and hobbies. Your class now looks like this:
+
+![Project in Papyrus - remaining attributes with range index](pap_model_person4.png)
+
+We will give our model a version and a namespace. Click in a blank part of the canvas. Under Properties select Profile. Under Applied Stereotype click the +. (If you can't see Applied Stereotypes, make the properties panel larger.) Under Applicable Properties select esModel and click the arrow button to move it to Applied Properties.
+
+![Project in Papyrus - esModel](pap_model_esmodel.png)
+
+Click OK. Back in the Properties panel, you see the esModel has been added. Expand it, click on version. In the right text box type 0.0.1.
+
+![Project in Papyrus - version](pap_model_version.png)
+
+Similarly for baseUri enter the value http://xyz.org/marklogicModels.
+
+We are done modelling. Click File | Save All.
 
 
 
