@@ -19,7 +19,7 @@ The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit 
 - Copy its tasks into your existing gradle build file. 
 - Copy it into your gradle project and use it as your main gradle build file. Add app-specific build tasks to it as needed.
 
-The mega tutorial [../tutorials/runningRaceStartToFinish.md](../tutorials/runningRaceStartToFinish.md) demonstrates the gradle build as key ingredient in a soup-to-nuts modeling example for DHF. Please go through this tutorial to see how to:
+The mega tutorial [../tutorials/employeeCradleToGrave.md](../tutorials/employeeCradleToGrave.md) demonstrates the gradle build as key ingredient in a soup-to-nuts modeling example for DHF. Please go through this tutorial to see how to:
 
 - Setup a brand new source-controlled MarkLogic gradle build for UML in DHF.
 - Construct a UML model and maintain it as part of the gradle build. 
