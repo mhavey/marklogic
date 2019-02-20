@@ -137,14 +137,29 @@ Similarly for baseUri enter the value http://com.marklogic.es.uml.hr. Save the m
 We have now a properly named model with packages for its two main parts.
 
 ### Step 2c: Define HRCommon Classes
-TODO ... 
-You will need the Model Explorer. If it is not open in your workspace, open it by selecting Window | Show View | Papyrus | Model Explorer. 
+
+For the remainder of this step you will need the Model Explorer. If it is not open in your workspace, open it by selecting Window | Show View | Papyrus | Model Explorer. 
 
 ![Model explorer](images/emp_setup7.png)
 
 Model Explorer will now appear as a new pane, likely on the bottom or right part of the screen.
 
 ![Model explorer](images/emp_setup8.png)
+
+Using the Model Explorer, we will now create two new class diagrams, one for each package. Select the HRCommon package, right-click, and from the menu choose New Diagram | Class Diagram. 
+
+![New Class Diagram](images/emp_setup14.png)
+
+Give it the name HRClassDiagram. Similarly for HRMain, create a class diagram called HRMainClassDiagram. Your model explorer should now show the following:
+
+![Packages and Diagrams](images/emp_setup15.png)
+
+
+### Step 2 Summary
+
+You created dadada... 
+
+If you think you might have messed up along the way, a pre-cooked model is available under [employeeHubLab/step2/EmployeeHubModel](employeeHubLab/step2/EmployeeHubModel). TODO -- put it there; and talk about how to import it into the workspace ... ; or, at import time, get the model from here instead of from your shitty workspace...
 
 </p>
 </details>
