@@ -9,7 +9,7 @@ There is more than one cook in the kitchen. In a real-world project different pe
 
 ## Step 1: Standup a MarkLogic Environment and Source Code Repo (Build Person)
 
-<details><summary>View this section</summary>
+<details><summary>Click to view/hide this section</summary>
 <p>
 We get started by having you, in the role of build person, setup a basic data hub on MarkLogic. You will also create a source code repository with a folder structure in which different project artifacts are stored. 
 
@@ -67,7 +67,12 @@ When this has completed, you should see in your MarkLogic environment several ne
 
 ## Step 2: Design UML Model for Employee Hub (Data Architect)
 
+<details><summary>Click to view/hide this section</summary>
+<p>
+
 Next you get to play the role of data architect. You will use the UML modeling tool Papyrus to design a class model for employees. The file containing your model resides in the employeeHub folder the build person (performed convincingly by you) created in Step 1. 
+
+### Step 2a: Setup Workspace and Projects
 
 Pre-requisite: You need Papyrus. If you don't have Papyrus, install it. See [How to install Papyrus](papyrus_install.md) for instructions.
 
@@ -101,75 +106,47 @@ Click Finish. In Papyrus, you now see two projects in your workspace:
 
 ![Papyrus projects](images/emp_setup6.png)
 
+### Step 2b: Create Model and Package Structure
 
+We will design a relatively simple model consisting of two main classes (Department, Employee) and a set of common location classes (Address, PhoneNumber, Email). We will split these classes into two packages: Department and Employee will go into the HRMain packages; the location classes will go in the HRCommon package.
 
-### Building a Simple Model
+Create the HRCommon package by dragging a Package from the Palette onto the diagram EmployeeodelHub.di. In the Properties pane edit the name of the package. Change it from Package1 to HRCommon. 
 
-In Project Explorer, right-click on Model and select New | Other. In the selection wizard screen select "Papyrus Model". 
+![HRCommon](images/emp_setup9.png)
 
-![Project in Papyrus - new model](pap_model_new.png)
+Create a second package in the same way. Name this one HRMain. 
 
-Click Next. For diagram language, select UML.
+Next, configure model-level attributes. In the diagram, click anywhere on the white background outside the packages you just created. In the Properties pane, in the UML section change the name from RootElement to HRModel.
 
-![Project in Papyrus - new model UML](pap_model_uml.png)
+![HRModel](images/emp_setup10.png)
 
-Click Next. For filename, enter PapyrusPerson.di
+Still in the Properties pane, move to the Profile section and scroll down to the Applied Stereotypes. Click on the + symbol. In the popup window, Under Applicable Stereotypes select esModel. 
 
-![Project in Papyrus - new model name](pap_model_name.png)
+![HRModel Profile](images/emp_setup11.png) 
 
-In the next page, for "Root model element name" type Person. For "Diagram Kind", select Class Diagram. Check "A UML Model With Primitive Types". For "Choose a profile to apply" click Browse Workspace. Select MLProfileProject/MLProfile.profile.uml.
+Move them over to the Applied Stereotypes section by clicking the button with an arrow that points right. When done click OK to close the popup.
 
-![Project in Papyrus - new model UML](pap_model_options.png)
+![HRModel Profile](images/emp_setup12.png) 
 
-Click Finish..
+Back in the Properties pane, in the Applied Stereotyes part of the Profile section still, select version under esModel. Enter the value 0.0.1
 
-You will now see the PapyrusPerson canvas open in the center panel. From the Palette on the right class, choose Class. Drag it onto the canvas. It creates a class called Class1.
+![HRModel Profile](images/emp_setup13.png) 
 
-![Project in Papyrus - new class](pap_model_class.png)
+Similarly for baseUri enter the value http://com.marklogic.es.uml.hr. Save the model (File | Save All).
 
-In the bottom panel, select Properties. Change the name of the class to Person.
+We have now a properly named model with packages for its two main parts.
 
-![Project in Papyrus - person class](pap_model_person.png)
+### Step 2c: Define HRCommon Classes
+TODO ... 
+You will need the Model Explorer. If it is not open in your workspace, open it by selecting Window | Show View | Papyrus | Model Explorer. 
 
-In the canvas, hover over the Person class. From the bar select Add Property Class Attribute Label.
+![Model explorer](images/emp_setup7.png)
 
-![Project in Papyrus - person class new attribute](pap_model_attribute.png)
+Model Explorer will now appear as a new pane, likely on the bottom or right part of the screen.
 
-It creates an attribute called Attribute1. Select the attribute and in the properties change the name to "id" and the type to String (under UML Primitives).
+![Model explorer](images/emp_setup8.png)
 
-![Project in Papyrus - id attribute](pap_model_id.png)
-
-Create three additional attributes. Name them firstName, lastName, and hobbies. Make each a String. The multiplicity of each should be 1, except hobbies, which should have multiplicity 0..*. When done, your model should look like this:
-
-![Project in Papyrus - remaining attributes](pap_model_person2.png)
-
-### Stereotyping the Model
-
-To help map this to Entity Services, we'll add a few stereotypes to our model. 
-
-First we will make the id attribute a primary key. To do this, select the id attribute. In the Properties panel select Profile. Click the + button above Applied Stereotypes. From the list of applicable stereotypes select PK and click the arrow to move it to Applied Stereotypes.
-
-![Project in Papyrus - id PK](pap_model_idpk.png)
-
-Click OK. The class now looks like this.
-
-![Project in Papyrus - person with id PK](pap_model_person3.png)
-
-Using a similar approach, add the elementRangeIndex stereotype to firstName, lastName, and hobbies. Your class now looks like this:
-
-![Project in Papyrus - remaining attributes with range index](pap_model_person4.png)
-
-We will give our model a version and a namespace. Click in a blank part of the canvas. Under Properties select Profile. Under Applied Stereotype click the +. (If you can't see Applied Stereotypes, make the properties panel larger.) Under Applicable Properties select esModel and click the arrow button to move it to Applied Properties.
-
-![Project in Papyrus - esModel](pap_model_esmodel.png)
-
-Click OK. Back in the Properties panel, you see the esModel has been added. Expand it, click on version. In the right text box type 0.0.1.
-
-![Project in Papyrus - version](pap_model_version.png)
-
-Similarly for baseUri enter the value http://xyz.org/marklogicModels.
-
-We are done modelling. Click File | Save All.
-
+</p>
+</details>
 
 
