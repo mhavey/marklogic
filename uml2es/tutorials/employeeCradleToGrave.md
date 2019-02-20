@@ -108,7 +108,7 @@ Click Finish. In Papyrus, you now see two projects in your workspace:
 
 ### Step 2b: Create Model and Package Structure
 
-We will design a relatively simple model consisting of two main classes (Department, Employee) and a set of common location classes (Address, PhoneNumber, Email). We will split these classes into two packages: Department and Employee will go into the HRMain packages; the location classes will go in the HRCommon package.
+We will design a relatively simple model consisting of two main classes (Department, Employee) and a set of common location classes (Address, Phone, Email). We will split these classes into two packages: Department and Employee will go into the HRMain packages; the location classes will go in the HRCommon package.
 
 Create the HRCommon package by dragging a Package from the Palette onto the diagram EmployeeodelHub.di. In the Properties pane edit the name of the package. Change it from Package1 to HRCommon. 
 
@@ -150,10 +150,47 @@ Using the Model Explorer, we will now create two new class diagrams, one for eac
 
 ![New Class Diagram](images/emp_setup14.png)
 
-Give it the name HRClassDiagram. Similarly for HRMain, create a class diagram called HRMainClassDiagram. Your model explorer should now show the following:
+Give it the name HRClassDiagram. Similarly for HRMain, create a class diagram called HRMainClassDiagram. Your Model Explorer should now show the following:
 
 ![Packages and Diagrams](images/emp_setup15.png)
 
+Select the HRCommonClassDiagram in Model Explorer. Drag a Class from the Palette onto the HRCommonClassDiagram canvas. Name it Address. Similarly create classes Phone and Email. Your diagram should look like this:
+
+![Common](images/emp_setup16.png)
+
+Let's add attributes to each class. Select the Address class. From the context menu that appears, choose Add Property Class Attribute Label. 
+
+![Attribute](images/emp_setup17.png)
+
+Then in the UML section of the Properties pane, change its name from Attribute1 to addressType. Set the Type to UML Primitive Types | String. Keep the Multiplicity at 1.
+
+![Attribute](images/emp_setup18.png)
+
+At this point your diagram looks like this:
+
+![Attribute](images/emp_setup19.png)
+
+Add these attributes to Address:
+
+- lines, type: string, multiplicity: 1..*
+- city, type: string, multiplicity: 1
+- state, type: string, multiplicity: 1
+- zip, type: string, multiplicity: 1
+- country, type: string, multiplicity: 1
+
+Add these attributes to Phone:
+
+- phoneType, type: string, multiplicity: 1
+- phoneNumber, type: string, multiplicity: 1
+
+Add these attributes to Email:
+
+- emailType, type: string, multiplicity: 1
+- emailAddress, type: string, multiplicity: 1
+
+When you are done, your diagram should look like this:
+
+![Attributes](images/emp_setup20.png)
 
 ### Step 2 Summary
 
