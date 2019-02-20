@@ -77,29 +77,27 @@ Click Next. In the Import Projects dialog, make sure "Select root directory" is 
 
 ![Import profile project](images/emp_setup3.png)
 
-Click Finish. You should now see the project in the Project Explorer pane in the upper-right corner of Eclipse.
+Click Finish. You should now see the profile project in the Project Explorer pane in the upper-right corner of Eclipse. Next, create a project for the employee model. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
 
-![Imported project - DONE](pap_profile2_import_done.png)
-
-### Create a new project
-
-Open Eclipse. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
-
-![New project in Papyrus](pap_model_create.png)
+![New project in Papyrus](images/pap_model_create.png)
 
 Click Next. In the Diagram Language window, select UML.
 
-![New project in Papyrus](pap_model_uml.png)
+![New project in Papyrus](images/pap_model_uml.png)
 
-Click Next. In the next window enter the project name as MyPapyrusProject.
+Click Next. In the next window enter the project name as EmployeeHubModel. Select the model file name as EmployeeHubModel. For the location, uncheck "Use default location". For location, browse to the employeeHub/data/papyrus folder you created in Step 1.
 
-![New project in Papyrus](pap_model_name.png)
+![New project in Papyrus](images/emp_setup4.png)
 
-Click finish.
+Click Next.  In the next page, under Diagram Kind, select Class Diagram. Click the box "A UML model with basic primitive types." Under "Choose a profile to apply", select Browse Workspace and select MLProjectProfile|MLProfile.profile.uml. 
 
-In Project Explorer, you will see the new project. Papyrus created a dummy model for you called model. Delete it by right-clicking on it and selecting Delete.
+![New project in Papyrus](images/emp_setup5.png)
 
-![New project in Papyrus](pap_model_delete.png)
+Click Finish. In Papyrus, you now see two projects in your workspace:
+
+![Papyrus projects](images/emp_setup6.png)
+
+
 
 ### Building a Simple Model
 
