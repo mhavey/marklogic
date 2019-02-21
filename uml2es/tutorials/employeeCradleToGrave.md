@@ -323,6 +323,7 @@ First, the build person modifies the build.gradle and gradle.properties files cr
 
 - To build.gradle, add the following code at the end:
 
+```
 task prepHRModel(type: Copy) {
     from "data/papyrus/EmployeeHubModel/EmployeeHubModel.uml"
     into "data/model"
@@ -339,6 +340,7 @@ task deployHRModel() {
   dependsOn "runUML2ESDeploy"
   tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepHRModel'
 }
+```
 
 - To gradle.properties, add the following line at the end:
 
