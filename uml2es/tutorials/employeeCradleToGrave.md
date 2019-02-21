@@ -404,3 +404,19 @@ function doCalculation_Employee_uri(id, content, ioptions) {
 
 </p>
 </details>
+
+## Step 4: Define Mapping Spec (Source Data SME)
+
+<details><summary>Click to view/hide this section</summary>
+<p>
+
+</p>
+</details>
+
+## Step 5: Ingest and Harmonize Employee Hub (Developer with Assist from Build Person)
+
+<details><summary>Click to view/hide this section</summary>
+<p>
+
+</p>
+</details>
