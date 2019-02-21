@@ -237,11 +237,11 @@ Now let's bring into this diagram the Address, Phone, and Email classes from our
 
 ![common](images/emp_setup26.png)
 
-In our model, both Employee and Department have addresses, phones, and emails. We use aggregration relationships to represent this. Draw six association links: Employee to Address, Employee to Phone, Employee to Email, Department to Address, Department to Phone, and Department to Email. Because of all the arrows the diagram might be a bit messy. Let's make it pretty. First, moving the classes into a good spot as in the following:
+In our model, both Employee and Department have addresses, phones, and emails. We use aggregration relationships to represent this. Draw six association links: Employee to Address, Employee to Phone, Employee to Email, Department to Address, Department to Phone, and Department to Email. Because of all the arrows the diagram might be a bit messy. Let's make it pretty. First, move the classes into a good spot on the canvas:
 
 ![common](images/emp_setup27.png)
 
-Next, let's remove unnecessary arrow labelling. Right-click on the white part of the diagram and from the context menu choose Select | All Connectors. Right-click again and choose Filters | Manage Connector Labels. In the popup, click Deselect All. Then manually select Target Role and Target Multiplicity under A_memberOf_employee and A_reportsTo_employee. 
+Next, remove unnecessary arrow labelling. Right-click on the white part of the diagram and from the context menu choose Select | All Connectors. Right-click again and choose Filters | Manage Connector Labels. In the popup, click Deselect All. Then manually select Target Role and Target Multiplicity under A_memberOf_employee and A_reportsTo_employee. 
 
 ![pretty](images/emp_setup28.png)
 
@@ -249,7 +249,7 @@ Click OK to close the popup. Lastly, select Address, Phone, and Email. Right-cli
 
 ![gorgeous](images/emp_setup29.png)
 
-Finally, let's modify the configuration of each of the six associations to Address, Phone, and Email. For each, select the arrow in the diagram. In the Properties pane, ensure the right Member End is non-navigable. For the left Member End, change the multiplicity to 0..*, the aggregation to shared, and the name to the plural (addresses, phones, and emails rather than address, phone, and email). Here is what the configuration looks like for the link between department and email:
+To complete the step, modify the configuration of each of the six associations to Address, Phone, and Email. For each, select the arrow in the diagram. In the Properties pane, ensure the right Member End is non-navigable. For the left Member End, change the multiplicity to 0..*, the aggregation to shared, and the name to the plural (addresses, phones, and emails rather than address, phone, and email). Here is what the configuration looks like for the link between department and email:
 
 ![aggregation](images/emp_setup30.png)
 
@@ -300,7 +300,7 @@ And here's the final diagram:
 
 ![memberOf](images/emp_setup37.png)
 
-Save your work (File | Save All).
+Save your work (File | Save All). If the build person has created a source code repository, push your model to that repo.
 
 ### Step 2 Summary
 
@@ -311,4 +311,26 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 </p>
 </details>
 
+## Step 3: Confirm Model Works in MarkLogic (Build Person, Data Architect, Developer)
 
+<details><summary>Click to view/hide this section</summary>
+<p>
+Next is a quick verification that the UML model can be dpeloyed to MarkLogic as part of the build process. This gives the data architect the assurance that the model "works in ML." It gives the developer a first look at the model and how it is represented in ML. It gives the build person knowledge of the steps to deploy the UML model to ML.
+
+We won't have any actual DHF code when this step completes. That comes later. But we will have proved that our UML model can be transformed to Entity Services. And with that assurance, we're off and running with ES-based development.
+
+First, the build person modifies the build.gradle and gradle.properties files. 
+
+- To build.gradle, the build person adds the following code:
+
+
+
+- To gradle.properties, the build person adds:
+
+modelName=EmployeeHubModel
+
+If you're not sure you did this correctly, look at pre-cooked files [employeeHubLab/step3/build.gradle](employeeHubLab/step3/build.gradle) and [employeeHubLab/step3/gradle.properties](employeeHubLab/step3/gradle.properties). 
+
+
+</p>
+</details>

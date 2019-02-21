@@ -10,4 +10,4 @@ A few tools tutorials:
 
 [How to edit the profile in Papyrus](papyrus_profile_edit.md)
 
-[Employee Hub Cradle To Grave](employeeCradleToGrave.md)
+[Employee Hub Cradle To Grave - Mo](employeeCradleToGrave.md)
