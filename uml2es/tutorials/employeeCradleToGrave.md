@@ -348,25 +348,58 @@ modelName=EmployeeHubModel
 
 If you're not sure you did this correctly, look at pre-cooked files [employeeHubLab/step3/build.gradle](employeeHubLab/step3/build.gradle) and [employeeHubLab/step3/gradle.properties](employeeHubLab/step3/gradle.properties). 
 
-To transform the UML model to Entity Services and deploy it to MarkLogic, you, still in the role of build person, runs the following from the command line in the gradle project folder you created in Step 1.
+To transform the UML model to Entity Services and deploy it to MarkLogic, you, still in the role of build person, run the following from the command line in the gradle project folder you created in Step 1.
 
 gradle -i deployHRModel
 
-That command should run successfully. You should see "BUILD SUCCESSFUL" when its completes. To check what it did, go into the Query Console and navigate to the xmi2es-tutorials-empHub-FINAL database. Click on Explore. Among the documents created are the following:
+That command should run successfully; you should see "BUILD SUCCESSFUL" when its completes. Now it's time for everyone, especially the data architect and the developer, to observe the effects of gradle deployment command just run. Playing these roles, open Query Console and navigate to the xmi2es-tutorials-empHub-FINAL database. Click on Explore. Among the documents created are the following:
 
-- /marklogic.com/entity-services/models/EmployeeHubModel.json (The deployed ES model. We'll come back to this in a moment.)
-- /xmi2es/extension/EmployeeHubModel.ttl (Semantic triples that extend our ES model)
-- /xmi2es/gen/EmployeeHubModel/lib.xqy (Initial generated code from the model. We'll come back to this in a moment.)
-- /xmi2es/findings/EmployeeHubModel.xml (Problems found during transformation. Stop and open this up. Check to make sure it reports no issues.)
-- /xmi2es/xmi/EmployeeHubModel.xml (The original UML model as an XMI document)
+- /marklogic.com/entity-services/models/EmployeeHubModel.json: This is the ES model corresponding to our UML model. Here is an excerpt. Notice that its structure is exactly as we defined it UML. This will reassure the data architect.
 
-- In Query Console, open a tab of type SPARQL, point to the final DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
+![ES Model](images/emp_setup38.png)
+
+- /xmi2es/extension/EmployeeHubModel.ttl: There is more to the model than the JSON descriptor we just examined. You'll notice that the descriptor does not mention some of our stereotypes. Where, for example, is the xDocument and xCalculated configuration? The JSON descriptor is the *core* model, but in Entity Services there is also an *extended* model. The extended model expresses, using semantic triples, facts about the entities and attributes of the model that fall outside the core model. /xmi2es/extension/EmployeeHubModel.ttl is a Turtle representation of those facts. Open that document and peruse it. Alternatively, in Query Console open a tab of type SPARQL Query pointed to the xmi2es-tutorials-empHub-FINAL database. Run the following query:
 
 select * where {?s ?o ?p}
 
-Among the results, you should see the following:
-- <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee> <http://marklogic.com/entity-services#property> http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/emails> from basic ES model
-- <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
+Nearly 300 triples come back from this query, but most of them are out-of-the-box *core* triples. One of our extended triples indicates that the Employee entity's collection is "Employee":
+
+	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Employee> <http://marklogic.com/xmi2es/xes#collections> "Employee"
+
+These triples show the calculated value of uri in the Department entity:
+
+	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Department/uri>	<http://marklogic.com/xmi2es/xes#calculation> _:bnode7470cb4106d8a9b6
+	* _:bnode7470cb4106d8a9b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"\"/department/\""
+	* _:bnode7470cb4106d8a9b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	_:bnode7411cb4716d8c8b6
+	* _:bnode7411cb4716d8c8b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"$attribute(departmentId)"
+	* _:bnode7411cb4716d8c8b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	_:bnode7432cb4526d8ebb6
+	* _:bnode7432cb4526d8ebb6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"\".json\""
+	* _:bnode7432cb4526d8ebb6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>
+
+Those triples are not pretty, but both the data architect and developer will be happy to see that the stereotypes are accounted for in the MarkLogic model. These extended facts will be used in the DHF harmonization logic. Significantly, the UML2ES toolkit generates useful (and relatively pretty) harmonization code from the extended model. 
+
+- /xmi2es/gen/EmployeeHubModel/lib.sjs: And here is the first bit of that generated code. Notice the following generated Javascript functions. runWriter_Employee creates an Employee JSON document and, according to the extended model, writes it to the "Employee" collection. doCalculation_Employee_uri constructs the uri attribute of Employee as the string concatenation of "/employee/", the employeeId attribute value, and ".json". We'll see in a later step how these functions are brought together in the harmonization.
+
+```
+function runWriter_Employee(id, envelope, ioptions) {
+  var uri = id;
+  var dioptions = {};
+  var collections = [];
+  collections.push("Employee");
+  dioptions.collections = collections;
+  dioptions.permissions = xdmp.defaultPermissions();
+  xdmp.documentInsert(uri, envelope, dioptions);
+}
+function doCalculation_Employee_uri(id, content, ioptions) {
+  var c = "";
+  c += "/employee/";
+  c += content.employeeId;
+  c += ".json";
+  content.uri = c;
+}
+```
+
+- /xmi2es/findings/EmployeeHubModel.xml: This file records problems found during transformation. Stop and open this up. Check to make sure it reports no issues.
 
 
 </p>
