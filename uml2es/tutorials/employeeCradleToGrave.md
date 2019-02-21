@@ -368,7 +368,7 @@ Nearly 300 triples come back from this query, but most of them are out-of-the-bo
 
 These triples show the calculated value of uri in the Department entity:
 
-	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Department/uri>	<http://marklogic.com/xmi2es/xes#calculation> _:bnode7470cb4106d8a9b6
+	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Department/uri>	<http://marklogic.com/xmi2es/xes#calculation> 	_:bnode7470cb4106d8a9b6
 	* _:bnode7470cb4106d8a9b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"\"/department/\""
 	* _:bnode7470cb4106d8a9b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	_:bnode7411cb4716d8c8b6
 	* _:bnode7411cb4716d8c8b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"$attribute(departmentId)"
