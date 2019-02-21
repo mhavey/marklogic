@@ -63,8 +63,8 @@ task prepHRModel(type: Copy) {
 }
 
 task runUML2ESDeploy(type: GradleBuild) {
-  buildFile "uml2es4dhf.gradle"
-  tasks "uDeployModel"
+  buildFile = "uml2es4dhf.gradle"
+  tasks = ["uDeployModel"]
 }
 
 task deployHRModel() {

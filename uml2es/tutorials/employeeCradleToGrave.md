@@ -39,9 +39,9 @@ Copy into employeeHub/src/main/ml-modules/root the UML2ES transform code [../uml
 
 Copy into the main folder employeeHub the UML2ES build file [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).
 
-Copy into employeeHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you cn see the file employeeHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
+Copy into employeeHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you can see the file employeeHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
 
-Copy into the main folder employeeHub your initial build file [employeeHubLab/step1/build.gradle](employeeHubLab/step1/build.gradle) and your initial gradle properties file [employeeHubLab/step1/gradle.properties](employeeHubLab/step1/gradle.properties). Tweak the gradle.properties once you've copied it over. TODO ...
+Copy into the main folder employeeHub your initial build file [employeeHubLab/step1/build.gradle](employeeHubLab/step1/build.gradle) and your initial gradle properties file [employeeHubLab/step1/gradle.properties](employeeHubLab/step1/gradle.properties). Tweak the gradle.properties once you've copied it over. For example, modify mlHost if you're ML server is not running on localhost; modify mlUsername and mlPassword if your admin username/password is not admin/admin.
 
 When you are done, you should have the following folder structure:
 
@@ -59,7 +59,7 @@ Finally, let's create an instance of the data hub. In the command prompt, run th
 
 gradle -i mlDeploy
 
-When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-STAGING, xmi2es-tutorials-FINAL, and xmi2es-tutorials-MODULES. Check in admin console you have these.
+When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-empHub-STAGING, xmi2es-tutorials-empHub-FINAL, and xmi2es-tutorials-empHub-MODULES. Check in admin console you have these.
 
 ![Step 2 - folder structure](images/emp_setup2.png)
 </p>
@@ -70,7 +70,7 @@ When this has completed, you should see in your MarkLogic environment several ne
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-Next you get to play the role of data architect. You will use the UML modeling tool Papyrus to design a class model for employees. The file containing your model resides in the employeeHub folder the build person (performed convincingly by you) created in Step 1. 
+Next you get to play the role of data architect. You will use the UML modeling tool Papyrus to design a class model for employees. The file containing your model resides in the employeeHub folder that the build person (performed convincingly by you) created in Step 1. 
 
 ### Step 2a: Setup Workspace and Projects
 
@@ -94,7 +94,7 @@ Click Next. In the Diagram Language window, select UML.
 
 ![New project in Papyrus](images/pap_model_uml.png)
 
-Click Next. In the next window enter the project name as EmployeeHubModel. Select the model file name as EmployeeHubModel. For the location, uncheck "Use default location". For location, browse to the employeeHub/data/papyrus folder you created in Step 1.
+Click Next. In the next window enter the project name as EmployeeHubModel. Select the model file name as EmployeeHubModel. For the location, uncheck "Use default location". For location, browse to the employeeHub/data/papyrus folder you created in Step 1. To this path append EmployeeHubModel.
 
 ![New project in Papyrus](images/emp_setup4.png)
 
@@ -120,11 +120,11 @@ Next, configure model-level attributes. In the diagram, click anywhere on the wh
 
 ![HRModel](images/emp_setup10.png)
 
-Still in the Properties pane, move to the Profile section and scroll down to the Applied Stereotypes. Click on the + symbol. In the popup window, Under Applicable Stereotypes select esModel. 
+Still in the Properties pane, move to the Profile section and scroll down to the Applied Stereotypes. Click on the + symbol. In the popup window, under Applicable Stereotypes select esModel. 
 
 ![HRModel Profile](images/emp_setup11.png) 
 
-Move them over to the Applied Stereotypes section by clicking the button with an arrow that points right. When done click OK to close the popup.
+Move it over to the Applied Stereotypes section by clicking the button with an arrow that points right. When done click OK to close the popup.
 
 ![HRModel Profile](images/emp_setup12.png) 
 
@@ -200,7 +200,7 @@ Now switch to the HRMainClassDiagram by double-clicking it in the Model Explorer
 
 Add the following attributes to Employee:
 
-- employeeId, type: integer, multiplicity: 1
+- employeeId, type: string, multiplicity: 1
 - firstName, type: string, multiplicity: 1
 - lastName, type: string, multiplicity: 1
 - status, type: string, multiplicity: 1
@@ -233,7 +233,7 @@ Next to do is the reportsTo relationship between employees. Draw an association 
 
 ![reportsTo](images/emp_setup25.png)
 
-Now let's bring into this diagram the Address, Phone, and Email classes from our HRCommon package. In Model Explorer, under HRCommon select Address and draw it into the current diagram. Do the same with Phone and Email.
+Now let's bring into this diagram the Address, Phone, and Email classes from our HRCommon package. In Model Explorer, under HRCommon select Address and drag it into the current diagram. Do the same with Phone and Email.
 
 ![common](images/emp_setup26.png)
 
@@ -286,7 +286,7 @@ Next, stereotype several of the attributes by first selecting the atttibute in t
 	* $attribute(employeeId)
 	* ".json"
 
-Your last step is to configure the memberOf and reportsTo relationships use reference rather than containment. In MarkLogic, you want Employee's memberOf attribute to contain the primary key of the Department rather than a copy of the Department object itself. You want Employee's reportsTo attribute to contain the primary key of the other Employee rather than a copy of the other Employee object itself. (The relationships from Department and Employee to Address, Phone, and Type, on the other hand, will be containment, not reference.)
+Your last step is to configure the memberOf and reportsTo relationships to use reference rather than containment. In MarkLogic, you want Employee's memberOf attribute to contain the primary key of the Department rather than a copy of the Department object itself. You want Employee's reportsTo attribute to contain the primary key of the other Employee rather than a copy of the other Employee object itself. (The relationships from Department and Employee to Address, Phone, and Type, on the other hand, will be containment, not reference.)
 
 To make the memberOf attribute referential, in the diagram, select the Employee class. In the Properties pane, go to the UML section. Under Owned Attribute, select memberOf. Double-click it. In the Edit Property popup, switch to the Profile tab. Click the + button. Move from Applicable Stereotypes to Applied Stereotypes the FK stereotype.
 
@@ -315,21 +315,56 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 
 <details><summary>Click to view/hide this section</summary>
 <p>
-Next is a quick verification that the UML model can be dpeloyed to MarkLogic as part of the build process. This gives the data architect the assurance that the model "works in ML." It gives the developer a first look at the model and how it is represented in ML. It gives the build person knowledge of the steps to deploy the UML model to ML.
+Next is a quick verification that the UML model can be deployed to MarkLogic as part of the build process. This gives the data architect the assurance that the model "works in ML." It gives the developer a first look at the model and how it is represented in ML. It gives the build person knowledge of the steps to deploy the UML model to ML.
 
 We won't have any actual DHF code when this step completes. That comes later. But we will have proved that our UML model can be transformed to Entity Services. And with that assurance, we're off and running with ES-based development.
 
-First, the build person modifies the build.gradle and gradle.properties files. 
+First, the build person modifies the build.gradle and gradle.properties files created in Step 1. Put on your build person hat and make the following edits:
 
-- To build.gradle, the build person adds the following code:
+- To build.gradle, add the following code at the end:
 
+task prepHRModel(type: Copy) {
+    from "data/papyrus/EmployeeHubModel/EmployeeHubModel.uml"
+    into "data/model"
+    rename '(.*).uml', '$1.xml'
+}
 
+task runUML2ESDeploy(type: GradleBuild) {
+  buildFile = "uml2es4dhf.gradle"
+  tasks = ["uDeployModel"]
+}
 
-- To gradle.properties, the build person adds:
+task deployHRModel() {
+  dependsOn "prepHRModel"
+  dependsOn "runUML2ESDeploy"
+  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepHRModel'
+}
+
+- To gradle.properties, add the following line at the end:
 
 modelName=EmployeeHubModel
 
 If you're not sure you did this correctly, look at pre-cooked files [employeeHubLab/step3/build.gradle](employeeHubLab/step3/build.gradle) and [employeeHubLab/step3/gradle.properties](employeeHubLab/step3/gradle.properties). 
+
+To transform the UML model to Entity Services and deploy it to MarkLogic, you, still in the role of build person, runs the following from the command line in the gradle project folder you created in Step 1.
+
+gradle -i deployHRModel
+
+That command should run successfully. You should see "BUILD SUCCESSFUL" when its completes. To check what it did, go into the Query Console and navigate to the xmi2es-tutorials-empHub-FINAL database. Click on Explore. Among the documents created are the following:
+
+- /marklogic.com/entity-services/models/EmployeeHubModel.json (The deployed ES model. We'll come back to this in a moment.)
+- /xmi2es/extension/EmployeeHubModel.ttl (Semantic triples that extend our ES model)
+- /xmi2es/gen/EmployeeHubModel/lib.xqy (Initial generated code from the model. We'll come back to this in a moment.)
+- /xmi2es/findings/EmployeeHubModel.xml (Problems found during transformation. Stop and open this up. Check to make sure it reports no issues.)
+- /xmi2es/xmi/EmployeeHubModel.xml (The original UML model as an XMI document)
+
+- In Query Console, open a tab of type SPARQL, point to the final DB, run the following query, and verify you get any results. This means the ES model is in FINAL and its semantic metadata is populated.
+
+select * where {?s ?o ?p}
+
+Among the results, you should see the following:
+- <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee> <http://marklogic.com/entity-services#property> http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/emails> from basic ES model
+- <http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf> <http://marklogic.com/xmi2es/xes#relationship>  "association" from the extended ES model
 
 
 </p>
