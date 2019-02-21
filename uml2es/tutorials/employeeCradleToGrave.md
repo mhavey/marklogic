@@ -192,11 +192,121 @@ When you are done, your diagram should look like this:
 
 ![Attributes](images/emp_setup20.png)
 
+### Step 2d: Define HRMain Classes
+
+Now switch to the HRMainClassDiagram by double-clicking it in the Model Explorer. The canvas above is blank. Drag two classes onto it. Name them Employee and Department.
+
+![Main](images/emp_setup21.png)
+
+Add the following attributes to Employee:
+
+- employeeId, type: integer, multiplicity: 1
+- firstName, type: string, multiplicity: 1
+- lastName, type: string, multiplicity: 1
+- status, type: string, multiplicity: 1
+- hireDate, type: none, multiplicity: 1
+- effectiveDate, type: none, multiplicity: 0..1
+- baseSalary, type: real, multiplicity: 0..1
+- bonus, type: real, multiplicity: 0..1
+- dateOfBirth, type: none, multiplicity: 1
+- uri, type: string, multiplicity: 1
+
+Add the following attributes to Department:
+ 
+- departmentId, type: integer, multiplicity: 1
+- name, type: string, multiplicity: 1
+- uri, type: string, multiplicity: 1
+
+Here's what you should have so far:
+
+![Main](images/emp_setup22.png)
+
+Next we configure a few relationships. First, let's represent the memberOf relationship. An employee is a member of a department. To represent this, draw an association between the Employee class and the Department class. In the Palette select Association. Then with your mouse draw a line from Employee to Department. 
+
+![memberOf](images/emp_setup23.png)
+
+Select the association link you just drew and see the details of it in the Properties pane. You see two Member Ends. For the Member End on the right (labelled employee), ensure Navigable is set to false. For the Member End on the left, change the name from department to memberOf. Change the multiplicity to 0..1.
+
+![memberOf](images/emp_setup24.png)
+
+Next to do is the reportsTo relationship between employees. Draw an association from the Employee class to itself by selecting Association in the Palette and drawing a line from Employee back to itself. Then select that line you drew and in the Properties pane make sure the right Member End has Navigable set to false. For the left Member End, change the name to reportsTo and set multiplicity to 0..1.
+
+![reportsTo](images/emp_setup25.png)
+
+Now let's bring into this diagram the Address, Phone, and Email classes from our HRCommon package. In Model Explorer, under HRCommon select Address and draw it into the current diagram. Do the same with Phone and Email.
+
+![common](images/emp_setup26.png)
+
+In our model, both Employee and Department have addresses, phones, and emails. We use aggregration relationships to represent this. Draw six association links: Employee to Address, Employee to Phone, Employee to Email, Department to Address, Department to Phone, and Department to Email. Because of all the arrows the diagram might be a bit messy. Let's make it pretty. First, moving the classes into a good spot as in the following:
+
+![common](images/emp_setup27.png)
+
+Next, let's remove unnecessary arrow labelling. Right-click on the white part of the diagram and from the context menu choose Select | All Connectors. Right-click again and choose Filters | Manage Connector Labels. In the popup, click Deselect All. Then manually select Target Role and Target Multiplicity under A_memberOf_employee and A_reportsTo_employee. 
+
+![pretty](images/emp_setup28.png)
+
+Click OK to close the popup. Lastly, select Address, Phone, and Email. Right-click and select Filters | Show/Hide Compartments. In the popup click Deselect All. Click OK. We end up a more pleasant diagram:
+
+![gorgeous](images/emp_setup29.png)
+
+Finally, let's modify the configuration of each of the six associations to Address, Phone, and Email. For each, select the arrow in the diagram. In the Properties pane, ensure the right Member End is non-navigable. For the left Member End, change the multiplicity to 0..*, the aggregation to shared, and the name to the plural (addresses, phones, and emails rather than address, phone, and email). Here is what the configuration looks like for the link between department and email:
+
+![aggregation](images/emp_setup30.png)
+
+At this point, your model looks like this:
+
+![aggregation](images/emp_setup31.png)
+
+### Step 2e: Add Class and Attribute Stereotypes
+
+Lastly, let's prepare the model for MarkLogic by stereotyping it. First, let's associate with the class Department the MarkLogic collection named "Department". To do this, select Department in the diagram. In the Properties pane, switch to the Profile section. In the Applied Stereotypes, click the + button. In the popup move xDocument from Applicable Stereotypes to Applied Stereotypes. 
+
+![xDocument](images/emp_setup32.png)
+
+Click OK. Then back in the Properties pane, add the value Department for the collections tag of xDocument.
+
+![collections](images/emp_setup33.png)
+
+Do the same for the Employee class. Assign it the stereotype xDocument with the collections value Employee.
+
+Next, stereotype several of the attributes by first selecting the atttibute in the diagram and then stereotyping and tagging it in the Profile section of the Properties pane:
+
+- Give Department.departmentId the stereotype PK.
+- Give Employee.employeeId the stereotype PK.
+- Give Employee.hireDate, Employee.effectiveDate, and Employee.dateOfBirth the stereotype esProperty with mlType "date".
+- Give Department.uri the stereotype xCalculated. Its tagged value concat consists of three strings with the quotes included:
+	* "/department/"
+	* $attribute(departmentId)
+	* ".json"
+
+![concat](images/emp_setup34.png)
+
+- Give Employee.uri the stereotype xCalculated. Its tagged value concat consists of three strings with the quotes included:
+	* "/employee/"
+	* $attribute(employeeId)
+	* ".json"
+
+Your last step is to configure the memberOf and reportsTo relationships use reference rather than containment. In MarkLogic, you want Employee's memberOf attribute to contain the primary key of the Department rather than a copy of the Department object itself. You want Employee's reportsTo attribute to contain the primary key of the other Employee rather than a copy of the other Employee object itself. (The relationships from Department and Employee to Address, Phone, and Type, on the other hand, will be containment, not reference.)
+
+To make the memberOf attribute referential, in the diagram, select the Employee class. In the Properties pane, go to the UML section. Under Owned Attribute, select memberOf. Double-click it. In the Edit Property popup, switch to the Profile tab. Click the + button. Move from Applicable Stereotypes to Applied Stereotypes the FK stereotype.
+
+![memberOf](images/emp_setup35.png)
+
+![memberOf](images/emp_setup36.png)
+
+Do the same for reportsTo.
+
+And here's the final diagram:
+
+![memberOf](images/emp_setup37.png)
+
+Save your work (File | Save All).
+
 ### Step 2 Summary
 
-You created dadada... 
+You created a model with two packages: HRCommon, containing classes Address, Phone, and Email; and HRMain, containing classes Department and Employee. There are numerous relationships in your model, and your model includes several stereotypes. 
 
-If you think you might have messed up along the way, a pre-cooked model is available under [employeeHubLab/step2/EmployeeHubModel](employeeHubLab/step2/EmployeeHubModel). TODO -- put it there; and talk about how to import it into the workspace ... ; or, at import time, get the model from here instead of from your shitty workspace...
+If you think you might have messed up along the way, a pre-cooked model is available under [employeeHubLab/step2/EmployeeHubModel](employeeHubLab/step2/EmployeeHubModel). If you want it in your workspace, the simplest way is to copy each of its files over yours. You can also delete the EmployeeHubModel project from your workspace (by right-clicking the project and selecting Delete, but keeping the contents!) and import the pre-cooked project (File | Import | Existing Projects Into Workspace). 
 
 </p>
 </details>
