@@ -23,6 +23,7 @@ To begin, create a folder called employeeHub anywhere on your build machine. Thi
 Under employeeHub, create the following subfolders:
 - data
 - src
+- lib
 
 Under employeeHub/data, create the following subfolders:
 - mapping
@@ -42,6 +43,8 @@ Copy into the main folder employeeHub the UML2ES build file [../uml2esTransform/
 Copy into employeeHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you can see the file employeeHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
 
 Copy into the main folder employeeHub your initial build file [employeeHubLab/step1/build.gradle](employeeHubLab/step1/build.gradle) and your initial gradle properties file [employeeHubLab/step1/gradle.properties](employeeHubLab/step1/gradle.properties). Tweak the gradle.properties once you've copied it over. For example, modify mlHost if you're ML server is not running on localhost; modify mlUsername and mlPassword if your admin username/password is not admin/admin.
+
+Copy into the lib folder a log4j properties file [employeeHubLab/step1/log4j.properties](employeeHubLab/step1/log4j.properties).
 
 When you are done, you should have the following folder structure:
 
@@ -525,8 +528,216 @@ Finally, if you have your code in a source code repo, add two new files -- data/
 <details><summary>Click to view/hide this section</summary>
 <p>
 
+The last step is to develop code to move source data into the hub and harmonize it to the model form. Put on your developer's hat. 
 
-Finally, add/push changes to the source code repo... And here are the contents that should be in that repot...
+## Step 5a: Create DHF Plugins
+
+The first step is to create DHF entity plugins for Department and Employee. One way to do this is to ask the UML2ES toolkit to look at the model and *infer* which UML classes should be DHF entities. Run the following in a command prompt in your gradle folder:
+
+gradle -b uml2es4dhf.gradle -i uCreateDHFEntities -PentitySelect=infer 
+
+When this command completes, check in the plugins/entities folder of your gradle project. You should see two new folders created:
+
+- plugins/entities/Department
+- plugins/entities/Employee
+
+We conclude, then, that the toolkit figured out that of the five classes in the UML model, it is Department and Employee that should be entities. [The *infer* option is not suitable for all models. See [../docs/build.md](../docs/build.md) for more.]
+
+Next, ingest the source data. First, ask DHF to create Input Flows for Employee and Department. Run the following:
+
+gradle -i hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee -PdataFormat=json -PpluginFormat=sjs -PuseES=false
+
+gradle -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=json -PpluginFormat=sjs -PuseES=false
+
+gradle -i mlReloadModules
+
+Your gradle project has now newly generated code under plugins/entities/Employee/input and plugins/entities/Department/input.
+
+## Step 5b: Ingest Source Data
+
+Now let's move our source data into the gradle project. Copy the contents of [../examples/hr/data/hr](../examples/hr/data/hr) in your local clone of the UML2ES toolkit to the data folder of your gradle project. You want the structure in the gradle project to be such that you have the folders data/hr/AcmeTech and data/hr/GlobalCorp. If yours is different, remove what you copied and try again the correct level. 
+
+We will write a new gradle task to ingest the data. Add the following code at the end of your build.gradle. (If you get stuck, use the build.gradle in [employeeHubLab/step5/build.gradle](employeeHubLab/step5/build.gradle).)
+
+```
+task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/hr/GlobalCorp/employee";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlStagingPort.toInteger()
+  database = mlStagingDbName
+
+  document_type = "json"
+  input_file_path =  "data/hr/GlobalCorp/employee/EmployeeTable.csv"
+  input_file_type ="delimited_text" 
+
+  output_collections= "Employee,LoadEmployee,input" 
+  output_permissions= "rest-reader,read,rest-writer,update" 
+  output_uri_replace=regex
+  output_uri_prefix = "/hr/employee/global/"
+  output_uri_suffix = ".json"
+
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
+  transform_param "entity-name=Employee,flow-name=LoadEmployee"	
+}
+
+task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/hr/GlobalCorp/employee";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  println regex
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlStagingPort.toInteger()
+  database = mlStagingDbName
+
+  document_type = "json"
+  input_file_path =  "data/hr/GlobalCorp/employee/SalaryTable.csv"
+  input_file_type ="delimited_text" 
+
+  output_collections= "Salary,LoadEmployee,input" 
+  output_permissions= "rest-reader,read,rest-writer,update" 
+  output_uri_replace=regex
+  output_uri_prefix = "/hr/salary/global/"
+  output_uri_suffix = ".json"
+
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
+  transform_param "entity-name=Employee,flow-name=LoadEmployee"	
+}
+
+task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/hr/GlobalCorp/department";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlStagingPort.toInteger()
+  database = mlStagingDbName
+
+  document_type = "json"
+  input_file_path =  "data/hr/GlobalCorp/department"
+  input_file_type ="delimited_text" 
+
+  output_collections= "Department,LoadDepartment,input" 
+  output_permissions= "rest-reader,read,rest-writer,update" 
+  output_uri_replace=regex
+  output_uri_prefix = "/hr/department/global/"
+  output_uri_suffix = ".json"
+
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
+  transform_param "entity-name=Department,flow-name=LoadDepartment"	
+}
+
+task loadAcme(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/hr/AcmeTech";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlStagingPort.toInteger()
+  database = mlStagingDbName
+
+  document_type = "json"
+  input_file_path =  "data/hr/AcmeTech" 
+  input_file_type = "documents" 
+
+  output_collections "Employee,LoadEmployee,input" 
+  output_permissions "rest-reader,read,rest-writer,update" 
+  output_uri_replace = regex 
+  output_uri_prefix = "/hr/employee/acme/"
+
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
+  transform_param "entity-name=Employee,flow-name=LoadEmployee"	
+}
+
+task runInputMLCP() {
+  dependsOn 'loadAcme'
+  dependsOn 'loadGlobalEmployee'
+  dependsOn 'loadGlobalSalary'
+  dependsOn 'loadGlobalDepartment'
+}
+```
+
+Run the ingest from the command line:
+
+gradle -i runInputMLCP 
+
+In Query Console, explore database xmi2es-tutorials-empHub-STAGING) and verify it has 2008 or more documents. Of these:
+- 1002 are in Employee collection
+- 1000 are in Salary collection
+- 5 are in Department collection
+
+## Step 5c: Generate Harmonization
+
+Now let's generate harmonization flows to create from source data Employee and Department documents that conform to the UML model. We need three harmonizations: one to build Employee from AcmeTech, one to build Employee from GlobalCorp, and one to build Department (GlobalCorp only). Run the following:
+
+gradle -i hubCreateHarmonizeFlow -PflowName=HarmonizeEmployeeGlobal -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PuseES=true
+
+gradle -i hubCreateHarmonizeFlow -PflowName=HarmonizeEmployeeAcme -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PuseES=true
+
+gradle -i hubCreateHarmonizeFlow -PflowName=HarmonizeDepartment -PentityName=Department -PpluginFormat=sjs -PdataFormat=json -PuseES=true
+
+This creates new code: plugins/entities/Department/harmonize/HarmonizeDepartment, plugins/entities/Employee/harmonize/HarmonizeEmployeeAcme, and plugins/entities/Employee/harmonize/HarmonizeEmployeeGlobal. You, the developer, will now need to tweak that code to use the SME's data mapping from Step 4. Specifically you will tweak the following modules of each harmonization:
+
+- collector.sjs: Compiles a list of STAGING URIs referring to the staging documents to be harmonized. You will add a query to filter this correctly.
+- content.sjs: Builds the main content of the harmonized document by mapping STAGING to the UML structure. DHF's generated code is a good start. The *useES* flag that we passed to the gradle commands above tells DHF to look at our model (in Entity Services) form and generate content.sjs code that constructs content exactly according to that model. But DHF doesn't know what our source data looks like; you need to tweak the code to do that mapping.  
+- writer.sjs: Writes the harmonized document to the FINAL database. You want to ensure this code uses the uris and collections specified in our model.
+
+[We're keeping it simple in this tutorial. UML2ES can generate harmonization code that incorporates the stereotyes of our model and references the SME's data mapping spreadsheet. It can also auto-discover mappings. It can even generate a declarative mapper template, making harmonization a near zero-code effort. See [../docs/build.md](../docs/build.md) for more.]
+
+Let's get tweaking!
+
+## Step 5d: Tweak Department Harmonization
+
+## Step 5e: Tweak Acme Employee Harmonization
+
+## Step 5f: Tweak Global Employee Harmonization
+
+TODO - tweak the fucker
+
+
+## Step 5g: Run Harmonization
+
+It's time to deploy our code and run the harmonizations:
+
+gradle -i mlReloadModules
+
+gradle -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
+
+gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeAcme
+
+gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeGlobal
+
+TODO - confirm
+
+## Step 5h: Step 5 Summary
+TODO ...
+
 
 </p>
 </details>
+
+## Summary
+Where to find the whole project ... 
+
+Where to go from here...
+
