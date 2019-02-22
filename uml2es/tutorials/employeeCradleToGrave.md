@@ -300,7 +300,7 @@ And here's the final diagram:
 
 ![memberOf](images/emp_setup37.png)
 
-Save your work (File | Save All). If the build person has created a source code repository, push your model to that repo.
+Save your work (File | Save All). If the build person has created a source code repository, push your model to that repo. Specifically, add the folders data/papyrus/MLProfileProject and data/papyrus/EmployeeHubModel to the repo.
 
 ### Step 2 Summary
 
@@ -368,13 +368,13 @@ Nearly 300 triples come back from this query, but most of them are out-of-the-bo
 
 These triples show the calculated value of uri in the Department entity:
 
-	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Department/uri>	<http://marklogic.com/xmi2es/xes#calculation> 	_:bnode7470cb4106d8a9b6
-	* _:bnode7470cb4106d8a9b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"\"/department/\""
-	* _:bnode7470cb4106d8a9b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	_:bnode7411cb4716d8c8b6
-	* _:bnode7411cb4716d8c8b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"$attribute(departmentId)"
-	* _:bnode7411cb4716d8c8b6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	_:bnode7432cb4526d8ebb6
-	* _:bnode7432cb4526d8ebb6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>	"\".json\""
-	* _:bnode7432cb4526d8ebb6	<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>	<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>
+	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Department/uri>,<http://marklogic.com/xmi2es/xes#calculation>,_:bnode7470cb4106d8a9b6
+	* _:bnode7470cb4106d8a9b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>,"\"/department/\""
+	* _:bnode7470cb4106d8a9b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>,_:bnode7411cb4716d8c8b6
+	* _:bnode7411cb4716d8c8b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>,"$attribute(departmentId)"
+	* _:bnode7411cb4716d8c8b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>,_:bnode7432cb4526d8ebb6
+	* _:bnode7432cb4526d8ebb6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>,"\".json\""
+	* _:bnode7432cb4526d8ebb6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>,<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>
 
 Those triples are not pretty, but both the data architect and developer will be happy to see that the stereotypes are accounted for in the MarkLogic model. These extended facts will be used in the DHF harmonization logic. Significantly, the UML2ES toolkit generates useful (and relatively pretty) harmonization code from the extended model. 
 
@@ -401,6 +401,11 @@ function doCalculation_Employee_uri(id, content, ioptions) {
 
 - /xmi2es/findings/EmployeeHubModel.xml: This file records problems found during transformation. Stop and open this up. Check to make sure it reports no issues.
 
+The step is nearly complete. If you are keeping the gradle project in a source code repo, add the following newly created files to the repo: 
+- data/entity-services/EmployeeHubMode.json
+- src/main/ml-modules/root/modelgen/EmployeeHubModel/*
+
+Also push your changes to build.gradle and gradle.properties.
 
 </p>
 </details>
@@ -409,6 +414,108 @@ function doCalculation_Employee_uri(id, content, ioptions) {
 
 <details><summary>Click to view/hide this section</summary>
 <p>
+The goal of the employee hub is to represent employees and departments in the form expressed by the UML model. That's the FINAL form of the data. But the actual employee data we have from the company's source system is messy. We intend to ingest this data *as is* into STAGING and then *harmonize* that data into the FINAL form. Data Hub Framework is exactly the right tool for the job. Now all we need is to understand that messy source data.
+
+Luckily one of the members of the team is a source data SME. In this step, you play the SME's role. Your deliverable is an Excel spreadsheet that describes how to map source data to the UML model. 
+
+Let's first review what that data looks like. It's a set of CSV and JSON files. We used the same data in the [HR example](../examples/hr). You can see it in the [../examples/hr/data/hr](../examples/hr/data/hr) folder of your local clone of the UML2ES toolkit. Our company, GlobalCorp, recently acquired AcmeTech. Each company has its own employee data: [../examples/hr/data/hr/GlobalCorp](../examples/hr/data/hr/GlobalCorp) and [../examples/hr/data/hr/AcmetTech](../examples/hr/data/hr/AcmeTech).
+
+GlobalCorp has three files:
+
+- [../examples/hr/data/hr/GlobalCorp/employee/EmployeeTable.csv](../examples/hr/data/hr/GlobalCorp/employee/EmployeeTable.csv). This is a CSV extract from the source relational database with the main employee record. Here is the first row and its header:
+
+```
+emp_id,first_name,last_name,dob,addr1,addr2,city,latitude,longitude,state,zip,home_phone,mobile,pager,home_email,job_title,hire_date,work_phone,work_email,reports_to,dept_num,office_number
+356,Tina,Webb,2/20/1988,62 Mayer Plaza,,El Paso,31.6948,-106.3,TX,88535,1-(915)584-8677,1-(339)592-9887,,,Marketing Manager,9/21/2007,1-(402)348-8753,Tina.Webb@foo.com,4,3,218
+```
+
+- [../examples/hr/data/hr/GlobalCorp/employee/SalaryTable.csv](../examples/hr/data/hr/GlobalCorp/employee/SalaryTable.csv). This is a CSV extract from the source relational database with the employee's salary details. Here is the first row and its header:
+
+```
+emp_id,status,job_effective_date,base_salary,bonus
+1,Active - Regular Exempt (Part-time),07/07/2013,59783,8787
+```
+- [../examples/hr/data/hr/GlobalCorp/department/DeptTable.csv](../examples/hr/data/hr/GlobalCorp/department/DeptTable.csv). This is a CSV extract from the source relational database with the department record:
+
+```
+dept_num,dept_name
+1,Sales
+```
+AcmeTech's data is simpler. Each employee has a JSON file. For example the file for Rosanne Henckle is [../examples/hr/data/hr/AcmeTech/32930.json](../examples/hr/data/hr/AcmeTech/32930.json):
+
+```
+{
+  "id": "32920",
+  "firstName": "Rosanne",
+  "lastName": "Henckle",
+  "dateOfBirth": "05/19/1979",
+  "hireDate": "12/19/2005",
+  "salaryHistory": [
+    {
+      "effectiveDate": "12/23/2005",
+      "salary": 63439
+    },
+    {
+      "effectiveDate": "01/14/2010",
+      "salary": 66300
+    }
+  ]
+}
+```
+
+As the source data SME, you realize that your deliverable is actually two mapping spreadsheets: one for GlobalCorb, another for AcmeTech. The UML2ES toolkit has a template: [../excel/uml2es-excel-mapping-template.xlsx](../excel/uml2es-excel-mapping-template.xlsx). Make two copies of it and store both in the data/mapping folder of the gradle project created in Step 1. Name them acme-mapping.xlsx and global-mapping.xlsx. 
+
+Open up acme-mapping.xlsx. Notice it has three tabs: Instructions, Mapping, and Entity1. Leave Instructions as is; read it over and keep it in place. Edit Mapping with overall details about the AcmeTech data source. 
+
+- For Mapping Source, enter "ACMETech HR Data" (cell B1)
+- For Mapping Notes, enter "JSON Employee Files From Acquired Firm ACME" (cell B2)
+
+When you are done, the Mapping tab should look like this:
+
+![mapping](images/emp_setup39.png)
+
+As for Entity1, you should make several copies of it, one for each entity that will be represented in the hub. *Entity* is not synonymous with *class*. Our model has five classes -- Employee, Department, Address, Phone, Email -- but really just two entities: Employee and Department. In the FINAL hub, Employee and Department instances are first-class documents, each stored in an envelope and referenced by a URI. Address, Phone, and Email are mere sub-documents of Employee and Department. They exist only as part of the structure of those entities. In the mapping sheet, you specify how to map source data to the fully-expanded structure (including sub-classes) of the entity.
+
+AcmeTech has no department data, only employee data. So the Acme sheet only requires a tab for Employee. Rename the Entity1 tab to Employee. Enter the following entity-level details:
+
+- Entity Name: enter "Employee" (cell B1)
+- Mapping Source: enter "Employee JSON document" (cell B2)
+- Mapping Notes: enter "Each employee has JSON file xyz.json, where xyz is the numeric employee ID." (cell B3)
+- Ignore rows 4-6, which are for the optional data discovery feature not discussed in this tutorial.
+
+Specify the mappings of each attribute in the Properties section of the Employee sheet. Add a row for each attribute to map, starting on row 13. In column A put the attribute name from the model. In column B specify how to map source data to that attribute's value. In column C enter an optional note about this mapping. Ignore Columns D and E, which are for the optional data discovery feature not discussed in this tutorial. 
+
+AcmeTech's data doesn't cover the full detail of Employee. Enter rows for the following attributes. The Column A values are the following. See if you can complete Columns B and C based on your understanding of the mapping. You don't need to be precise. The spreadsheet is not executable code. It is intended as a useful documentation artifact to help the developer harmonize the data.
+
+- employeeId
+- firstName
+- lastName
+- dateOrBirth
+- effectiveDate
+- status
+- hireDate
+
+You should end up with an Employee sheet resembling the following:
+
+![employee](images/emp_setup40.png)
+
+Save acme-mapping.xlsx. Now it's time for global-mapping.xlsx. Open it. Edit the Mapping tab as shown:
+
+![global mapping](images/emp_setup41.png)
+
+We need two entity tabs, one for Employee, one for Department. Make a copy of Entity1. Name the two entity tables Employee and Department. The previous diagram shows the correct tab structure.
+
+Edit the Department tab. This mapping is simple. It should look like this:
+
+![global mapping](images/emp_setup42.png)
+
+The Employee tab is more complicated, because we have inline attributes like addresses.lines. We also have to join EmployeeTable and SalaryTable. It should look like this:
+
+![global mapping](images/emp_setup43.png)
+
+If you messed up with the spreadsheets, good pre-cookied copies are available at [employeeHubLab/step4](employeeHubLab/step4). Copy the two xlsx files there over to the data/mapping folder in your gradle project.
+
+Finally, if you have your code in a source code repo, add two new files -- data/mapping/acme-mapping.xlsx and data/mapping/global-mapping.xlsx -- to the repo. 
 
 </p>
 </details>
@@ -417,6 +524,9 @@ function doCalculation_Employee_uri(id, content, ioptions) {
 
 <details><summary>Click to view/hide this section</summary>
 <p>
+
+
+Finally, add/push changes to the source code repo... And here are the contents that should be in that repot...
 
 </p>
 </details>
