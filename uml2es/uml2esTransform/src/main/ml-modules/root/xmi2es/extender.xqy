@@ -735,7 +735,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 			'($id as xs:string, $envelope as item(), $ioptions as map:map) as empty-sequence() {'))
 
 		(: get content portion, in case we need it :)
-		-- TODO does this work?????
+		(: TODO does this work????? :)
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var content = envelope.instance;'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $content := $envelope/instance'))
 
