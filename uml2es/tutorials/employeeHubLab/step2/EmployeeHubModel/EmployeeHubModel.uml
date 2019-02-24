@@ -201,4 +201,6 @@
   </MarkLogicEntityServicesProfile.xes:xCalculated>
   <MarkLogicEntityServicesProfile.es:FK xmi:id="_WFyyMDVwEembtqK7BSl3Tg" base_Property="_hsfqMjVdEembtqK7BSl3Tg"/>
   <MarkLogicEntityServicesProfile.es:FK xmi:id="_5MDKQDVwEembtqK7BSl3Tg" base_Property="_VDtS0jVfEembtqK7BSl3Tg"/>
+  <MarkLogicEntityServicesProfile.xes:xURI xmi:id="_wn3iIDdyEem5Huum9s8i6A" base_Property="__FcqkDVEEembtqK7BSl3Tg"/>
+  <MarkLogicEntityServicesProfile.xes:xURI xmi:id="_x4e1cDdyEem5Huum9s8i6A" base_Property="_XiVQMDVFEembtqK7BSl3Tg"/>
 </xmi:XMI>

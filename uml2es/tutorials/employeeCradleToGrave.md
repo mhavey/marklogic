@@ -277,14 +277,14 @@ Next, stereotype several of the attributes by first selecting the atttibute in t
 - Give Department.departmentId the stereotype PK.
 - Give Employee.employeeId the stereotype PK.
 - Give Employee.hireDate, Employee.effectiveDate, and Employee.dateOfBirth the stereotype esProperty with mlType "date".
-- Give Department.uri the stereotype xCalculated. Its tagged value concat consists of three strings with the quotes included:
+- Give Department.uri the stereotypes xCalculated and xURI. For xCalculated, its tagged value concat consists of three strings with the quotes included:
 	* "/department/"
 	* $attribute(departmentId)
 	* ".json"
 
 ![concat](images/emp_setup34.png)
 
-- Give Employee.uri the stereotype xCalculated. Its tagged value concat consists of three strings with the quotes included:
+- Give Employee.uri the stereotypes xCalculated and xURI. For xCalculated, its tagged value concat consists of three strings with the quotes included:
 	* "/employee/"
 	* $attribute(employeeId)
 	* ".json"
