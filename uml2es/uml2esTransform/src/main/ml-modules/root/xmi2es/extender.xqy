@@ -734,6 +734,11 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
 			'($id as xs:string, $envelope as item(), $ioptions as map:map) as empty-sequence() {'))
 
+		(: get content portion, in case we need it :)
+		-- TODO does this work?????
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var content = envelope.instance;'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $content := $envelope/instance'))
+
 		(: URI :)
 		let $tXURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI) and contains(sem:subject/text(), $classIRI)]
 		let $xuriVal :=

@@ -385,7 +385,7 @@ Those triples are not pretty, but both the data architect and developer will be 
 
 ```
 function runWriter_Employee(id, envelope, ioptions) {
-  var uri = id;
+  var uri = content.uri;
   var dioptions = {};
   var collections = [];
   collections.push("Employee");
