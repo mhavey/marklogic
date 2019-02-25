@@ -776,7 +776,7 @@ Finally, modify writer.sjs to use our calculated uri, plus the collection stereo
 
 ```
 // import the generated lib
-const ulib = require("modelgen/EmployeeHubModel/lib.sjs");
+const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
 
 function write(id, envelope, options) {
   // from the envelope we need the content part - it has our calculated uri
@@ -792,7 +792,6 @@ module.exports = write;
 
 Now deploy the code and run the harmonization. Run the following from your gradle folder:
 
-
 gradle -i mlReloadModules
 
 gradle -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
@@ -804,12 +803,66 @@ In Query Console explore the xmi2es-tutorials-empHub-FINAL database. You should 
 
 ## Step 5e: Tweak Acme Employee Harmonization
 
-More tweaking
+Next, modify the plugins/entities/Employee/harmonize/HarmonizeEmployeeAcme modules. Begin by modify collector.sjs to scope the harmonization job. We want to consider only Acme staged employee documents. For this we filter on the documents whose URI is in the "/hr/employee/acme/" directory:
+
+```
+function collect(options) {
+  // by default we return the URIs in the same collection as the Entity name
+  return cts.uris(null, null, cts:directory-query("/hr/employee/acme/"));
+}
+```
+
+For content.sjs ... TODO
+
+For writer.sjs, change it like you did with department:
+
+```
+// import the generated lib
+const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
+
+function write(id, envelope, options) {
+  // from the envelope we need the content part - it has our calculated uri
+  var content = envelope.envelope.instance.Employee;
+
+  // call the generated lib
+  ulib.runWriter_Employee(id, envelope, content, options);
+}
+
+module.exports = write;
+
+``` 
+
+Now deploy the code and run the harmonization. Run the following from your gradle folder:
+
+gradle -i mlReloadModules
+
+gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeAcme
+
+TODO confirm
+
 
 ## Step 5f: Tweak Global Employee Harmonization
 
-More tweaking
+Finally, modify the plugins/entities/Employee/harmonize/HarmonizeEmployeeGlobal modules. Begin by modify collector.sjs to scope the harmonization job. We want to consider only Global staged employee documents. For this we filter on the documents whose URI is in the "/hr/employee/global/" directory:
 
+```
+function collect(options) {
+  // by default we return the URIs in the same collection as the Entity name
+  return cts.uris(null, null, cts:directory-query("/hr/employee/global/"));
+}
+```
+
+For content.sjs ... TODO
+
+For writer.sjs, just copy the writers module from Acme; the same code fits both harmonizations.
+
+Now deploy the code and run the harmonization. Run the following from your gradle folder:
+
+gradle -i mlReloadModules
+
+gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeGlobal
+
+TODO confirm
 ## Step 5h: Step 5 Summary
 TODO ...
 

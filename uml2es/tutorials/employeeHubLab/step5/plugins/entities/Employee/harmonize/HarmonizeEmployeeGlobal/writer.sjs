@@ -1,14 +1,12 @@
-/*~
- * Writer Plugin
- *
- * @param id       - the identifier returned by the collector
- * @param envelope - the final envelope
- * @param options  - an object options. Options are sent from Java
- *
- * @return - nothing
- */
+// import the generated lib
+const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
+
 function write(id, envelope, options) {
-  xdmp.documentInsert(id, envelope, xdmp.defaultPermissions(), options.entity);
+  // from the envelope we need the content part - it has our calculated uri
+  var content = envelope.envelope.instance.Employee;
+
+  // call the generated lib
+  ulib.runWriter_Employee(id, envelope, content, options);
 }
 
 module.exports = write;
