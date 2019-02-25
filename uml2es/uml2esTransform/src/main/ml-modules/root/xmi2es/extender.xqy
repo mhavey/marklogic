@@ -730,14 +730,9 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat($FUNCTION-WRITER, "_", $className)
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, ioptions) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, content, ioptions) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
-			'($id as xs:string, $envelope as item(), $ioptions as map:map) as empty-sequence() {'))
-
-		(: get content portion, in case we need it :)
-		(: TODO does this work????? :)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var content = envelope.instance;'))
-		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $content := $envelope/instance'))
+			'($id as xs:string, $envelope as item(), $content, $ioptions as map:map) as empty-sequence() {'))
 
 		(: URI :)
 		let $tXURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI) and contains(sem:subject/text(), $classIRI)]

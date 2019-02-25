@@ -384,7 +384,7 @@ Those triples are not pretty, but both the data architect and developer will be 
 - /xmi2es/gen/EmployeeHubModel/lib.sjs: And here is the first bit of that generated code. Notice the following generated Javascript functions. runWriter_Employee creates an Employee JSON document and, according to the extended model, writes it to the "Employee" collection. doCalculation_Employee_uri constructs the uri attribute of Employee as the string concatenation of "/employee/", the employeeId attribute value, and ".json". We'll see in a later step how these functions are brought together in the harmonization.
 
 ```
-function runWriter_Employee(id, envelope, ioptions) {
+function runWriter_Employee(id, envelope, content, ioptions) {
   var uri = content.uri;
   var dioptions = {};
   var collections = [];
@@ -704,30 +704,111 @@ This creates new code: plugins/entities/Department/harmonize/HarmonizeDepartment
 
 [We're keeping it simple in this tutorial. UML2ES can generate harmonization code that incorporates the stereotyes of our model and references the SME's data mapping spreadsheet. It can also auto-discover mappings. It can even generate a declarative mapper template, making harmonization a near zero-code effort. See [../docs/build.md](../docs/build.md) for more.]
 
-Let's get tweaking!
+Let's get tweaking! (And if you get stuck, a pre-cooked copy of the tweaked modules is here: [employeeHubLab/step5/plugins](employeeHubLab/step5/plugins))
 
 ## Step 5d: Tweak Department Harmonization
 
-## Step 5e: Tweak Acme Employee Harmonization
+Look inside the generated code in plugins/entities/Department/harmonize/HarmonizeDepartment.
 
-## Step 5f: Tweak Global Employee Harmonization
+We don't need to change collector.sjs. Because all the department documents from staging are in the collection "Department", the following collector code will work as is. Do you see why? -- because options.entity is "Department"!
 
-TODO - tweak the fucker
+```
+function collect(options) {
+  // by default we return the URIs in the same collection as the Entity name
+  return cts.uris(null, null, cts.collectionQuery(options.entity));
+}
+```
 
+For content.sjs, your task is to map from source to target model. There are three things to do: 
 
-## Step 5g: Run Harmonization
+- First, recall from Step 4 that source department data has no addresses, phones, and emails. So, simplify by deleting the generated code for addresses, phones, and emails. Specifically, remove the functions extractInstanceAddress, extractInstancePhone, extractInstanceEmail, and makeReferenceObject. Also remove references to these from the extractInstanceDepartment function. That function is shown below.
+- Second, as the mapping document in Step 4 instructs, map dept_num to departmentId and dept_name to name. See the code commented by "!!! USING SME MAPPING !!!" in the code below.
+- Third, calculate the value of uri. Recall from the model, uri is a calculated attribute. Code to perform this calculation is already exposed as a function in the module src/main/ml-modules/root/modelgen/EmployeeHubModel/lib.sjs. The function is doCalculation_Department_uri. We just need to call it.
+	* Near the top of the content module, import the generated library: const ulib = require("modelgen/EmployeeHubModel/lib.sjs");
+	* In the extractInstanceDepartment, call the calculation function. See the code commented by "!!! CALCULATED !!!"
 
-It's time to deploy our code and run the harmonizations:
+Here is the extractInstanceDepartment function you will need:
+
+```
+/**
+* Creates an object instance from some source document.
+* @param source  A document or node that contains
+*   data for populating a Department
+* @return An object with extracted data and
+*   metadata about the instance.
+*/
+function extractInstanceDepartment(source) {
+  // the original source documents
+  let attachments = source;
+  // now check to see if we have XML or json, then create a node clone from the root of the instance
+  if (source instanceof Element || source instanceof ObjectNode) {
+    let instancePath = '/*:envelope/*:instance';
+    if(source instanceof Element) {
+      //make sure we grab content root only
+      instancePath += '/node()[not(. instance of processing-instruction() or . instance of comment())]';
+    }
+    source = new NodeBuilder().addNode(fn.head(source.xpath(instancePath))).toNode();
+  }
+  else{
+    source = new NodeBuilder().addNode(fn.head(source)).toNode();
+  }
+
+  let content = {
+    '$attachments': attachments,
+    '$type': 'Department',
+    '$version': '0.0.1',
+  };
+
+  // !!! USING SME MAPPING !!!
+  content.departmentId = !fn.empty(fn.head(source.xpath('/dept_num'))) ? 
+  	xs.int(fn.head(fn.head(source.xpath('/dept_num')))) : null;
+  content.name = !fn.empty(fn.head(source.xpath('/dept_name'))) ? 
+  	xs.string(fn.head(fn.head(source.xpath('/dept_name')))) : null;
+
+  // !!! CALCULATED !!!
+  ulib.doCalculation_Department_uri(null, content, null);
+
+  return content;
+};
+```
+
+Finally, modify writer.sjs to use our calculated uri, plus the collection stereotype, when writing the harmonized document to the FINAL database. Here is the complete module you need:
+
+```
+// import the generated lib
+const ulib = require("modelgen/EmployeeHubModel/lib.sjs");
+
+function write(id, envelope, options) {
+  // from the envelope we need the content part - it has our calculated uri
+  var content = envelope.envelope.instance.Department;
+
+  // call the generated lib
+  ulib.runWriter_Department(id, envelope, content, options);
+}
+
+module.exports = write;
+
+``` 
+
+Now deploy the code and run the harmonization. Run the following from your gradle folder:
+
 
 gradle -i mlReloadModules
 
 gradle -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
 
-gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeAcme
+In Query Console explore the xmi2es-tutorials-empHub-FINAL database. You should see five new documents in the Department collection. /department/1.json, /department/2.json, ..., /department/5.json. Open up one of the them, say /department/3.json. It should look like this:
 
-gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeGlobal
+![department](images/emp_setup44.png)
 
-TODO - confirm
+
+## Step 5e: Tweak Acme Employee Harmonization
+
+More tweaking
+
+## Step 5f: Tweak Global Employee Harmonization
+
+More tweaking
 
 ## Step 5h: Step 5 Summary
 TODO ...

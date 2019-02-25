@@ -35,7 +35,7 @@ function main(id, options) {
 
   // writers must be invoked this way.
   // see: https://github.com/marklogic/marklogic-data-hub/wiki/dhf-lib#run-writer
-  dhf.runWriter(writerPlugin, id, envelope, content, options);
+  dhf.runWriter(writerPlugin, id, envelope, options);
 }
 
 module.exports = {
