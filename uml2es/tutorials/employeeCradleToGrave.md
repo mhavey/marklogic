@@ -796,23 +796,63 @@ gradle -i mlReloadModules
 
 gradle -i hubRunFlow -PentityName=Department -PflowName=HarmonizeDepartment
 
-In Query Console explore the xmi2es-tutorials-empHub-FINAL database. You should see five new documents in the Department collection. /department/1.json, /department/2.json, ..., /department/5.json. Open up one of the them, say /department/3.json. It should look like this:
+In Query Console, explore the xmi2es-tutorials-empHub-FINAL database. You should see five new documents in the Department collection: /department/1.json, /department/2.json, ..., /department/5.json. Open up one of the them, say /department/3.json. It should look like this:
 
 ![department](images/emp_setup44.png)
 
 
 ## Step 5e: Tweak Acme Employee Harmonization
 
-Next, modify the plugins/entities/Employee/harmonize/HarmonizeEmployeeAcme modules. Begin by modify collector.sjs to scope the harmonization job. We want to consider only Acme staged employee documents. For this we filter on the documents whose URI is in the "/hr/employee/acme/" directory:
+Next, modify the plugins/entities/Employee/harmonize/HarmonizeEmployeeAcme modules. Begin by modifying collector.sjs to scope the harmonization job. We want to consider only Acme staged employee documents. For this we filter on the documents whose URI is in the "/hr/employee/acme/" directory:
 
 ```
 function collect(options) {
   // by default we return the URIs in the same collection as the Entity name
-  return cts.uris(null, null, cts:directory-query("/hr/employee/acme/"));
+  return cts.uris(null, null, cts.directoryQuery("/hr/employee/acme/"));
 }
 ```
 
-For content.sjs ... TODO
+For content.sjs:
+
+- Remove code that adds addresses, phones, and emails to the employee; Acme source data does not include these. 
+- As with Department, map source to target using the mapping spec as a guide; see the code commented by "!!! USING SME MAPPING !!!" in below. One quirk of Acme data is that the source JSON includes a salaryHistory array. From this array we pick the most recent salary entry; it is from this entry that we determine the employee's current base salary. The comment "get the salary record with the most recent date" finds this entry using an array sort on date. 
+- Calculate the value of uri similarly to how you calculated the department's uri above. See the code commented by "!!! CALCULATED !!!". Remember to import the generated library: const ulib = require("modelgen/EmployeeHubModel/lib.sjs");
+
+```
+function extractInstanceEmployee(source) {
+
+  var instance = source.toObject().envelope.instance;
+  xdmp.log(JSON.stringify(instance));
+
+  // get the salary record with the most recent date
+  var salaryDoc = instance.salaryHistory.sort(function(a,b) {
+    a.actualEffectiveDate = xdmp.parseDateTime("[M01]/[D01]/[Y0001]", a.effectiveDate);
+    b.actualEffectiveDate = xdmp.parseDateTime("[M01]/[D01]/[Y0001]", b.effectiveDate);
+    if (a.actualEffectiveDate > b.actualEffectiveDate) return -1;
+    if (b.actualEffectiveDate > a.actualEffectiveDate) return 1;
+    return 0;
+  })[0];
+
+  var content = {
+    '$attachments': source,
+    '$type': 'Employee',
+    '$version': '0.0.1',
+  };
+
+  // !!! USING SME MAPPING !!!
+  content.employeeId = "ACME_" + instance.id;
+  content.firstName = instance.firstName;
+  content.lastName = instance.lastName;
+  if (instance.dateOfBirth) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.dateOfBirth));
+  if (instance.hireDate) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hireDate));
+  if (salaryDoc && salaryDoc.actualEffectiveDate) content.effectiveDate = xs.date(salaryDoc.actualEffectiveDate);
+  if (salaryDoc && salaryDoc.salary) content.baseSalary = salaryDoc.salary;
+
+  // !!! CALCULATED !!!
+  ulib.doCalculation_Employee_uri(null, content, null);
+  return content;
+};
+```
 
 For writer.sjs, change it like you did with department:
 
@@ -838,17 +878,19 @@ gradle -i mlReloadModules
 
 gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeAcme
 
-TODO confirm
+To confirm, in Query Console explore the xmi2es-tutorials-empHub-FINAL database. You should see two new documents with a URI matching "/employee/ACME_*": /employee/ACME_32920.json and /employee/ACME_34324.json. Open the first of these. It should look like this:
+
+![department](images/emp_setup45.png)
 
 
 ## Step 5f: Tweak Global Employee Harmonization
 
-Finally, modify the plugins/entities/Employee/harmonize/HarmonizeEmployeeGlobal modules. Begin by modify collector.sjs to scope the harmonization job. We want to consider only Global staged employee documents. For this we filter on the documents whose URI is in the "/hr/employee/global/" directory:
+Finally, modify the plugins/entities/Employee/harmonize/HarmonizeEmployeeGlobal modules. Begin by modifying collector.sjs to scope the harmonization job. We want to consider only Global staged employee documents. For this we filter on the documents whose URI is in the "/hr/employee/global/" directory:
 
 ```
 function collect(options) {
   // by default we return the URIs in the same collection as the Entity name
-  return cts.uris(null, null, cts:directory-query("/hr/employee/global/"));
+  return cts.uris(null, null, cts.directoryQuery("/hr/employee/global/"));
 }
 ```
 
