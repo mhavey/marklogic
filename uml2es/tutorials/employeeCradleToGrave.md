@@ -844,7 +844,7 @@ function extractInstanceEmployee(source) {
   content.firstName = instance.firstName;
   content.lastName = instance.lastName;
   if (instance.dateOfBirth) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.dateOfBirth));
-  if (instance.hireDate) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hireDate));
+  if (instance.hireDate) content.hireDate = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hireDate));
   if (salaryDoc && salaryDoc.actualEffectiveDate) content.effectiveDate = xs.date(salaryDoc.actualEffectiveDate);
   if (salaryDoc && salaryDoc.salary) content.baseSalary = salaryDoc.salary;
 
