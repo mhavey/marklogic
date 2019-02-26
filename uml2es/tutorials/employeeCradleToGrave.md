@@ -1012,16 +1012,21 @@ Verify the document looks like this:
 
 ![global](images/emp_setup46.png)
 
+## Step 5h: Step Summary
 
-## Step 5h: Step 5 Summary
-TODO ...
+In this step you, the developer, created DHF plugins to ingest and harmonize employee and department data. You now have all Acme and Global data in your hub in both its source and harmonized forms. You had to write code to attain this goal, but you didn't need to start from scratch. DHF, knowing the structure of your model, generated very useful starter code for you. And you had the SME's mapping spec from Step 4 to help you map source to target.
 
+Building and deploying this code was straighforward gradle. 
+
+If you are keeping your project in a source code repo, add the plugins folder to it, and push changes to build.gradle too.
 
 </p>
 </details>
 
 ## Summary
-Where to find the whole project ... 
 
-Where to go from here...
+In this tutorial, you, playing several roles, started from nothing to build an employee data hub in MarkLogic. The key ingredient was your UML employee model. The UML2ES toolkit helped you bring that model into the MarkLogic build process.
+
+Where do you go from here? Go through the [HR example](../examples/hr), which is very similar to this tutorial but showcases semantics and alternative code generation approaches.
+
 
