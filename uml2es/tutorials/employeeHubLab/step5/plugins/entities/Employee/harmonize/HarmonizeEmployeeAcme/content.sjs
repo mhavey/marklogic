@@ -41,7 +41,6 @@ function createContent(id, options) {
 function extractInstanceEmployee(source) {
 
   var instance = source.toObject().envelope.instance;
-  xdmp.log(JSON.stringify(instance));
 
   // get the salary record with the most recent date
   var salaryDoc = instance.salaryHistory.sort(function(a,b) {
@@ -63,7 +62,7 @@ function extractInstanceEmployee(source) {
   content.firstName = instance.firstName;
   content.lastName = instance.lastName;
   if (instance.dateOfBirth) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.dateOfBirth));
-  if (instance.hireDate) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hireDate));
+  if (instance.hireDate) content.hireDate = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hireDate));
   if (salaryDoc && salaryDoc.actualEffectiveDate) content.effectiveDate = xs.date(salaryDoc.actualEffectiveDate);
   if (salaryDoc && salaryDoc.salary) content.baseSalary = salaryDoc.salary;
 

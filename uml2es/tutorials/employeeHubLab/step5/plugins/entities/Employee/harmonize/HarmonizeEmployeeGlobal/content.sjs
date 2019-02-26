@@ -1,5 +1,7 @@
 'use strict'
 
+const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
+
 /*
 * Create Content Plugin
 *
@@ -29,223 +31,85 @@ function createContent(id, options) {
   return extractInstanceEmployee(source);
 }
   
-/**
-* Creates an object instance from some source document.
-* @param source  A document or node that contains
-*   data for populating a Employee
-* @return An object with extracted data and
-*   metadata about the instance.
-*/
 function extractInstanceEmployee(source) {
-  // the original source documents
-  let attachments = source;
-  // now check to see if we have XML or json, then create a node clone from the root of the instance
-  if (source instanceof Element || source instanceof ObjectNode) {
-    let instancePath = '/*:envelope/*:instance';
-    if(source instanceof Element) {
-      //make sure we grab content root only
-      instancePath += '/node()[not(. instance of processing-instruction() or . instance of comment())]';
-    }
-    source = new NodeBuilder().addNode(fn.head(source.xpath(instancePath))).toNode();
-  }
-  else{
-    source = new NodeBuilder().addNode(fn.head(source)).toNode();
-  }
-  let employeeId = !fn.empty(fn.head(source.xpath('/employeeId'))) ? xs.string(fn.head(fn.head(source.xpath('/employeeId')))) : null;
-  let firstName = !fn.empty(fn.head(source.xpath('/firstName'))) ? xs.string(fn.head(fn.head(source.xpath('/firstName')))) : null;
-  let lastName = !fn.empty(fn.head(source.xpath('/lastName'))) ? xs.string(fn.head(fn.head(source.xpath('/lastName')))) : null;
-  let status = !fn.empty(fn.head(source.xpath('/status'))) ? xs.string(fn.head(fn.head(source.xpath('/status')))) : null;
-  let hireDate = !fn.empty(fn.head(source.xpath('/hireDate'))) ? xs.date(fn.head(fn.head(source.xpath('/hireDate')))) : null;
-  let effectiveDate = !fn.empty(fn.head(source.xpath('/effectiveDate'))) ? xs.date(fn.head(fn.head(source.xpath('/effectiveDate')))) : null;
-  let baseSalary = !fn.empty(fn.head(source.xpath('/baseSalary'))) ? xs.float(fn.head(fn.head(source.xpath('/baseSalary')))) : null;
-  let bonus = !fn.empty(fn.head(source.xpath('/bonus'))) ? xs.float(fn.head(fn.head(source.xpath('/bonus')))) : null;
-  let dateOfBirth = !fn.empty(fn.head(source.xpath('/dateOfBirth'))) ? xs.date(fn.head(fn.head(source.xpath('/dateOfBirth')))) : null;
-  let uri = !fn.empty(fn.head(source.xpath('/uri'))) ? xs.string(fn.head(fn.head(source.xpath('/uri')))) : null;
-  let memberOf = !fn.empty(fn.head(source.xpath('/memberOf'))) ? xs.int(fn.head(fn.head(source.xpath('/memberOf')))) : null;
-  let reportsTo = !fn.empty(fn.head(source.xpath('/reportsTo'))) ? xs.string(fn.head(fn.head(source.xpath('/reportsTo')))) : null;
-  
-  /* The following property is a local reference. */
-  let addresses = [];
-  if(fn.head(source.xpath('/addresses'))) {
-    for(const item of Sequence.from(source.xpath('/addresses'))) {
-      // let's create and pass the node
-      let itemSource = new NodeBuilder();
-      itemSource.addNode(fn.head(item));
-      // this will return an instance of a Address
-      addresses.push(extractInstanceAddress(itemSource.toNode()));
-      // or uncomment this to create an external reference to a Address
-      //addresses.push(makeReferenceObject('Address', itemSource.toNode()));
-    }
-  };
-  
-  /* The following property is a local reference. */
-  let phones = [];
-  if(fn.head(source.xpath('/phones'))) {
-    for(const item of Sequence.from(source.xpath('/phones'))) {
-      // let's create and pass the node
-      let itemSource = new NodeBuilder();
-      itemSource.addNode(fn.head(item));
-      // this will return an instance of a Phone
-      phones.push(extractInstancePhone(itemSource.toNode()));
-      // or uncomment this to create an external reference to a Phone
-      //phones.push(makeReferenceObject('Phone', itemSource.toNode()));
-    }
-  };
-  
-  /* The following property is a local reference. */
-  let emails = [];
-  if(fn.head(source.xpath('/emails'))) {
-    for(const item of Sequence.from(source.xpath('/emails'))) {
-      // let's create and pass the node
-      let itemSource = new NodeBuilder();
-      itemSource.addNode(fn.head(item));
-      // this will return an instance of a Email
-      emails.push(extractInstanceEmail(itemSource.toNode()));
-      // or uncomment this to create an external reference to a Email
-      //emails.push(makeReferenceObject('Email', itemSource.toNode()));
-    }
-  };
 
-  // return the instance object
-  return {
-    '$attachments': attachments,
+  var instance = source.toObject().envelope.instance;
+
+  var content = {
+    '$attachments': source,
     '$type': 'Employee',
     '$version': '0.0.1',
-    'employeeId': employeeId,
-    'firstName': firstName,
-    'lastName': lastName,
-    'status': status,
-    'hireDate': hireDate,
-    'effectiveDate': effectiveDate,
-    'baseSalary': baseSalary,
-    'bonus': bonus,
-    'dateOfBirth': dateOfBirth,
-    'uri': uri,
-    'memberOf': memberOf,
-    'reportsTo': reportsTo,
-    'addresses': addresses,
-    'phones': phones,
-    'emails': emails
-  }
+  };
+
+  // get associated salary doc
+  var salaryDoc = cts.doc("/hr/salary/global/" + instance.emp_id + ".json");
+  if (salaryDoc) salaryDoc = salaryDoc.toObject();
+  if (salaryDoc.envelope && salaryDoc.envelope.instance) salaryDoc = salaryDoc.envelope.instance;
+
+  // !!! USING SME MAPPING !!!
+  content.employeeId = instance.emp_id;
+  content.firstName = instance.first_name;
+  content.lastName = instance.last_name;
+  content.reportsTo = instance.reports_to;
+  content.memberOf = instance.dept_num;
+  if (instance.dob) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.dob));
+  if (instance.hire_date) content.hireDate = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hire_date));
+  if (salaryDoc) content.status = salaryDoc.status;
+  if (salaryDoc) content.baseSalary = salaryDoc.base_salary;
+  if (salaryDoc) content.bonus = salaryDoc.bonus;
+  if (salaryDoc) content.effectiveDate = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", salaryDoc.job_effective_date));
+
+  // sub-documents
+  content.addresses =  [extractInstanceAddress(instance)];
+  content.phones = [
+    extractInstancePhone(instance, "home", "home_phone"),
+    extractInstancePhone(instance, "mobile", "mobile"),
+    extractInstancePhone(instance, "pager", "pager"),
+    extractInstancePhone(instance, "work", "work_phone"),
+  ];
+  content.emails = [
+    extractInstanceEmail(instance, "home", "home_email"),
+    extractInstanceEmail(instance, "work", "work_email")
+  ];
+
+  // !!! CALCULATED !!!
+  ulib.doCalculation_Employee_uri(null, content, null);
+  return content;
 };
 
-/**
-* Creates an object instance from some source document.
-* @param source  A document or node that contains
-*   data for populating a Address
-* @return An object with extracted data and
-*   metadata about the instance.
-*/
-function extractInstanceAddress(source) {
-  let attachments = source;
-  // now check to see if we have XML or json, then create a node clone to operate of off
-  if (source instanceof Element || source instanceof ObjectNode) {
-    let instancePath = '/';
-    if(source instanceof Element) {
-      //make sure we grab content root only
-      instancePath = '/node()[not(. instance of processing-instruction() or . instance of comment())]';
-    }
-    source = new NodeBuilder().addNode(fn.head(source.xpath(instancePath))).toNode();
-  }
-  else{
-    source = new NodeBuilder().addNode(fn.head(source)).toNode();
-  }
-  let addressType = !fn.empty(fn.head(source.xpath('/addressType'))) ? xs.string(fn.head(fn.head(source.xpath('/addressType')))) : null;
-  let lines = !fn.empty(fn.head(source.xpath('/lines'))) ? fn.head(source.xpath('/lines')) : [];
-  let city = !fn.empty(fn.head(source.xpath('/city'))) ? xs.string(fn.head(fn.head(source.xpath('/city')))) : null;
-  let state = !fn.empty(fn.head(source.xpath('/state'))) ? xs.string(fn.head(fn.head(source.xpath('/state')))) : null;
-  let zip = !fn.empty(fn.head(source.xpath('/zip'))) ? xs.string(fn.head(fn.head(source.xpath('/zip')))) : null;
-  let country = !fn.empty(fn.head(source.xpath('/country'))) ? xs.string(fn.head(fn.head(source.xpath('/country')))) : null;
-
-  // return the instance object
+// Extract the one and only address from the employee instance
+function extractInstanceAddress(instance) {
   return {
-  
     '$type': 'Address',
     '$version': '0.0.1',
-    'addressType': addressType,
-    'lines': lines,
-    'city': city,
-    'state': state,
-    'zip': zip,
-    'country': country
+    'addressType': "Primary",
+    'lines': [instance.addr1, instance.addr2], 
+    'city': instance.city,
+    'state': instance.state,
+    'zip': instance.zip,
+    'country': "USA"
   }
 };
 
-/**
-* Creates an object instance from some source document.
-* @param source  A document or node that contains
-*   data for populating a Phone
-* @return An object with extracted data and
-*   metadata about the instance.
-*/
-function extractInstancePhone(source) {
-  let attachments = source;
-  // now check to see if we have XML or json, then create a node clone to operate of off
-  if (source instanceof Element || source instanceof ObjectNode) {
-    let instancePath = '/';
-    if(source instanceof Element) {
-      //make sure we grab content root only
-      instancePath = '/node()[not(. instance of processing-instruction() or . instance of comment())]';
-    }
-    source = new NodeBuilder().addNode(fn.head(source.xpath(instancePath))).toNode();
-  }
-  else{
-    source = new NodeBuilder().addNode(fn.head(source)).toNode();
-  }
-  let phoneType = !fn.empty(fn.head(source.xpath('/phoneType'))) ? xs.string(fn.head(fn.head(source.xpath('/phoneType')))) : null;
-  let phoneNumber = !fn.empty(fn.head(source.xpath('/phoneNumber'))) ? xs.string(fn.head(fn.head(source.xpath('/phoneNumber')))) : null;
-
-  // return the instance object
-  return {
-  
+// extract phone of given type
+function extractInstancePhone(instance, type, data) {
+  return {  
     '$type': 'Phone',
     '$version': '0.0.1',
-    'phoneType': phoneType,
-    'phoneNumber': phoneNumber
+    'phoneType': type,
+    'phoneNumber': instance[data]
   }
 };
 
-/**
-* Creates an object instance from some source document.
-* @param source  A document or node that contains
-*   data for populating a Email
-* @return An object with extracted data and
-*   metadata about the instance.
-*/
-function extractInstanceEmail(source) {
-  let attachments = source;
-  // now check to see if we have XML or json, then create a node clone to operate of off
-  if (source instanceof Element || source instanceof ObjectNode) {
-    let instancePath = '/';
-    if(source instanceof Element) {
-      //make sure we grab content root only
-      instancePath = '/node()[not(. instance of processing-instruction() or . instance of comment())]';
-    }
-    source = new NodeBuilder().addNode(fn.head(source.xpath(instancePath))).toNode();
-  }
-  else{
-    source = new NodeBuilder().addNode(fn.head(source)).toNode();
-  }
-  let emailType = !fn.empty(fn.head(source.xpath('/emailType'))) ? xs.string(fn.head(fn.head(source.xpath('/emailType')))) : null;
-  let emailAddress = !fn.empty(fn.head(source.xpath('/emailAddress'))) ? xs.string(fn.head(fn.head(source.xpath('/emailAddress')))) : null;
-
-  // return the instance object
-  return {
-  
+// extract email of given type
+function extractInstanceEmail(instance, type, data) {
+  return {  
     '$type': 'Email',
     '$version': '0.0.1',
-    'emailType': emailType,
-    'emailAddress': emailAddress
+    'emailType': type,
+    'emailAddress': instance[data]
   }
 };
-
-
-function makeReferenceObject(type, ref) {
-  return {
-    '$type': type,
-    '$ref': ref
-  };
-}
 
 module.exports = {
   createContent: createContent

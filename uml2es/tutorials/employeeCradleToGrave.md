@@ -814,15 +814,16 @@ function collect(options) {
 
 For content.sjs:
 
-- Remove code that adds addresses, phones, and emails to the employee; Acme source data does not include these. 
-- As with Department, map source to target using the mapping spec as a guide; see the code commented by "!!! USING SME MAPPING !!!" in below. One quirk of Acme data is that the source JSON includes a salaryHistory array. From this array we pick the most recent salary entry; it is from this entry that we determine the employee's current base salary. The comment "get the salary record with the most recent date" finds this entry using an array sort on date. 
+- Remove code that adds addresses, phones, and emails to the employee. Acme source data does not include these. 
+- As with Department, map source to target using the mapping spec as a guide; see the code commented by "!!! USING SME MAPPING !!!" below. One quirk of Acme data is that the source JSON includes a salaryHistory array. From this array we pick the most recent salary entry; it is from this entry that we determine the employee's current base salary. The comment "get the salary record with the most recent date" finds this entry using an array sort on date. 
 - Calculate the value of uri similarly to how you calculated the department's uri above. See the code commented by "!!! CALCULATED !!!". Remember to import the generated library: const ulib = require("modelgen/EmployeeHubModel/lib.sjs");
+
+The extractInstanceEmployee function should look like this:
 
 ```
 function extractInstanceEmployee(source) {
 
   var instance = source.toObject().envelope.instance;
-  xdmp.log(JSON.stringify(instance));
 
   // get the salary record with the most recent date
   var salaryDoc = instance.salaryHistory.sort(function(a,b) {
@@ -880,7 +881,7 @@ gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeAcme
 
 To confirm, in Query Console explore the xmi2es-tutorials-empHub-FINAL database. You should see two new documents with a URI matching "/employee/ACME_*": /employee/ACME_32920.json and /employee/ACME_34324.json. Open the first of these. It should look like this:
 
-![department](images/emp_setup45.png)
+![acme](images/emp_setup45.png)
 
 
 ## Step 5f: Tweak Global Employee Harmonization
@@ -894,7 +895,104 @@ function collect(options) {
 }
 ```
 
-For content.sjs ... TODO
+Content.sjs will be your most ambitious edit yet:
+
+- In Global's data, each employee document has an associated salary document. Find that salary document. See comment "get associated salary doc" in the code below.
+- Do the source-to-target mapping as per the mapping spec. See comment "!!! USING SME MAPPING !!!" below. That mapping obtains source data from both the employee and salary documents.
+- Incorporate the address, phone, and email data. Follow the SME mapping sheet. The code that was generated helps you construct the addresses, phones, and emails as subdocuments. The code below shows a concise way to tailor the generated functions extractInstanceAddress, extractInstancePhone, and extractInstanceEmail to build this.
+
+Here is the complete module:
+
+```
+'use strict'
+
+const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
+
+function createContent(id, options) { ... KEEP THE SAME AS ORIGINAL
+  
+function extractInstanceEmployee(source) {
+
+  var instance = source.toObject().envelope.instance;
+
+  var content = {
+    '$attachments': source,
+    '$type': 'Employee',
+    '$version': '0.0.1',
+  };
+
+  // get associated salary doc
+  var salaryDoc = cts.doc("/hr/salary/global/" + instance.emp_id + ".json");
+  if (salaryDoc) salaryDoc = salaryDoc.toObject();
+  if (salaryDoc.envelope && salaryDoc.envelope.instance) salaryDoc = salaryDoc.envelope.instance;
+
+  // !!! USING SME MAPPING !!!
+  content.employeeId = instance.emp_id;
+  content.firstName = instance.first_name;
+  content.lastName = instance.last_name;
+  content.reportsTo = instance.reports_to;
+  content.memberOf = instance.dept_num;
+  if (instance.dob) content.dateOfBirth = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.dob));
+  if (instance.hire_date) content.hireDate = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", instance.hire_date));
+  if (salaryDoc) content.status = salaryDoc.status;
+  if (salaryDoc) content.baseSalary = salaryDoc.base_salary;
+  if (salaryDoc) content.bonus = salaryDoc.bonus;
+  if (salaryDoc) content.effectiveDate = xs.date(xdmp.parseDateTime("[M01]/[D01]/[Y0001]", salaryDoc.job_effective_date));
+
+  // sub-documents
+  content.addresses =  [extractInstanceAddress(instance)];
+  content.phones = [
+    extractInstancePhone(instance, "home", "home_phone"),
+    extractInstancePhone(instance, "mobile", "mobile"),
+    extractInstancePhone(instance, "pager", "pager"),
+    extractInstancePhone(instance, "work", "work_phone"),
+  ];
+  content.emails = [
+    extractInstanceEmail(instance, "home", "home_email"),
+    extractInstanceEmail(instance, "work", "work_email")
+  ];
+
+  // !!! CALCULATED !!!
+  ulib.doCalculation_Employee_uri(null, content, null);
+  return content;
+};
+
+// Extract the one and only address from the employee instance
+function extractInstanceAddress(instance) {
+  return {
+    '$type': 'Address',
+    '$version': '0.0.1',
+    'addressType': "Primary",
+    'lines': [instance.addr1, instance.addr2], 
+    'city': instance.city,
+    'state': instance.state,
+    'zip': instance.zip,
+    'country': "USA"
+  }
+};
+
+// extract phone of given type
+function extractInstancePhone(instance, type, data) {
+  return {  
+    '$type': 'Phone',
+    '$version': '0.0.1',
+    'phoneType': type,
+    'phoneNumber': instance[data]
+  }
+};
+
+// extract email of given type
+function extractInstanceEmail(instance, type, data) {
+  return {  
+    '$type': 'Email',
+    '$version': '0.0.1',
+    'emailType': type,
+    'emailAddress': instance[data]
+  }
+};
+
+module.exports =  .... KEEP THE SAME AS ORIGINAL
+
+```
 
 For writer.sjs, just copy the writers module from Acme; the same code fits both harmonizations.
 
@@ -904,7 +1002,17 @@ gradle -i mlReloadModules
 
 gradle -i hubRunFlow -PentityName=Employee -PflowName=HarmonizeEmployeeGlobal
 
-TODO confirm
+To confirm, in Query Console explore the xmi2es-tutorials-empHub-FINAL database. You should see one thousand new documents with a URI like "/employee/<number>.json". Find /employee/107.json and  open it up. To find it, either type the URI into the Explorer's search bar or open a JSON query, point it xmi2es-tutorials-empHub-FINAL database, and run 
+
+```
+cts.doc("/employee/107.json")
+```
+
+Verify the document looks like this:
+
+![global](images/emp_setup46.png)
+
+
 ## Step 5h: Step 5 Summary
 TODO ...
 
