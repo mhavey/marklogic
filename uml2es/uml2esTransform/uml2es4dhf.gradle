@@ -396,7 +396,7 @@ task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.cutConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ',' + ');\n'
+js += 'cookie.createConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ');\n'
 println js
   javascript = js;
 }
@@ -432,7 +432,7 @@ task _cFetchCutConversionModule(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
-  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName") + "/"
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" 
   classpath = configurations.mlcp
   command = "EXPORT"
   output_file_path = "data/cookieCutter-dump"
@@ -442,7 +442,8 @@ task _cFetchCutConversionModule(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 task _cPromoteCutConversionModule(type: Copy) {
-    def convPath = "src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" + project.findProperty("moduleName")
+    def convPath = "src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName")
+    println '!!!!' + convPath
     enabled = project.findProperty("overwrite") == "true" || !file(convPath).exists()
     from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + convPath  
     into convPath 

@@ -4,8 +4,7 @@ ${ModelDesc}
 
 xquery version '1.0-ml';
 
-module namespace conv
-    = 'http://com.marklogic.es.uml.movie#conv-0.0.1';
+module namespace plugin = "http://marklogic.com/data-hub/plugins";
 
 import module namespace xesgen = "${ModelGenURI}" at "/modelgen/${ModelName}/lib.xqy" ;
 

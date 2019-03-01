@@ -1,0 +1,77 @@
+<export><workspace name="XMI2ESGenDataVanilla"><query name="insertXML" focus="false" listorder="1" taborder="1" active="true" database="13207800994987417675" server="9484533440839814663" database-name="xmi2es-examples-gentest-vanilla-content" server-name="xmi2es-examples-gentest-vanilla" mode="xquery">xquery version "1.0-ml";
+
+xdmp:document-insert("/testx.xml", &lt;envelope&gt;&lt;instance&gt;&lt;data&gt;x&lt;/data&gt;&lt;/instance&gt;&lt;/envelope&gt;)
+
+</query><query name="insertJSON" focus="false" listorder="2" taborder="2" active="true" database="13207800994987417675" server="9484533440839814663" database-name="xmi2es-examples-gentest-vanilla-content" server-name="xmi2es-examples-gentest-vanilla" mode="javascript">'use strict';
+
+declareUpdate();
+
+xdmp.documentInsert("/testj.json", {"envelope": {"instance": {"data": "j"}}});
+
+</query><query name="testSJS" focus="false" listorder="3" taborder="3" active="true" database="13207800994987417675" server="9484533440839814663" database-name="xmi2es-examples-gentest-vanilla-content" server-name="xmi2es-examples-gentest-vanilla" mode="javascript">'use strict';
+
+const ajj = require("/esconversion/Maudle/A/Ajj.sjs");
+const ajx = require("/esconversion/Maudle/A/Ajx.sjs");
+const bjj = require("/esconversion/Maudle/B/Bjj.sjs");
+const bjx = require("/esconversion/Maudle/B/Bjx.sjs");
+
+var options, ret;
+var results = [];
+
+options = {};
+ret = ajj.createContent(cts.doc("/testj.json"), options);
+results.push("ajj");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = ajx.createContent(cts.doc("/testx.xml"), options);
+results.push("ajx");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = bjj.createContent(cts.doc("/testj.json"), options);
+results.push("bjj");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = bjx.createContent(cts.doc("/testx.xml"), options);
+results.push("bjx");
+results.push(ret);
+results.push(options);
+
+results;
+</query><query name="testXQY" focus="true" listorder="4" taborder="4" active="true" database="13207800994987417675" server="9484533440839814663" database-name="xmi2es-examples-gentest-vanilla-content" server-name="xmi2es-examples-gentest-vanilla" mode="xquery">import module namespace axj = "http://marklogic.com/data-hub/plugins/Axj" at "/esconversion/Maudle/A/Axj.xqy" ;
+import module namespace axx = "http://marklogic.com/data-hub/plugins/Axx" at "/esconversion/Maudle/A/Axx.xqy" ;
+import module namespace bxj = "http://marklogic.com/data-hub/plugins/Bxj" at "/esconversion/Maudle/B/Bxj.xqy" ;
+import module namespace bxx = "http://marklogic.com/data-hub/plugins/Bxx" at "/esconversion/Maudle/B/Bxx.xqy" ;
+
+let $axj-options := map:map()
+let $axj-ret := axj:buildContent_A("dontcare",fn:doc("/testj.json"),$axj-options,$axj-options)
+
+let $axx-options := map:map()
+let $axx-ret := axx:buildContent_A("dontcare",fn:doc("/testx.xml"),$axx-options,$axx-options)
+
+let $bxj-options := map:map()
+let $bxj-ret := bxj:buildContent_B("dontcare",fn:doc("/testj.json"),$bxj-options,$bxj-options)
+
+let $bxx-options := map:map()
+let $bxx-ret := bxx:buildContent_B("dontcare",fn:doc("/testx.xml"),$bxx-options,$bxx-options)
+
+return
+(
+  "axj",
+  $axj-ret,
+  $axj-options,
+  "axx",
+  $axx-ret,
+  $axx-options,
+  "bxj",
+  $bxj-ret,
+  $bxj-options,
+  "bxx",
+  $bxx-ret,
+  $bxx-options
+)</query></workspace></export>

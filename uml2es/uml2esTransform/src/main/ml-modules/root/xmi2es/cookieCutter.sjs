@@ -11,6 +11,8 @@ const ALLOWABLE_SELECTS = ["all", "infer"];
 const ALLOWABLE_CONTENTS = ["es", "dm"];
 
 function getAttributes(modelIRI, entityName) {
+
+	xdmp.log("GETTING ATTRIBUTES *" + modelIRI + "*" + entityName + "*");
 	var entity = modelIRI + "/" + entityName;
   var res = sem.sparql(`
 select * where {
@@ -600,6 +602,7 @@ ${AttribDesc}
 	}
 
 	var tpl = eval('`'+template+'`');
+
 	return tpl;
 }
 
@@ -800,7 +803,7 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 	if (contentMode == null || ALLOWABLE_CONTENTS.indexOf(contentMode) < 0) throw "Illegal content mode *" + contentMode + "*";
 	modelName = validateRequired(modelName, "modelName");
 	entityName = validateRequired(entityName, "entityName");
-	moduleName = validateRequired(flowName, "moduleName");
+	moduleName = validateRequired(moduleName, "moduleName");
 
 	// find the model
 	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
@@ -814,7 +817,7 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 	var builderFunctions = getBuilderFunctions(modelIRI);
 
 	// create plugins (with harmonization) for each
-	var moduleFolder = "/cookieCutter/" + modelName + "/src/main/ml-modules/" + entityName + "/";
+	var moduleFolder = "/cookieCutter/" + modelName + "/src/main/ml-modules/root/esconversion/" + modelName + "/" + entityName + "/";
 
 	if (mappingURI) mappingURI = mappingURI.trim();
 
@@ -834,8 +837,8 @@ function createConversionModule(modelName, entityName, dataFormat, pluginFormat,
 	};
 	// now let's cookie-cut the module; it's the same approach as content module of harmonization
 	writeFile(moduleFolder, moduleName + "." + pluginFormat, 
-		cutContent(inputuseTemplate("/xmi2es/conversionTemplate/conversion.t" + pluginFormat)), 
-		true, modelName, "conversion");
+		cutContent(input, useTemplate("/xmi2es/conversionTemplate/conversion.t" + pluginFormat)),
+		true, modelName, "harmonization");
 }
 
 module.exports = {

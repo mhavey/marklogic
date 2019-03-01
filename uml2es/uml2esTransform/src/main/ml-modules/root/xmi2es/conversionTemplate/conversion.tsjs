@@ -19,7 +19,7 @@ ${EntityContentEnableDMOut}
 
 var options = {};
 
-function createContent(source) {
+function createContent(source, options) {
   var id = "dontcare";
   return buildContent_${EntityX}(id, source, options, options);
 }
