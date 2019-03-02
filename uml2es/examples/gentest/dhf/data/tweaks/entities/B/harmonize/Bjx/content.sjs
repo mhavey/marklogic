@@ -9,7 +9,10 @@
       runWriter_B
 */
 
+'use strict'
+
 const xesgen = require("/modelgen/Maudle/lib.sjs");
+const util = require("/xmi2es/util.sjs");
 
 /*
 const dm = require('/ext/declarative-mapper.sjs');
@@ -24,10 +27,34 @@ function getDMMapper(options) {
 }
 */
 
-var options = {};
+/*
+* Create Content Plugin
+*
+* @param id         - the identifier returned by the collector
+* @param options    - an object containing options. Options are sent from Java
+*
+* @return - your content
+*/
+function createContent(id, options) {
+  let doc = cts.doc(id);
+  let ioptions = util.setIOptions(id,options);
 
-function createContent(id,source, options) {
-  return buildContent_B(id, source, options, options);
+  let source;
+
+  // for xml we need to use xpath
+  if(doc && xdmp.nodeKind(doc) === 'element' && doc instanceof XMLDocument) {
+    source = doc
+  }
+  // for json we need to return the instance
+  else if(doc && doc instanceof Document) {
+    source = fn.head(doc.root);
+  }
+  // for everything else
+  else {
+    source = doc;
+  }
+
+  return buildContent_B(id, source, options, ioptions);
 }
 
 
@@ -61,21 +88,21 @@ function buildContent_B(id,source,options,ioptions) {
       '$version': '0.0.1'
    };
 
-  var sampleData = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
+var data = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
 
 /*
   Attribute b is stereotyped in the model as follows:: 
     resolvedType: 
       string
 */
-   ret["b"] = "Bjjb" + sampleData; // type: string, req'd: true, array: false
+   ret["b"] = "bjxb"; // type: string, req'd: true, array: false
 
 /*
   Attribute format is stereotyped in the model as follows:: 
     resolvedType: 
       string
 */
-   ret["format"] = "json"; // type: string, req'd: true, array: false
+   ret["format"] = "xml"; // type: string, req'd: true, array: false
 
 /*
   Attribute header is stereotyped in the model as follows:: 
@@ -87,7 +114,7 @@ function buildContent_B(id,source,options,ioptions) {
     resolvedType: 
       string
 */
-   ret["id"] = "Bjj" + sampleData; // type: string, req'd: true, array: false
+   ret["id"] = "bjx" + data; // type: string, req'd: true, array: false
 
 /*
   Attribute a is stereotyped in the model as follows:: 

@@ -9,7 +9,10 @@
       runWriter_B
 */
 
+'use strict'
+
 const xesgen = require("/modelgen/Maudle/lib.sjs");
+const util = require("/xmi2es/util.sjs");
 
 /*
 const dm = require('/ext/declarative-mapper.sjs');
@@ -24,20 +27,49 @@ function getDMMapper(options) {
 }
 */
 
-var options = {};
+/*
+* Create Content Plugin
+*
+* @param id         - the identifier returned by the collector
+* @param options    - an object containing options. Options are sent from Java
+*
+* @return - your content
+*/
+function createContent(id, options) {
+  let doc = cts.doc(id);
+  let ioptions = util.setIOptions(id,options);
 
-function createContent(id,source, options) {
-  return buildContent_A(id, source, options, options);
+  let source;
+
+  // for xml we need to use xpath
+  if(doc && xdmp.nodeKind(doc) === 'element' && doc instanceof XMLDocument) {
+    source = doc
+  }
+  // for json we need to return the instance
+  else if(doc && doc instanceof Document) {
+    source = fn.head(doc.root);
+  }
+  // for everything else
+  else {
+    source = doc;
+  }
+
+  return buildContent_B(id, source, options, ioptions);
 }
 
 
 /*
-  Class A is stereotyped in the model as follows:: 
+  Class B is stereotyped in the model as follows:: 
     collections: 
-      A,
+      B,
       Maudle
+    ,
+    excludes: 
+      http://jude.org/maudle/Maudle-0.0.1/B/a,
+      http://jude.org/maudle/Maudle-0.0.1/B/header,
+      http://jude.org/maudle/Maudle-0.0.1/B/uri
 */
-function buildContent_A(id,source,options,ioptions) {
+function buildContent_B(id,source,options,ioptions) {
    // now check to see if we have XML or json, then create a node clone from the root of the instance
    if (source instanceof Element || source instanceof ObjectNode) {
       let instancePath = '/*:envelope/*:instance';
@@ -52,11 +84,18 @@ function buildContent_A(id,source,options,ioptions) {
    }
 
    var ret = {
-      '$type': 'A',
+      '$type': 'B',
       '$version': '0.0.1'
    };
 
-  var sampleData = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
+var data = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
+
+/*
+  Attribute b is stereotyped in the model as follows:: 
+    resolvedType: 
+      string
+*/
+   ret["b"] = "bjjb"; // type: string, req'd: true, array: false
 
 /*
   Attribute format is stereotyped in the model as follows:: 
@@ -70,14 +109,40 @@ function buildContent_A(id,source,options,ioptions) {
     resolvedType: 
       string
 */
-   ret["header"] = "Ajj"; // type: string, req'd: true, array: false
-
 /*
   Attribute id is stereotyped in the model as follows:: 
     resolvedType: 
       string
 */
-   ret["id"] = "Ajj_" + sampleData; // type: string, req'd: true, array: false
+   ret["id"] = "bjj" + data; // type: string, req'd: true, array: false
+
+/*
+  Attribute a is stereotyped in the model as follows:: 
+    basedOnAttribute: 
+      format
+    ,
+    calculation: 
+        $attribute(format)
+    ,
+    resolvedType: 
+      string
+*/
+   xesgen.doCalculation_B_a(id, ret, ioptions) 
+
+/*
+  Attribute c is stereotyped in the model as follows:: 
+    basedOnAttribute: 
+      a,
+      b
+    ,
+    calculation: 
+        $attribute(a),
+        $attribute(b)
+    ,
+    resolvedType: 
+      string
+*/
+   xesgen.doCalculation_B_c(id, ret, ioptions) 
 
 /*
   Attribute uri is stereotyped in the model as follows:: 
@@ -97,7 +162,7 @@ function buildContent_A(id,source,options,ioptions) {
     resolvedType: 
       string
 */
-   xesgen.doCalculation_A_uri(id, ret, ioptions) 
+   xesgen.doCalculation_B_uri(id, ret, ioptions) 
 
    return ret;
 }

@@ -40,7 +40,9 @@ declare function plugin:buildContent_A($id,$source,$options,$ioptions) {
       map:put($model, '$version', '0.0.1')
    )
 
-let $sampleData := $source/data
+let $sampleData := 
+  if (fn:ends-with($id, ".json")) then $source/data
+  else $source/text()
 
 (:
   Attribute format is stereotyped in the model as follows:: 

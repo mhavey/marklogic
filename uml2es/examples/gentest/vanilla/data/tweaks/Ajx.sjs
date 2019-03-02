@@ -26,8 +26,7 @@ function getDMMapper(options) {
 
 var options = {};
 
-function createContent(source, options) {
-  var id = "dontcare";
+function createContent(id,source, options) {
   return buildContent_A(id, source, options, options);
 }
 
@@ -57,7 +56,7 @@ function buildContent_A(id,source,options,ioptions) {
       '$version': '0.0.1'
    };
 
-  var sampleData = source.xpath("string(/envelope/instance/data)");
+  var sampleData = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
 
 
 /*

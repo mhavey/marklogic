@@ -17,4 +17,7 @@ gradle -b uml2es.gradle -i uCreateConversionModule -PentityName=B -PdataFormat=j
 
 gradle -b uml2es.gradle -i uCreateConversionModule -PentityName=B -PdataFormat=json -PpluginFormat=xqy -PcontentMode=es -Poverwrite=true -PmoduleName=Bxj
 
+-in data/tweaks are the tweaks, copy them over the code that was just generated in plugins
+- then redploy the modules
 
+test using the workspace
