@@ -65,7 +65,7 @@
     <concat>&quot;.&quot;</concat>
     <concat>$attribute(format)</concat>
   </MarkLogicEntityServicesProfile.xes:xCalculated>
-  <MarkLogicEntityServicesProfile.xes:xHeader xmi:id="_rPVS0Dw2EemEE_GkmS6oaw" base_Property="_qATT4Dw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xHeader xmi:id="_rPVS0Dw2EemEE_GkmS6oaw" base_Property="_qATT4Dw2EemEE_GkmS6oaw" field="headerFromContent"/>
   <MarkLogicEntityServicesProfile.es:PK xmi:id="__DrAADw2EemEE_GkmS6oaw" base_Property="_7YIiYDw2EemEE_GkmS6oaw"/>
   <MarkLogicEntityServicesProfile.xes:xURI xmi:id="_C3AHsDw3EemEE_GkmS6oaw" base_Property="_74xxUDw2EemEE_GkmS6oaw"/>
   <MarkLogicEntityServicesProfile.xes:xCalculated xmi:id="_C3ZwUDw3EemEE_GkmS6oaw" base_Property="_74xxUDw2EemEE_GkmS6oaw">
@@ -76,7 +76,7 @@
   </MarkLogicEntityServicesProfile.xes:xCalculated>
   <MarkLogicEntityServicesProfile.es:exclude xmi:id="_C3xjwDw3EemEE_GkmS6oaw" base_Property="_74xxUDw2EemEE_GkmS6oaw"/>
   <MarkLogicEntityServicesProfile.es:exclude xmi:id="_I01YEDw3EemEE_GkmS6oaw" base_Property="_8xnd0Dw2EemEE_GkmS6oaw"/>
-  <MarkLogicEntityServicesProfile.xes:xHeader xmi:id="_I1PAsDw3EemEE_GkmS6oaw" base_Property="_8xnd0Dw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xHeader xmi:id="_I1PAsDw3EemEE_GkmS6oaw" base_Property="_8xnd0Dw2EemEE_GkmS6oaw" field="headerFromContent"/>
   <MarkLogicEntityServicesProfile.xes:xCalculated xmi:id="_ZplusDw3EemEE_GkmS6oaw" base_Property="_RO6BYDw3EemEE_GkmS6oaw">
     <concat>$attribute(a)</concat>
     <concat>$attribute(b)</concat>

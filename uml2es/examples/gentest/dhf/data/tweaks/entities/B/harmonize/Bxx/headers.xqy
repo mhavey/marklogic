@@ -2,7 +2,7 @@ xquery version "1.0-ml";
 
 module namespace plugin = "http://marklogic.com/data-hub/plugins";
 
-(:import module namespace xesgen = "http://jude.org/maudle/Maudle-0.0.1" at "/modelgen/Maudle/lib.xqy" ;:)
+import module namespace xesgen = "http://jude.org/maudle/Maudle-0.0.1" at "/modelgen/Maudle/lib.xqy" ;
 import module namespace util = "http://marklogic.com/xmi2es/util" at "/xmi2es/util.xqy" ;
 
 declare namespace es = "http://marklogic.com/entity-services";
@@ -24,11 +24,11 @@ declare function plugin:create-headers(
   $options as map:map) as node()*
 {
   let $lang := "xml"
-  (:
+  
   let $ioptions := util:getIOptions($id, $options)
   return xesgen:setHeaders_B($id, $content, $ioptions, $lang)
-  :)
-  return ()
+  
+  (:return ():)
 
   (: TODO - nested :)
 };

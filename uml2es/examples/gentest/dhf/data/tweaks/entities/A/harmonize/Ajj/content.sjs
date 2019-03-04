@@ -6,7 +6,9 @@
       doCalculation_B_c,
       doCalculation_B_uri,
       runWriter_A,
-      runWriter_B
+      runWriter_B,
+      setHeaders_A,
+      setHeaders_B
 */
 
 'use strict'
@@ -65,6 +67,7 @@ function createContent(id, options) {
       Maudle
 */
 function buildContent_A(id,source,options,ioptions) {
+
    // now check to see if we have XML or json, then create a node clone from the root of the instance
    if (source instanceof Element || source instanceof ObjectNode) {
       let instancePath = '/*:envelope/*:instance';
@@ -83,12 +86,14 @@ function buildContent_A(id,source,options,ioptions) {
       '$version': '0.0.1'
    };
 
-var data = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
 
-var data = source.toObject().envelope.instance.data;
+var data = id.endsWith(".xml") ? source.xpath("string(/data)") : source.toObject().data;
 
 /*
   Attribute header is stereotyped in the model as follows:: 
+    header: 
+      headerFromContent
+    ,
     resolvedType: 
       string
 */
@@ -127,7 +132,6 @@ var data = source.toObject().envelope.instance.data;
       string
 */
    xesgen.doCalculation_A_uri(id, ret, ioptions) 
-
    return ret;
 }
 

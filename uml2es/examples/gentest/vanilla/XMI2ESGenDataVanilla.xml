@@ -19,25 +19,49 @@ var options, ret;
 var results = [];
 
 options = {};
-ret = ajj.createContent(cts.doc("/testj.json"), options);
+ret = ajj.createContent("/testj.json", cts.doc("/testj.json"), options);
 results.push("ajj");
 results.push(ret);
 results.push(options);
 
 options = {};
-ret = ajx.createContent(cts.doc("/testx.xml"), options);
+ret = ajj.createContent("/testx.xml", cts.doc("/testx.xml"), options);
+results.push("ajj");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = ajx.createContent("/testx.xml", cts.doc("/testx.xml"), options);
 results.push("ajx");
 results.push(ret);
 results.push(options);
 
 options = {};
-ret = bjj.createContent(cts.doc("/testj.json"), options);
+ret = ajx.createContent("/testj.json", cts.doc("/testj.json"), options);
+results.push("ajx");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = bjj.createContent("/testj.json", cts.doc("/testj.json"), options);
 results.push("bjj");
 results.push(ret);
 results.push(options);
 
 options = {};
-ret = bjx.createContent(cts.doc("/testx.xml"), options);
+ret = bjj.createContent("/testx.xml", cts.doc("/testx.xml"), options);
+results.push("bjj");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = bjx.createContent("/testx.xml", cts.doc("/testx.xml"), options);
+results.push("bjx");
+results.push(ret);
+results.push(options);
+
+options = {};
+ret = bjx.createContent("/testj.json", cts.doc("/testj.json"), options);
 results.push("bjx");
 results.push(ret);
 results.push(options);
@@ -49,29 +73,53 @@ import module namespace bxj = "http://marklogic.com/data-hub/plugins/Bxj" at "/e
 import module namespace bxx = "http://marklogic.com/data-hub/plugins/Bxx" at "/esconversion/Maudle/B/Bxx.xqy" ;
 
 let $axj-options := map:map()
-let $axj-ret := axj:buildContent_A("dontcare",fn:doc("/testj.json"),$axj-options,$axj-options)
+let $axj-ret := axj:buildContent_A("/testj.json",fn:doc("/testj.json"),$axj-options,$axj-options)
+
+let $axjx-options := map:map()
+let $axjx-ret := axj:buildContent_A("/testx.xml",fn:doc("/testx.xml"),$axjx-options,$axjx-options)
 
 let $axx-options := map:map()
-let $axx-ret := axx:buildContent_A("dontcare",fn:doc("/testx.xml"),$axx-options,$axx-options)
+let $axx-ret := axx:buildContent_A("/testx.xml",fn:doc("/testx.xml"),$axx-options,$axx-options)
+
+let $axxj-options := map:map()
+let $axxj-ret := axx:buildContent_A("/testj.json",fn:doc("/testj.json"),$axxj-options,$axxj-options)
 
 let $bxj-options := map:map()
-let $bxj-ret := bxj:buildContent_B("dontcare",fn:doc("/testj.json"),$bxj-options,$bxj-options)
+let $bxj-ret := bxj:buildContent_B("/testj.json",fn:doc("/testj.json"),$bxj-options,$bxj-options)
+
+let $bxjx-options := map:map()
+let $bxjx-ret := bxj:buildContent_B("/testx.xml",fn:doc("/testx.xml"),$bxjx-options,$bxjx-options)
 
 let $bxx-options := map:map()
-let $bxx-ret := bxx:buildContent_B("dontcare",fn:doc("/testx.xml"),$bxx-options,$bxx-options)
+let $bxx-ret := bxx:buildContent_B("/testx.xml",fn:doc("/testx.xml"),$bxx-options,$bxx-options)
+
+let $bxxj-options := map:map()
+let $bxxj-ret := bxx:buildContent_B("/testj.json",fn:doc("/testj.json"),$bxxj-options,$bxxj-options)
 
 return
 (
   "axj",
   $axj-ret,
   $axj-options,
+  "axjx",
+  $axjx-ret,
+  $axjx-options,
   "axx",
   $axx-ret,
   $axx-options,
+  "axxj",
+  $axxj-ret,
+  $axxj-options,
   "bxj",
   $bxj-ret,
   $bxj-options,
+  "bxjx",
+  $bxjx-ret,
+  $bxjx-options,
   "bxx",
   $bxx-ret,
-  $bxx-options
+  $bxx-options,
+  "bxxj",
+  $bxxj-ret,
+  $bxxj-options
 )</query></workspace></export>

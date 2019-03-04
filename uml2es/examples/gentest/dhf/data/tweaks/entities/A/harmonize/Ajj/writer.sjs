@@ -10,8 +10,8 @@ const util = require("/xmi2es/util.sjs");
  *
  * @return - nothing
  */
-function write(id, envelope, content, options) {
-  xesgen.runWriter_A(id, envelope, content, util.getIOptions(id,options));
+function write(id, envelope, options) {
+  xesgen.runWriter_A(id, envelope, util.getIOptions(id,options));
       util.removeIOptions(id,options);
   //xdmp.documentInsert(id, envelope, xdmp.defaultPermissions(), options.entity);
   util.removeIOptions(id,options);

@@ -6,7 +6,9 @@
       doCalculation_B_c,
       doCalculation_B_uri,
       runWriter_A,
-      runWriter_B
+      runWriter_B,
+      setHeaders_A,
+      setHeaders_B
 */
 
 const xesgen = require("/modelgen/Maudle/lib.sjs");
@@ -79,6 +81,9 @@ function buildContent_B(id,source,options,ioptions) {
 
 /*
   Attribute header is stereotyped in the model as follows:: 
+    header: 
+      headerFromContent
+    ,
     resolvedType: 
       string
 */

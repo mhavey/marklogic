@@ -594,6 +594,11 @@ function addTriple(ret, s, p, o) {
   }
   else ret.push(sem.triple(s,p,o));    
 }
+
+function extractEnvelopeInstanceValue(envelope, field) {
+	var nenv = envelope instanceof Node ? envelope : xdmp.toJSON(envelope);
+	return nenv.xpath("string(/*:envelope/*:instance//" + field + ")");
+}
 ')),
 		xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, '
 declare function ', $NS-PREFIX, ':dynIRI($expr) as sem:iri* {
@@ -730,9 +735,9 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 		let $classIRIx := concat($classIRI, "/")
 		let $sjsFunction := concat($FUNCTION-WRITER, "_", $className)
 		let $_ := xes:addSJSFunction($xes, $sjsFunction)
-		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, content, ioptions) {'))
+		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, 'function ', $sjsFunction, '(id, envelope, ioptions) {'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, 'declare function ', $NS-PREFIX, ":", $sjsFunction, 
-			'($id as xs:string, $envelope as item(), $content, $ioptions as map:map) as empty-sequence() {'))
+			'($id as xs:string, $envelope as item(), $ioptions as map:map) as empty-sequence() {'))
 
 		(: URI :)
 		let $tXURI := $triples/sem:triple[sem:predicate eq string($PRED-IS-URI) and contains(sem:subject/text(), $classIRI)]
@@ -740,7 +745,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 			if (count($tXURI) ne 1) then ("id", "$id")
 			else 
 				let $attribName := fn:tokenize($tXURI/sem:subject/text(), "/")[last()]
-				return xes:getAttribForModule($xes, $triples, $tXURI/sem:subject/text())
+				return xes:getAttribForModuleEnv($xes, $triples, $tXURI/sem:subject/text())
 		let $_ := xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var uri = ', $xuriVal[1], ';'))
 		let $_ := xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $uri := ', $xuriVal[2]))
 
@@ -757,7 +762,7 @@ declare function xes:generateWriter($xes as map:map, $codeMap as map:map) as emp
 				let $_ := for $coll in $colls/sem:object/text()
 					let $field := xes:parseXString($xes, $classIRI, $coll)
 					let $val := 
-						if ($field[1] eq "attribute") then xes:getAttribForModule($xes, $triples, $field[2])
+						if ($field[1] eq "attribute") then xes:getAttribForModuleEnv($xes, $triples, $field[2])
 						else (concat('"', $field[2], '"'), concat('"', $field[2], '"'))
 					return (
 						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'collections.push(', $val[1], ');')),
@@ -879,7 +884,7 @@ return aTriples.concat(bTriples);
 		let $tSemIRI := $triples/sem:triple[sem:predicate eq string($PRED-IS-SEM-IRI) and starts-with(sem:subject, $classIRIx)]
 		let $iriVal :=
 			if (count($tSemIRI) ne 1) then ('"unknown"', '"unknown"')
-			else xes:getAttribForModule($xes, $triples, $tSemIRI/sem:subject/text(), true(), true(), ())
+			else xes:getAttribForModule($xes, $triples, $tSemIRI/sem:subject/text(), true(), true(), (), true())
 		let $_ := (
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var iri = ', $iriVal[1], ';')),
 			xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ret = [];')),
@@ -948,7 +953,7 @@ return aTriples.concat(bTriples);
 					xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := sem:bnode()'))
 				)
 				else 
-					let $attribVal := xes:getAttribForModule($xes, $triples, $attribIRI, true(), false(), ()) 
+					let $attribVal := xes:getAttribForModule($xes, $triples, $attribIRI, true(), false(), (), true()) 
 					return (
 						xes:appendSourceLine($codeMap, $LIB-SJS, concat($NEWLINE, $INDENT, 'var ', $objName, ' = ', $attribVal[1], ';')),
 						xes:appendSourceLine($codeMap, $LIB-XQY, concat($NEWLINE, $INDENT, 'let $', $objName, ' := ', $attribVal[2]))
@@ -1053,17 +1058,25 @@ declare function xes:appendSourceLine($codeMap, $key, $line) as empty-sequence()
 };
 
 (:
-We want an attribute from either content or options. If the attribute it excluded it comes from options,
+We want an attribute from either ready-to-ship envelope or options. If the attribute is excluded it comes from options,
+otherwise it's from envelope. Return both sjs and xqy expression.
+:)
+declare function xes:getAttribForModuleEnv($xes, $triples, $attribIRI as xs:string)  as xs:string+ {
+	xes:getAttribForModule($xes, $triples, $attribIRI, false(), false(), (), false())
+};
+
+(:
+We want an attribute from either content or options. If the attribute is excluded it comes from options,
 otherwise it's from content. Return both sjs and xqy expression.
 :)
 declare function xes:getAttribForModule($xes, $triples, $attribIRI as xs:string)  as xs:string+ {
-	xes:getAttribForModule($xes, $triples, $attribIRI, false(), false(), ())
+	xes:getAttribForModule($xes, $triples, $attribIRI, false(), false(), (), true())
 };
 
 declare function xes:getAttribForModule($xes, $triples, $attribIRI, 
 	$tryForIRI as xs:boolean, 
 	$mustBeIRI as xs:boolean, 
-	$expectedCardinality as xs:string?)  as xs:string+ {
+	$expectedCardinality as xs:string?, $useContentMap as xs:boolean?)  as xs:string+ {
 
 	let $attribName := fn:tokenize($attribIRI, "/")[last()]
 	let $profileForm := map:get($xes, "profileForm")
@@ -1090,8 +1103,11 @@ declare function xes:getAttribForModule($xes, $triples, $attribIRI,
 				if (exists($triples/sem:triple[sem:object/text() eq $attribIRI and 
 					sem:predicate/text() eq string($PRED-EXCLUDES)])) then
 					( concat('ioptions.', $attribName), concat('map:get($ioptions, "', $attribName, '")') )
-				else ( concat('content.', $attribName) , concat('map:get($content, "', $attribName, '")') )
-
+				else if ($useContentMap eq true()) then 
+					( concat('content.', $attribName) , concat('map:get($content, "', $attribName, '")') )
+				else
+					( concat('extractEnvelopeInstanceValue(envelope, "', $attribName, '")') , 
+					concat('string($envelope/*:envelope/*:instance/*/*:', $attribName, ')') )
 			let $_ := 
 				if (exists($expectedCardinality)) then
 					if ($expectedCardinality eq $cardinality or 
@@ -1160,6 +1176,7 @@ declare function xes:buildSemSPOParameter($xes, $codeMap, $triples, $sourceIRI a
 	let $attribMaxCardinality := if ($isO eq true()) then "*" else "1"
 	let $attribMustBeIRI := if ($isO eq true()) then false() else true()
 	let $attribTryIRI := true()
+	let $useContentMap := true()
 
 	return
 		if (count($spoFact) ne 1) then $defaults
@@ -1182,13 +1199,13 @@ declare function xes:buildSemSPOParameter($xes, $codeMap, $triples, $sourceIRI a
 						return ($blank, '$' || $blank)
 					else if ($parsed[1] eq "sattribute" or $parsed[1] eq "attribute") then 
 						xes:getAttribForModule($xes, $triples, concat($parentIRI, "/", $parsed[2]), 
-							$attribTryIRI, $attribMustBeIRI, $attribMaxCardinality)
+							$attribTryIRI, $attribMustBeIRI, $attribMaxCardinality, $useContentMap)
 					else if ($parsed[1] eq "tattribute") then 
 						let $replacer := "TODO - provide value of target attribute *" || $parsed[2] || "*"
 						return '"' || $replacer || '"'
 					else if ($parsed[1] eq "value") then 
 						xes:getAttribForModule($xes, $triples, $sourceIRI,  
-							$attribTryIRI, $attribMustBeIRI, $attribMaxCardinality)
+							$attribTryIRI, $attribMustBeIRI, $attribMaxCardinality, $useContentMap)
 					else if ($parsed[1] eq "integer" or $parsed[1] eq "decimal") then
 						if ($isO eq false()) then fn:error(xs:QName("ERROR"), "IRI required, *" || $parsed[1] || "* found *" || $parsed[2] || "*")
 						else ($parsed[2], $parsed[2])

@@ -1,4 +1,4 @@
-//const xesgen = require("/modelgen/Maudle/lib.sjs");
+const xesgen = require("/modelgen/Maudle/lib.sjs");
 const util = require("/xmi2es/util.sjs");
 
 /*
@@ -11,10 +11,10 @@ const util = require("/xmi2es/util.sjs");
  * @return - an object of headers
  */
 function createHeaders(id, content, options) {
-  //var lang = json
-  //var ioptions = util.getIOptions(id,options);
-  //return xesgen.setHeaders_A(id, content, ioptions, lang);
-  return {};
+  var lang = "json";
+  var ioptions = util.getIOptions(id,options);
+  return xesgen.setHeaders_A(id, content, ioptions, lang);
+  //return {};
 
   // TODO nested headers
 }

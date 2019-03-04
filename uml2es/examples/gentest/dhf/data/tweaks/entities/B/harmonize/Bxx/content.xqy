@@ -6,7 +6,9 @@
       doCalculation_B_c,
       doCalculation_B_uri,
       runWriter_A,
-      runWriter_B
+      runWriter_B,
+      setHeaders_A,
+      setHeaders_B
 :)
 
 xquery version "1.0-ml";
@@ -68,7 +70,7 @@ declare function plugin:buildContent_B($id,$source,$options,$ioptions) {
 
 let $data := 
   if (fn:ends-with($id, ".json")) then $source/data
-  else $source/text()
+  else $source/data/text()
 
 (:
   Attribute b is stereotyped in the model as follows:: 
@@ -86,6 +88,9 @@ let $data :=
 
 (:
   Attribute header is stereotyped in the model as follows:: 
+    header: 
+      headerFromContent
+    ,
     resolvedType: 
       string
 :)

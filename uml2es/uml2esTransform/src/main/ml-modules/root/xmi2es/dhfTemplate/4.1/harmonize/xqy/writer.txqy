@@ -19,11 +19,10 @@ declare option xdmp:mapping "false";
 declare function plugin:write(
   $id as xs:string,
   $envelope as item(),
-  $content,
   $options as map:map) as empty-sequence()
 {
   (
-     ${EntityXWriterXEnableIn}xesgen:runWriter_${EntityX}($id, $envelope, $content, util:getIOptions($id,$options))${EntityXWriterXEnableOut}
+     ${EntityXWriterXEnableIn}xesgen:runWriter_${EntityX}($id, $envelope,  util:getIOptions($id,$options))${EntityXWriterXEnableOut}
      ${EntityXWriterXDisableIn}xdmp:document-insert($id, $envelope, xdmp:default-permissions(), map:get($options, "entity"))${EntityXWriterXDisableOut}
      , util:removeIOptions($id,$options)
   )

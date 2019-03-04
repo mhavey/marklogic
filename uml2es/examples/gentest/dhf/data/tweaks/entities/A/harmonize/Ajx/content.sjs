@@ -6,7 +6,9 @@
       doCalculation_B_c,
       doCalculation_B_uri,
       runWriter_A,
-      runWriter_B
+      runWriter_B,
+      setHeaders_A,
+      setHeaders_B
 */
 
 'use strict'
@@ -83,10 +85,13 @@ function buildContent_A(id,source,options,ioptions) {
       '$version': '0.0.1'
    };
 
-var data = id.endsWith(".xml") ? source.xpath("string(/envelope/instance/data)") : source.toObject().envelope.instance.data;
+var data = id.endsWith(".xml") ? source.xpath("string(/data)") : source.toObject().data;
 
 /*
   Attribute header is stereotyped in the model as follows:: 
+    header: 
+      headerFromContent
+    ,
     resolvedType: 
       string
 */

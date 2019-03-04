@@ -51,5 +51,5 @@ declare function plugin:main(
   return
     (: writers must be invoked this way.
      see: https://github.com/marklogic/marklogic-data-hub/wiki/dhf-lib#run-writer :)
-    dhf:run-writer(xdmp:function(xs:QName("writer:write")), $id, $envelope, $content, $options)
+    dhf:run-writer(xdmp:function(xs:QName("writer:write")), $id, $envelope, $options)
 };

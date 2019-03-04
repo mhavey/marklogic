@@ -11,7 +11,7 @@ const util = require("/xmi2es/util.sjs");
  * @return - an object of headers
  */
 function createHeaders(id, content, options) {
-  ${EntityXHeaderEnable}var lang = ${EntityDataFormat}
+  ${EntityXHeaderEnable}var lang = "${EntityDataFormat}";
   ${EntityXHeaderEnable}var ioptions = util.getIOptions(id,options);
   ${EntityXHeaderEnable}return xesgen.setHeaders_${EntityX}(id, content, ioptions, lang);
   ${EntityXHeaderDisable}return {};
