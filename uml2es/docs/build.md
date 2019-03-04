@@ -7,8 +7,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 
 |Task|Description|Inputs|Dependencies|Effects|Usage|
 |---|---|---|---|---|---|
-|uDeployModel|Load your UML model into MarkLogic and convert it to ES|modelName (XMI or Excel filename without suffix)<br/>
-lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)|Your gradle project has the folder data/model<br/>Your model is in that folder.<br/>Your model is XMI.<br/>Your model ends in .xml<br/>Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...<br/>Standard DHF environment properties: mlHost, mlFinalPort<br/>|Target database has the UML model, the ES model, the ES extensions, findings, generated code<br/>Target database has the ES model and its extended triples deployed<br/>Your gradle project has entity-services, entity-services-dump, entity-services-extension folders<br/>You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas|Vanilla or DHF|
+|uDeployModel|Load your UML model into MarkLogic and convert it to ES|modelName (XMI or Excel filename without suffix)<br/>lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)|Your gradle project has the folder data/model<br/>Your model is in that folder.<br/>Your model is XMI.<br/>Your model ends in .xml<br/>Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...<br/>Standard DHF environment properties: mlHost, mlFinalPort<br/>|Target database has the UML model, the ES model, the ES extensions, findings, generated code<br/>Target database has the ES model and its extended triples deployed<br/>Your gradle project has entity-services, entity-services-dump, entity-services-extension folders<br/>You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas|Vanilla or DHF|
 
 hi
 
