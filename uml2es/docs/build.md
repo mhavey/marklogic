@@ -5,7 +5,7 @@ The toolkit includes common gradle tasks to deploy your UML model and generate h
 
 The toolkit provides a gradle build file containing all model deployment and code generation tasks: [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle). Actually, it also includes a similar build file for use for DHF: [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).  Here is a summary of the tasks from that build file:
 
-##uDeployModel
+## uDeployModel
 
 *Purpose*: Load your UML model into MarkLogic and convert it to ES.
 
