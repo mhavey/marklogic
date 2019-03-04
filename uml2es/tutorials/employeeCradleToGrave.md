@@ -384,8 +384,8 @@ Those triples are not pretty, but both the data architect and developer will be 
 - /xmi2es/gen/EmployeeHubModel/lib.sjs: And here is the first bit of that generated code. Notice the following generated Javascript functions. runWriter_Employee creates an Employee JSON document and, according to the extended model, writes it to the "Employee" collection. doCalculation_Employee_uri constructs the uri attribute of Employee as the string concatenation of "/employee/", the employeeId attribute value, and ".json". We'll see in a later step how these functions are brought together in the harmonization.
 
 ```
-function runWriter_Employee(id, envelope, content, ioptions) {
-  var uri = content.uri;
+function runWriter_Employee(id, envelope, ioptions) {
+  var uri = extractEnvelopeInstanceValue(envelope, "uri");
   var dioptions = {};
   var collections = [];
   collections.push("Employee");
@@ -779,11 +779,9 @@ Finally, modify writer.sjs to use our calculated uri, plus the collection stereo
 const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
 
 function write(id, envelope, options) {
-  // from the envelope we need the content part - it has our calculated uri
-  var content = envelope.envelope.instance.Department;
 
   // call the generated lib
-  ulib.runWriter_Department(id, envelope, content, options);
+  ulib.runWriter_Department(id, envelope,  options);
 }
 
 module.exports = write;
@@ -862,11 +860,9 @@ For writer.sjs, change it like you did with department:
 const ulib = require("/modelgen/EmployeeHubModel/lib.sjs");
 
 function write(id, envelope, options) {
-  // from the envelope we need the content part - it has our calculated uri
-  var content = envelope.envelope.instance.Employee;
 
   // call the generated lib
-  ulib.runWriter_Employee(id, envelope, content, options);
+  ulib.runWriter_Employee(id, envelope, options);
 }
 
 module.exports = write;
