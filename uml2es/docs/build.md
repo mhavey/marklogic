@@ -5,13 +5,16 @@ The toolkit includes common gradle tasks to deploy your UML model and generate h
 
 The toolkit provides a gradle build file containing all model deployment and code generation tasks: [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle). Actually, it also includes a similar build file for use for DHF: [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).  Here is a summary of the tasks from that build file:
 
-- uDeployModel: Load your UML model in MarkLogic and convert it to ES.
-- uCreateDHFEntities: If you use DHF, create DHF plugin entities based on classes in your model
-- uCreateDHFHarmonizeFlow: If you use DHF, generate a harmonization flow based on your model. This conversion is smart, if you ask it to be.
-- uCreateConversionModule: Create a module to convert source data to the ES model form. This conversion is smart, if you ask it to be.
-- uLoadMappingSpec: Load an Excel mapping spec, which indicates how to map source data to the model. Used in the above tasks.
+|Task|Description|Inputs|Dependencies|Effects|Usage|
+|---|---|---|---|---|---|
+|uDeployModel|Load your UML model into MarkLogic and convert it to ES|modelName (XMI or Excel filename without suffix)<br/>
+lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)|Your gradle project has the folder data/model<br/>Your model is in that folder.<br/>Your model is XMI.<br/>Your model ends in .xml<br/>Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...<br/>Standard DHF environment properties: mlHost, mlFinalPort<br/>|Target database has the UML model, the ES model, the ES extensions, findings, generated code<br/>Target database has the ES model and its extended triples deployed<br/>Your gradle project has entity-services, entity-services-dump, entity-services-extension folders<br/>You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas|Vanilla or DHF|
 
-Details of the task interface, including task input, are given in the build file. (TODO .... nope, let's document here. Also talk about when to use these and when to use DHF ones.)
+hi
+
+|uCreateDHFEntities|Create DHF plugin entities based on classes in your model-|DHF only.|
+|uCreateDHFHarmonizeFlow|Generate a harmonization flow based on your model. This conversion is smart, if you ask it to be.|-|DHF only.|
+|uLoadMappingSpec|Load an Excel mapping spec, which indicates how to map source data to the model. Used in the above tasks.|-|-|
 
 The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit show this gradle build in action. There are several ways to use it:
 
