@@ -41,7 +41,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - modelName - name of UML module file without .xml suffix
 - entities (optional) - CSV of class names representing entities to create
 - entitySelect (optional) - Possible values:
-	*"infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
+	* "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
 	* "all" - All classes are considered entities. Ignore entities specified.
 
 *Dependencies:* 
@@ -65,7 +65,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - pluginFormat: xqy, sjs
 - flowName: the harmonization flow name
 - contentMode: possible values
-	*es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+	* es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
           incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
     * dm - Declarative Mapper mode. This feature is not ready yet.
 - mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
