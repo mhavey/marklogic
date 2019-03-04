@@ -5,7 +5,9 @@ The toolkit includes common gradle tasks to deploy your UML model and generate h
 
 The toolkit provides a gradle build file containing all model deployment and code generation tasks: [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle). Actually, it also includes a similar build file for use for DHF: [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).  Here is a summary of the tasks from that build file:
 
-## uDeployModel
+## Build Tasks
+
+### uDeployModel
 
 *Purpose*: Load your UML model into MarkLogic and convert it to ES.
 
@@ -29,10 +31,99 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - Your gradle project has entity-services, entity-services-dump, entity-services-extension folders
 - You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas
 
+### uCreateDHFEntities
 
-|uCreateDHFEntities|Create DHF plugin entities based on classes in your model-|DHF only.|
-|uCreateDHFHarmonizeFlow|Generate a harmonization flow based on your model. This conversion is smart, if you ask it to be.|-|DHF only.|
-|uLoadMappingSpec|Load an Excel mapping spec, which indicates how to map source data to the model. Used in the above tasks.|-|-|
+*Purpose*: Create DHF plugin entities based on classes in your model.
+
+*DHF/Vanilla*: DHF
+
+*Input:* 
+- modelName - name of UML module file without .xml suffix
+- entities (optional) - CSV of class names representing entities to create
+- entitySelect (optional) - Possible values:
+     "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
+     "all" - All classes are considered entities. Ignore entities specified.
+
+*Dependencies:* 
+- Your gradle project is DHF 4.1
+- You have deployed your UML model
+- Standard DHF environment properties: mlHost, mlFinalPort
+
+*Effects:*
+- New plugins created under plugins/entities folder
+
+### uCreateDHFHarmonizeFlow
+
+*Purpose:*: Generate a harmonization flow based on your model. This conversion is smart, if you ask it to be.
+
+*DHF/Vanilla*: DHF
+
+*Input:* 
+- modelName - name of UML module file without .xml suffix
+- entityName - name of the entity. You must already have created this using uCreateDHFEntities
+- dataFormat: xml, json
+- pluginFormat: xqy, sjs
+- flowName: the harmonization flow name
+- contentMode: possible values
+     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
+     dm - Declarative Mapper mode. This feature is not ready yet.
+- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
+- overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
+
+*Dependencies:*
+- Your gradle project is DHF 4.1
+- You have deployed your UML model
+- You have created the entity in question using uCreateDHFEntities
+- Standard DHF environment properties: mlHost, mlFinalPort
+
+*Effects:*
+- New harmonization flow plugins/entities/entityName/harmonize folder
+
+### uLoadMappingSpec
+
+*Purpose:*: Load an Excel mapping spec, which indicates how to map source data to the model. Used in the above tasks.
+
+*Input:* 
+- specName = mandatory (Excel filename without suffix)
+- discover = true/false; default false
+- discoveryDB = default: content DB (non-DHF), staging DB (DHF0)
+
+*Dependencies:*
+- Your gradle project has the folder data/mapping
+- Your mapping spec is in that folder
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+
+*Effects:*
+- Target database has the mapping spec (original Excel plus transformed json)
+
+### uCreateConversionModule
+
+*Purpose:* Creates a harmonize flow for the specified entity. A souped up es.instanceConverterGenerate.
+
+*Input:* 
+- modelName - name of UML module file without .xml suffix
+- entityName - name of the entity. 
+- dataFormat: xml, json
+- pluginFormat: xqy, sjs
+- moduleName the module name
+- contentMode: possible values
+     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
+          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
+     dm - Declarative Mapper mode. This feature is not ready yet.
+- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
+- overwrite: true/false. If true and the module already exists, overwrite it. If you don't want to clobber, set to false.
+
+*Dependencies:*
+- You have deployed your UML model
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort. BUT WE RECOMMEND USING uCreateDHFHarmonizeFlow IF YOU ARE ON DHF.
+
+*Effects:*
+- New conversion module in src/main/ml-modules/root/modelName/entityName folder
+
+## Build Tips
 
 The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit show this gradle build in action. There are several ways to use it:
 
