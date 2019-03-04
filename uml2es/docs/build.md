@@ -5,11 +5,30 @@ The toolkit includes common gradle tasks to deploy your UML model and generate h
 
 The toolkit provides a gradle build file containing all model deployment and code generation tasks: [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle). Actually, it also includes a similar build file for use for DHF: [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).  Here is a summary of the tasks from that build file:
 
-|Task|Description|Inputs|Dependencies|Effects|Usage|
-|---|---|---|---|---|---|
-|uDeployModel|Load your UML model into MarkLogic and convert it to ES|modelName (XMI or Excel filename without suffix)<br/>lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)|Your gradle project has the folder data/model<br/>Your model is in that folder.<br/>Your model is XMI.<br/>Your model ends in .xml<br/>Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...<br/>Standard DHF environment properties: mlHost, mlFinalPort<br/>|Target database has the UML model, the ES model, the ES extensions, findings, generated code<br/>Target database has the ES model and its extended triples deployed<br/>Your gradle project has entity-services, entity-services-dump, entity-services-extension folders<br/>You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas|Vanilla or DHF|
+##uDeployModel
 
-hi
+*Purpose*: Load your UML model into MarkLogic and convert it to ES.
+
+*DHF/Vanilla*: Both
+
+*Input:* 
+- modelName (XMI or Excel filename without suffix)
+- lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)
+
+*Dependencies:*
+- Your gradle project has the folder data/model
+- Your model is in that folder
+- Your model is XMI
+- Your model ends in .xml
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+
+*Effects:*
+- Target database has the UML model, the ES model, the ES extensions, findings, generated code
+- Target database has the ES model and its extended triples deployed
+- Your gradle project has entity-services, entity-services-dump, entity-services-extension folders
+- You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas
+
 
 |uCreateDHFEntities|Create DHF plugin entities based on classes in your model-|DHF only.|
 |uCreateDHFHarmonizeFlow|Generate a harmonization flow based on your model. This conversion is smart, if you ask it to be.|-|DHF only.|
