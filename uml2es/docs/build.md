@@ -127,7 +127,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 
 How do you string these tasks together to build useful code from a model? Here are a few scenario workflows:
 
-1. DHF environment with harmonization created by out-of-the-box DHF code generator. Example: [../tutorials/employeeCradleToGrave.md](../tutoria;s/employeeCradleToGrave.md).
+1. DHF environment with harmonization created by out-of-the-box DHF code generator. Example: [../tutorials/employeeCradleToGrave.md](../tutorials/employeeCradleToGrave.md).
 
 	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle) into your local gradle project. 
 	- Run task uDeployModel. 
