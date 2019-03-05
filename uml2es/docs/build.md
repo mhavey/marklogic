@@ -123,6 +123,39 @@ The toolkit provides a gradle build file containing all model deployment and cod
 *Effects:*
 - New conversion module in src/main/ml-modules/root/modelName/entityName folder
 
+## Model/Conversion/Harmonization Workflow
+
+How do you string these tasks together to build useful code from a model? Here are a few scenario workflows:
+
+1. DHF environment with harmonization created by out-of-the-box DHF code generator. Example: [../tutorias/employeeCradleToGrave.md](../tutorias/employeeCradleToGrave.md).
+
+	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4djf.gradle) into your local gradle project. 
+	- Run task uDeployModel. 
+	- Generate entities using uCreateDHFEntities.
+	- Generate harmonizations using the out-of-the-box DHF createHarmonizeFlow task. These are created in the plugins/entities folder.
+
+2. DHF environment with harmonization created by UML2ES with mapping spec details and hints from the extended model. Example: [../examples/hr](../examples/hr). 
+
+	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4djf.gradle) into your local gradle project. 
+	- Run task uDeployModel. 
+	- Deploy the mapping spec: uLoadMappingSpec
+	- Generate entities using uCreateDHFEntities
+	- Generate harmonizations using uCreateDHFHarmonizationFlow. The harmonization is created in plugins/entities.
+
+3. Vanilla environment with out-of-the-box ES code generation from the model, as in the [../examples/movies](../examples/movies) example:
+
+	- Make a copy of [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle) into your local gradle project. At the bottom of that file, set one of more generate flags to true. For example, to use ES to generate an instance converter and TDE template, set the following to true:
+		- generateInstanceConverter=true
+		- generateExtractionTemplate=true
+	- Run task uDeployModel. As a result of this, the generated instance converter is in src/main/ml-modules/ext. The generated TDE template is in src/main/ml-schemas.
+
+4. Vanilla environment with generation of UML2ES conversion module with mapping spec details and hints from the extended model. Example: [../examples/gentest/vanilla](../examples/gentest/vanilla)
+
+	- Make a copy of [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle) into your local gradle project. 
+	- Run task uDeployModel. 
+	- Load the mapping spec using uLoadMappingSpec.
+	- Generate the conversion module using uCreateConversionModule with contentMode=es. As a result of this, the generated conversion module is in src/main/ml-modules/root/esconversion. 
+
 ## Build Tips
 
 The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit show this gradle build in action. There are several ways to use it:
