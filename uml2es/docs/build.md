@@ -127,16 +127,16 @@ The toolkit provides a gradle build file containing all model deployment and cod
 
 How do you string these tasks together to build useful code from a model? Here are a few scenario workflows:
 
-1. DHF environment with harmonization created by out-of-the-box DHF code generator. Example: [../tutorias/employeeCradleToGrave.md](../tutorias/employeeCradleToGrave.md).
+1. DHF environment with harmonization created by out-of-the-box DHF code generator. Example: [../tutorials/employeeCradleToGrave.md](../tutoria;s/employeeCradleToGrave.md).
 
-	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4djf.gradle) into your local gradle project. 
+	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle) into your local gradle project. 
 	- Run task uDeployModel. 
 	- Generate entities using uCreateDHFEntities.
 	- Generate harmonizations using the out-of-the-box DHF createHarmonizeFlow task. These are created in the plugins/entities folder.
 
 2. DHF environment with harmonization created by UML2ES with mapping spec details and hints from the extended model. Example: [../examples/hr](../examples/hr). 
 
-	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4djf.gradle) into your local gradle project. 
+	- Make a copy of [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle) into your local gradle project. 
 	- Run task uDeployModel. 
 	- Deploy the mapping spec: uLoadMappingSpec
 	- Generate entities using uCreateDHFEntities
