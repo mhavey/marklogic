@@ -8,4 +8,23 @@ Summary of examples:
 - examples/hrexcel: Demonstrates loading an entity services model from an Excel data model template. No UML! We use the HR example from above (examples/hr). We pass our Excel spreadsheet (containing the HR model in tablular form) into the transformation. The transformation produces the same entity services model (including extensions and generated code) as produces from the UML model in examples/hr. 
 - examples/declarativeCity: A simple city data model that uses the Declarative Mapper tool to map source data. The example shows the integration of UML, Entity Services, and Declarative Mapper. 
 - examples/jokeBook: A mixed model demonstrating advanced semantic relationships like qualified predicates and arbitrary semantic facts.
+- examples/gentest: Code generation tests.
 - examples/umlModels: The full set of models
+
+The following table summarizes the features demonstrated in the examples:
+
+|Feature|Example|
+|---|---|
+|DHF|hr, gentest|
+|UML class relationships|movies, blockFactory|
+|Mapping spec|hr|
+|Cookie cutter|hr, gentest|
+|Model comparison|runningRace, hrexcel|
+|Logical vs. physical|movietalk|
+|Interop|runningRace|
+|Discovery|movieTalk, hr|
+|ES conversion module|movies|
+|Declarative Mapper|declarativeCity, hr (COMING SOON)|
+|TDE|movies|
+|Semantics|hr, jokeBook|
+|Excel2ES|hrexcel|
