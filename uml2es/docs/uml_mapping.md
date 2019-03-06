@@ -82,6 +82,6 @@ Cons:
 
 ### Recommendation
 
-We recommended the first approach. The first approach is demonstrated in the mega tutorial: [../tutorials/remployeeCradleToGrave.md](../tutorials/employeeCradleToGrave.md) 
+We recommended the first approach. The first approach is demonstrated in the mega tutorial: [../tutorials/employeeCradleToGrave.md](../tutorials/employeeCradleToGrave.md) 
 
 The toolkit supports approaches 1 and 2. The toolkit currently does not support approach 2.

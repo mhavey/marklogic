@@ -41,7 +41,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - modelName - name of UML module file without .xml suffix
 - entities (optional) - CSV of class names representing entities to create
 - entitySelect (optional) - Possible values:
-	* "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
+	* "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified. (This works well for tree-based models where the candidate classes are parents but not children, such as [../examples/hr](../examples/hr). It does not always work. For example, in the graph-like model [../examples/movies](../examples/movies), the Movie class cannot be inferred to be *entity worthy*.
 	* "all" - All classes are considered entities. Ignore entities specified.
 
 *Dependencies:* 
@@ -67,7 +67,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - contentMode: possible values
 	* es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
           incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
-    * dm - Declarative Mapper mode. This feature is not ready yet.
+    * dm - Declarative Mapper mode. *This feature is not ready yet.*
 - mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
 - overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
 
@@ -86,8 +86,8 @@ The toolkit provides a gradle build file containing all model deployment and cod
 
 *Input:* 
 - specName = mandatory (Excel filename without suffix)
-- discover = true/false; default false
-- discoveryDB = default: content DB (non-DHF), staging DB (DHF0)
+- discover = true/false; default false. *This is an experimental feature.*
+- discoveryDB = default: content DB (non-DHF), staging DB (DHF0). *This is an experimental feature.*
 
 *Dependencies:*
 - Your gradle project has the folder data/mapping
