@@ -18,7 +18,8 @@ You use a third-party UML tool, along with a set of MarkLogic stereotypes, to bu
 The toolkit consists of the following parts:
 - [uml2esTransform](uml2esTransform): MarkLogic server-side modules to map UML to Entity Services, plus a UML-to-ES gradle build file to incorporate into your build. The transform also generates code to build XML or JSON documents whose structure follows that of the model. If you are a Data Hub Framework shop, the transform can generate harmonization modules!
 - [umlProfile](umlProfile): A UML profile containing stereotypes for MarkLogic Entity Services. Use this profile to include Entity Services configuration to your UML model.
-- [excel](excel): You can build your model in Excel as an alternative to UML! The toolkit provides an [Excel template](excel/uml2es-excel-template.xlsx) for this purpose. See [examples/hrexcel](examples/hrexcel) for a detailed example of how to use it. Also included is a [mapping spreadsheet](excel.uml2es-excel-mapping-template.xlsx). See [examples/hr](examples/hr) for a detailed example of how to use it. 
+- [excel](excel): You can build your model in Excel as an alternative to UML! Maybe we should rename this toolkit *Excel2ES*! The toolkit provides an [Excel template](excel/uml2es-excel-template.xlsx) for this purpose. See [examples/hrexcel](examples/hrexcel) for a detailed example of how to use it. Also included is a [mapping spreadsheet](excel.uml2es-excel-mapping-template.xlsx). See [tutorials/employeeCradleToGrave.md](tutorials/employeeCradleToGrave.md) and [examples/hr](examples/hr) for detailed examples of how to use it. 
+- [tutorials](tutorial): Step-by-step tutorials on how to use UML2ES ranging from simple -- [tutorials/papyrus_model_edit.md](tutorials/papyrus_model_edit.md) -- to epic: [tutorials/employeeCradleToGrave.md](tutorials/employeeCradleToGrave.md).
 - [examples](examples): Numerous examples showing the use of UML (and Excel) data models for MarkLogic. Highlights: modeling for Entity Services and Template-Driven Extraction; modeling complex document relationships using UML relationships; the UML toolkit and Data Hub; the Data Hub "cookie cutter"; mixed models (documents + semantics); logical vs. physical; generating MarkLogic code from the UML model; using ml-gradle to run the transformation of UML to Entity Services as part of your build. 
 
 ## How We Expect You Will Use This Toolkit
@@ -32,9 +33,9 @@ If that's you, we think this toolkit is for you. You will need the following ing
 - A **build-deploy-ingest framework** to deploy your UML model to MarkLogic and ingest source data into MarkLogic in the form prescribed by the model. In other words, you need for your UML model to be more than a picture; you need MarkLogic code that shapes your data to fit the model. This toolkit provides several examples of a gradle-based approach. We recommend you take one of these examples as your starting point, tailoring it for your needs.
 
 ## Where To Begin
-Dive into the examples! The [movies example](examples/movies) is a good place to start. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the [hr example](examples/hr). 
+Start with the tutorials. If want to build a really simple model and see it through to MarkLogic, try [tutorials/papyrus_model_edit.md](tutorials/papyrus_model_edit.md) or [tutorials/magicdraw_model_edit.md](tutorials/magicdraw_model_edit.md). If you want to have more fun and explore how a team would deliver a more interesting model, try [tutorials/employeeCradleToGrave.md](tutorials/employeeCradleToGrave.md).
 
-Here are a few tutorials on how to use the toolkit with MagicDraw and Papyrus: [Tool how-to's](tutorials/README.md). 
+Then dive into the examples! The [movies example](examples/movies) is a good place to start. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the [hr example](examples/hr). 
 
 ## Going Deeper
 Once you get deeper into the toolkit, refer to the [docs](docs/README.md) to learn about: the profile and its stereotypes; how the transform maps UML to Entity Services; how the toolkit supports semantics; how to include the transform in your build process.
