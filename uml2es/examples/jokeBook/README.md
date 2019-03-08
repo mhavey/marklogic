@@ -1,7 +1,7 @@
 # JokeBook - Advanced Semantics
 
 ## Intro
-This example exercises all the semantic stereotypes of the toolkit's profile. It shows how to tie a UML class to a semantic class, how to relate UML classes using semantic properties, how to qualify a semantic property with additional semantic facts, and how associate arbitrary semantic facts with a UML class.
+This example exercises all the semantic stereotypes of the toolkit's profile. It shows how to tie a UML class to a semantic class, how to relate UML classes using semantic properties, how to qualify a semantic property with additional semantic facts, and how to associate arbitrary semantic facts with a UML class.
 
 Here is our UML model. 
 
