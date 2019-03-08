@@ -1,4 +1,4 @@
-<export><workspace name="XMI2ESMovieTalk"><query name="Step 1 - Populate Physical Data" focus="false" listorder="1" taborder="1" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+<export><workspace name="XMI2ESMovieTalk"><query name="Step 1 - Populate Physical Data" focus="true" listorder="1" taborder="1" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
  * This script shows how to populate physical data. Just run it. Don't look at
@@ -230,7 +230,7 @@ var doc = {
 };
 xdmp.documentInsert(URI("sub", doc.SUB_ID), doc, getInsertOptions("subs"));
 
-</query><query name="View Movie" focus="false" listorder="2" taborder="3" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+</query><query name="View Movie" focus="false" listorder="2" taborder="3" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
 Show movie and its relationships
@@ -263,7 +263,7 @@ var orels = cts.triples(null, null, movieIRI);
 ]
 
 
-</query><query name="View User" focus="false" listorder="3" taborder="5" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+</query><query name="View User" focus="false" listorder="3" taborder="5" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
 Show user and its relationships
@@ -296,9 +296,9 @@ var orels = cts.triples(null, null, userIRI);
 ]
 
 
-</query><query name="Cast Triples" focus="false" listorder="4" taborder="8" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">select *  from &lt;http://org.jude/movie-talk/cast&gt; where {?s ?p ?o}
+</query><query name="Cast Triples" focus="false" listorder="4" taborder="8" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">select *  from &lt;http://org.jude/movie-talk/cast&gt; where {?s ?p ?o}
 
-</query><query name="View Contributor" focus="false" listorder="6" taborder="4" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+</query><query name="View Contributor" focus="false" listorder="6" taborder="4" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
 Show contrib and its relationships
@@ -331,7 +331,7 @@ var orels = cts.triples(null, null, contribIRI);
 ]
 
 
-</query><query name="View Posts Per Subject" focus="false" listorder="7" taborder="7" active="false" database="1952654142594417627" server="12637936017176057021" database-name="" server-name="" mode="javascript">'use strict';&#13;&#13;</query><query name="View Post" focus="false" listorder="8" taborder="6" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+</query><query name="View Posts Per Subject" focus="false" listorder="7" taborder="7" active="false" database="1952654142594417627" server="12637936017176057021" database-name="" server-name="" mode="javascript">'use strict';&#13;&#13;</query><query name="View Post" focus="false" listorder="8" taborder="6" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
 Show post and its relationships
@@ -361,7 +361,7 @@ var orels = cts.triples(null, null, postIRI);
   srels,
   orels
 ]
-</query><query name="View Subs and Alerts" focus="false" listorder="11" taborder="7" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+</query><query name="View Subs and Alerts" focus="false" listorder="11" taborder="7" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
 Show subscriptions and alerts
@@ -370,7 +370,7 @@ Show subscriptions and alerts
 var subs = cts.search(cts.collectionQuery("subs"));
 var alerts = cts.search(cts.directoryQuery("/alert/"));
 
-["subs", subs, "alerts", alerts]</query><query name="Step 2 - Discover" focus="true" listorder="22" taborder="2" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+["subs", subs, "alerts", alerts]</query><query name="Step 2 - Discover" focus="false" listorder="22" taborder="2" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 /*
 Let's try to map physical back to logical. We know the logical model that we built in UML. 
@@ -666,15 +666,15 @@ Logical class: Alert
   - post: Similar to subscription. The report can't find it, but physically there are several post attributes in the alert document:
     postURI, postType, postTitle, postDate
 
-*/</query><query name="Follower Triples" focus="false" listorder="11" taborder="9" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
+*/</query><query name="Follower Triples" focus="false" listorder="11" taborder="9" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
 
 select * where {?s &lt;http://org.jude/movie-talk/hasFollower&gt; ?o}
 
-</query><query name="Post Triples" focus="false" listorder="12" taborder="10" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
+</query><query name="Post Triples" focus="false" listorder="12" taborder="10" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
 
-select * where {?s &lt;http://org.jude/movie-talk/hasPost&gt; ?o}</query><query name="Gossip Triples" focus="false" listorder="14" taborder="12" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
+select * where {?s &lt;http://org.jude/movie-talk/hasPost&gt; ?o}</query><query name="Gossip Triples" focus="false" listorder="14" taborder="12" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="sparql">## query
 
-select * where {?s &lt;http://org.jude/movie-talk/contributor/hasGossip&gt; ?o}</query><query name="All Predicates" focus="false" listorder="15" taborder="13" active="true" database="8713840906578446244" server="13004035981817641043" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
+select * where {?s &lt;http://org.jude/movie-talk/contributor/hasGossip&gt; ?o}</query><query name="All Predicates" focus="false" listorder="15" taborder="13" active="true" database="17835779865633391371" server="6206172814798905005" database-name="xmi2es-examples-movieTalk-content" server-name="xmi2es-examples-movieTalk" mode="javascript">'use strict';
 
 var triples = cts.triples([],[],[]);
 var predicates = [];

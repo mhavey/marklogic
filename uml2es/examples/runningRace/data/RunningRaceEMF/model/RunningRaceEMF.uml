@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore MLProfile.profile.uml">
+<xmi:XMI xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_q-SUive3Eei9je1P-4okgQ http:///MarkLogicEntityServicesProfile/sem.ecore /MLProfileProject/MLProfile.profile.uml#_q-SU9Pe3Eei9je1P-4okgQ http:///MarkLogicEntityServicesProfile/xes.ecore /MLProfileProject/MLProfile.profile.uml#_q-SUxve3Eei9je1P-4okgQ">
   <uml:Model xmi:id="_d_YQcK0WEeewJ5KTVWTb5w" name="RunningRaceEMF">
     <elementImport xmi:id="_IzJJIK1LEeewJ5KTVWTb5w" alias="Boolean">
       <importedElement xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
@@ -67,19 +67,19 @@
     </packagedElement>
     <profileApplication xmi:id="_l0hl8K1REeewJ5KTVWTb5w">
       <eAnnotations xmi:id="_l0iNAK1REeewJ5KTVWTb5w" source="http://www.eclipse.org/uml2/2.0.0/UML">
-        <references xmi:type="ecore:EPackage" href="MLProfile.profile.uml#_duYVjSJtEeiC5PW0Q-4VWg"/>
+        <references xmi:type="ecore:EPackage" href="/MLProfileProject/MLProfile.profile.uml#_q-SUh_e3Eei9je1P-4okgQ"/>
       </eAnnotations>
-      <appliedProfile href="MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
+      <appliedProfile xmi:type="uml:Profile" href="/MLProfileProject/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
     </profileApplication>
   </uml:Model>
   <MarkLogicEntityServicesProfile.es:PK xmi:id="_G1-UYCLUEeiQiuF2YDo00Q" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
   <MarkLogicEntityServicesProfile.es:PK xmi:id="_I20KwCLUEeiQiuF2YDo00Q" base_Property="_KNdQMK05EeewJ5KTVWTb5w"/>
   <MarkLogicEntityServicesProfile.es:PK xmi:id="_LG6lICLUEeiQiuF2YDo00Q" base_Property="_HabAgK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_UeweQCLUEeiQiuF2YDo00Q" indexType="lexicon" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_iNffICLUEeiQiuF2YDo00Q" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_jyZAYCLUEeiQiuF2YDo00Q" base_Property="_UL_OgK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_ljvpQCLUEeiQiuF2YDo00Q" base_Property="_YhjgkK08EeewJ5KTVWTb5w"/>
-  <MarkLogicEntityServicesProfile.es:rangeIndex xmi:id="_xPUfkCLUEeiQiuF2YDo00Q" base_Property="_q-RYQCLUEeiQiuF2YDo00Q"/>
+  <MarkLogicEntityServicesProfile.es:wordLexicon xmi:id="_UeweQCLUEeiQiuF2YDo00Q" base_Property="_e1nC8K0YEeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_iNffICLUEeiQiuF2YDo00Q" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_jyZAYCLUEeiQiuF2YDo00Q" base_Property="_UL_OgK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_ljvpQCLUEeiQiuF2YDo00Q" base_Property="_YhjgkK08EeewJ5KTVWTb5w"/>
+  <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_xPUfkCLUEeiQiuF2YDo00Q" base_Property="_q-RYQCLUEeiQiuF2YDo00Q"/>
   <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_6fKTQCLUEeiQiuF2YDo00Q" mlType="date" base_Property="_NwQhMK08EeewJ5KTVWTb5w"/>
   <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_DP4iACLVEeiQiuF2YDo00Q" mlType="dayTimeDuration" base_Property="_q-RYQCLUEeiQiuF2YDo00Q" externalRef=""/>
   <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_WvmDACLVEeiQiuF2YDo00Q" prefix="rn" base_Class="_6-1M4K0XEeewJ5KTVWTb5w" url="http://org.jude.athletes.runners"/>

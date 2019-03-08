@@ -18,7 +18,10 @@ declare variable $VAL-YN := "y";
 declare variable $VAL-INT := "i";
 declare variable $VAL-CARDINALITY := "c";
 
-declare variable $FIRST_PROP_ROW := 20;
+declare variable $FIRST-PROP-ROW := 21;
+
+declare variable $DELIM-LINE := "[\n\r]";
+declare variable $DELIM-COMMA-LINE := "[\n\r,]";
 
 (:
 Convert attributes in the excel to XMI
@@ -29,19 +32,19 @@ declare function xlsx:convertAttributes($entitySheet as node(), $classSheet as x
 	let $attribNames := json:array()
 
 	(: the attributes :)
-	let $lastPropertyRow := xlsx:excelLastRow($entitySheet, $classSheet, $stringTable, $pt)
+	let $lastPropertyRow := xlsx:excelLastRow($entitySheet, $classSheet, $stringTable, $FIRST-PROP-ROW, $pt)
 
 let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 
 	let $_ := if (not(exists($lastPropertyRow))) then 
 		fn:error(xs:QName("ERROR"), concat("programming error, unable to find last row in ", $classSheet)) else ()
 
-	for $row in $FIRST_PROP_ROW to $lastPropertyRow return
+	for $row in $FIRST-PROP-ROW to $lastPropertyRow return
 		let $attribName := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "A"||$row, $pt, $VAL-MANDATORY)
 		let $attribLoc := concat($classSheet, ".", $attribName, " at ", $row)
 		return
 			if ($attribName eq json:array-values($attribNames)) then 
-				pt:addProblem($pt, $attribLoc, "", "Ignoring duplicate attrib name", $row)
+				pt:addProblem($pt, (), $attribLoc, "Ignoring duplicate attrib name", $row)
 			else 
 				let $_ := json:array-push($attribNames, $attribName)
 				let $attribID := sem:uuid-string()
@@ -50,19 +53,23 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 				let $attribCardinality:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "D"||$row, $pt, $VAL-CARDINALITY)
 				let $attribPK:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "E"||$row, $pt, $VAL-YN)
 				let $attribFK:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "F"||$row, $pt, $VAL-YN)
-				let $attribExclude:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "G"||$row, $pt, $VAL-YN)
-				let $attribRangeIndex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "H"||$row, $pt, ())
-				let $attribBizKey :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "I"||$row, $pt, $VAL-YN)
-				let $attribURI :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "J"||$row, $pt, $VAL-YN)
-				let $attribSemIRI:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "K"||$row, $pt, $VAL-YN)
-				let $attribSemLabel:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "L"||$row, $pt, $VAL-YN)
-				let $attribSemProperty:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "M"||$row, $pt, ())
-				let $attribCollation:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "N"||$row, $pt, ())
-				let $attribExternalRef:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "O"||$row, $pt, ())
-				let $attribHeader:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "P"||$row, $pt, ())
-				let $attribCalculated:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "Q"||$row, $pt, ())
-				let $attribImpl:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "R"||$row, $pt, ())
-				let $attribPO:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "S"||$row, $pt, ())
+				let $attribPII:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "G"||$row, $pt, $VAL-YN)
+				let $attribExclude:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "H"||$row, $pt, $VAL-YN)
+				let $attribElemRangeIndex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "I"||$row, $pt, $VAL-YN)
+				let $attribPathRangeIndex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "J"||$row, $pt, $VAL-YN)
+				let $attribWordLex:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "K"||$row, $pt, $VAL-YN)
+				let $attribBizKey :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "L"||$row, $pt, $VAL-YN)
+				let $attribURI :=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "M"||$row, $pt, $VAL-YN)
+				let $attribSemIRI:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "N"||$row, $pt, $VAL-YN)
+				let $attribSemLabel:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "O"||$row, $pt, $VAL-YN)
+				let $attribSemProperty:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "P"||$row, $pt, ())
+				let $attribSemQual:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "Q"||$row, $pt, ())
+				let $attribCollation:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "R"||$row, $pt, ())
+				let $attribExternalRef:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "S"||$row, $pt, ())
+				let $attribHeader:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "T"||$row, $pt, ())
+				let $attribCalculated:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "U"||$row, $pt, ())
+				let $attribImpl:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "V"||$row, $pt, ())
+				let $attribPO:=  xlsx:excelCell($entitySheet, $classSheet, $stringTable, "W"||$row, $pt, ())
 
 				(: attrib-level stereotypes :)
 				let $attribTypeRef := map:get(map:get($classDetailsPerClassName, $attribType), "classID")
@@ -88,6 +95,10 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:exclude xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
+					if ($attribPII eq "Y") then
+						json:array-push($classAttribStereotypes, 
+							<ml:PII xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+					else (),
 					if ($attribPK eq "Y") then
 						json:array-push($classAttribStereotypes, 
 							<ml:PK xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
@@ -112,13 +123,25 @@ let $_ := xdmp:log(concat($classSheet, " last row ", $lastPropertyRow), "info")
 						json:array-push($classAttribStereotypes, 
 							<ml:semLabel xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
-					if (string-length($attribRangeIndex) gt 0) then
+					if ($attribElemRangeIndex eq "Y") then
 						json:array-push($classAttribStereotypes, 
-							<ml:rangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" indexType="{$attribRangeIndex}"/>)
+							<ml:elememtRangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+					else (),
+					if ($attribPathRangeIndex eq "Y") then
+						json:array-push($classAttribStereotypes, 
+							<ml:pathRangeIndex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
+					else (),
+					if ($attribWordLex eq "Y") then
+						json:array-push($classAttribStereotypes, 
+							<ml:wordLex xmi:id="{sem:uuid-string()}" base_Property="{$attribID}"/>)
 					else (),
 					if (string-length($attribSemProperty) gt 0) then
 						json:array-push($classAttribStereotypes, 
-							<ml:semProperty xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" predicate="{$attribSemProperty}"/>)
+							<ml:semProperty xmi:id="{sem:uuid-string()}" base_Property="{$attribID}" predicate="{$attribSemProperty}">{
+								for $q in $attribSemQual return 
+									<qualifiedObject_sPO>{$q}</qualifiedObject_sPO>
+							}
+							</ml:semProperty>)
 					else (),
 					if (string-length($attribHeader) gt 0) then
 						json:array-push($classAttribStereotypes, 
@@ -172,7 +195,7 @@ declare function xlsx:convertClasses($entitySheets as node()*, $stringTable as n
 		let $className := xlsx:excelCell($entitySheet, concat("Sheet at ", ($pos + 2)), $stringTable, "B1", $VAL-MANDATORY, ())
 		return
 			if ($className eq json:array-values($classNames)) then 
-				pt:addProblem($pt, $className, "", "Ignoring duplicate class name", ($pos + 2))
+				pt:addProblem($pt, (), $className, "Ignoring duplicate class name", ($pos + 2))
 			else (
 				json:array-push($classNames, $className),
 				map:put($classDetailsPerClassName, $className, 
@@ -194,12 +217,13 @@ declare function xlsx:convertClasses($entitySheets as node()*, $stringTable as n
 	  	let $classXMLPrefix:= xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B4", $pt, ())
 	  	let $classXMLURL := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B5", $pt, ())
 		let $classSEMTypes := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B6", $pt, ())
-		let $classQuality := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B7", $pt, $VAL-INT)
-		let $classCollections:= xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B8", $pt, ())
-		let $classPerms := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B9", $pt, ())
-		let $classMetadataKV := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B10", $pt, ())
-		let $classImpl := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B11", $pt, ())
-		let $classPO := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B12", $pt, ())
+		let $classSEMFacts := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B7", $pt, ())
+		let $classQuality := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B8", $pt, $VAL-INT)
+		let $classCollections:= xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B9", $pt, ())
+		let $classPerms := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B10", $pt, ())
+		let $classMetadataKV := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B11", $pt, ())
+		let $classImpl := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B12", $pt, ())
+		let $classPO := xlsx:excelCell($entitySheet, $classSheet, $stringTable, "B13", $pt, ())
 					
 		(: class-level stereotypes :)
 		let $_ := (
@@ -225,6 +249,14 @@ declare function xlsx:convertClasses($entitySheets as node()*, $stringTable as n
 						for $type in $classSEMTypes return <types>{$type}</types>
 					}
 					</ml:semType>)
+			else (),
+			if (count($classSEMFacts) gt 0) then
+				json:array-push($classAttribStereotypes, 
+					<ml:semFacts xmi:id="{sem:uuid-string()}" base_Class="{$classID}">
+					{
+						for $f in $classSEMFacts return <facts_sPO>{$f}</facts_sPO>
+					}
+					</ml:semFacts>)
 			else (),
 			if (count($classCollections) gt 0 or count($classPerms) gt 0 or count ($classMetadataKV) gt 0 or string-length($classQuality) gt 0) then
 				json:array-push($classAttribStereotypes, 
@@ -264,7 +296,7 @@ declare function xlsx:convert($excel, $pt) as node() {
 	let $contents := xdmp:zip-get($excel, "[Content_Types].xml")/node()
 	let $modelSheet := 
 		if (exists($contents/*:Override[@PartName eq "/xl/worksheets/sheet2.xml"])) then xdmp:zip-get($excel, "xl/worksheets/sheet2.xml")/node()
-		else pt:addProblem($pt, "excel", "", "No model sheet found", ())
+		else pt:addProblem($pt, (), "excel", "No model sheet found", ())
 	let $entitySheets := 
 		for $sheet in $contents/*:Override[
 			@ContentType eq "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"
@@ -281,6 +313,7 @@ declare function xlsx:convert($excel, $pt) as node() {
   	let $modelXMLURL := xlsx:excelCell($modelSheet, "model", $stringTable, "B6", $pt, ())
   	let $modelImpl:= xlsx:excelCell($modelSheet, "model", $stringTable, "B7", $pt, ()) 
   	let $modelPO:= xlsx:excelCell($modelSheet, "model", $stringTable, "B8", $pt, ()) 
+  	let $modelSemPrefixes:= xlsx:excelCell($modelSheet, "model", $stringTable, "B9", $pt, ()) 
 
   	let $classAttribStereotypes := json:array()
   	let $classModel := xlsx:convertClasses($entitySheets, $stringTable, $classAttribStereotypes, $pt)
@@ -312,6 +345,11 @@ declare function xlsx:convert($excel, $pt) as node() {
 						for $po in $modelPO return <triplesPO>{$po}</triplesPO>
 					}</ml:xImplHints>
 				else (),
+				if (count($modelSemPrefixes) gt 0) then
+					<ml:semPrefixes xmi:id="{sem:uuid-string()}" base_Package="{$modelID}">{
+						for $p in $modelSemPrefixes return <prefixesPU>{$p}</prefixesPU>
+					}</ml:semPrefixes>
+				else (),
 				for $stereotype in json:array-values($classAttribStereotypes) return $stereotype
 			)}
 		</xmi:XMI>
@@ -323,6 +361,12 @@ If there are multiple values (delimited by newline), return the sequence of them
 :)
 declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string, 
 	$stringTable as node(), $cellCoord as xs:string, $pt, $validation as xs:string*) as xs:string* {
+
+	xlsx:excelCell($sheet, $sheetName, $stringTable, $cellCoord, $pt, $validation, $DELIM-LINE)
+};
+
+declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string, 
+	$stringTable as node(), $cellCoord as xs:string, $pt, $validation as xs:string*, $fieldDelim as xs:string) as xs:string* {
 
 	let $errorSource := concat($sheetName, ".", $cellCoord)
 
@@ -339,10 +383,10 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 					return ($stringTable//*:si)[xs:integer($stringTableIndex) + 1]/*:t/text()
 				else if (string-length($cellType) eq 0) then string($cell/*:v)
 				else
-					let $_ := pt:addProblem($pt, $errorSource, "", "Ignoring unknown cell type", "*" || $cellType || "*")
+					let $_ := pt:addProblem($pt, (), $errorSource, "Ignoring unknown cell type", "*" || $cellType || "*")
 					return ""
 
-	let $cellVals := for $tok in fn:tokenize($cellValWS, "[\n\r]") return
+	let $cellVals := for $tok in fn:tokenize($cellValWS, $fieldDelim) return
 		let $n := fn:normalize-space($tok)
 		return 
 			if (string-length($n) gt 0) then $n
@@ -353,22 +397,22 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 		for $val in $validation return
 			if ($val eq $VAL-MANDATORY) then
 				if (string-length($cellVal) gt 0) then ()
-				else pt:addProblem($pt, $errorSource, "", "Cell is mandatory", $cellVal)
+				else pt:addProblem($pt, (), $errorSource, "Cell is mandatory", $cellVal)
 			else if ($val eq $VAL-YN) then
 				if ($cellVal eq "" or $cellVal eq "Y" or $cellVal eq "N") then ()
-				else pt:addProblem($pt, $errorSource, "", "Illegal YN value", $cellVal)
+				else pt:addProblem($pt, (), $errorSource, "Illegal YN value", $cellVal)
 			else if ($val eq $VAL-INT) then
 				try { 
 					if (string-length($cellVal) gt 0) then xs:integer($cellVal)
 					else ()
   				} catch($e) {
-					pt:addProblem($pt, $errorSource, "", "value is not an integer", $cellVal)
+					pt:addProblem($pt, (), $errorSource, "value is not an integer", $cellVal)
 				}
 			else if ($val eq $VAL-CARDINALITY) then
 				if ($cellVal eq "0" or $cellVal eq "1" or $cellVal eq "*" or $cellVal eq "+") then ()
-				else pt:addProblem($pt, $errorSource, "", "Illegal cardinality value", $cellVal)
+				else pt:addProblem($pt, (), $errorSource, "Illegal cardinality value", $cellVal)
 			else 
-				pt:addProblem($pt, $errorSource, "", "Unknown validation type", $val)
+				pt:addProblem($pt, (), $errorSource, "Unknown validation type", $val)
 
 	return $cellVals
 };
@@ -377,11 +421,11 @@ declare function xlsx:excelCell($sheet as node(), $sheetName as xs:string,
 Return the last row that in an entity sheet has a property
 :)
 declare function xlsx:excelLastRow($sheet as node(), $sheetName as xs:string, 
-	$stringTable as node(), $pt) as xs:integer? {
+	$stringTable as node(), $firstRow as xs:integer, $pt) as xs:integer? {
 
 	(: find last A cell at or beyond the last prop row :)
 	let $lastARowAttrib := $sheet//*:row[
-		xs:integer(@*:r) ge $FIRST_PROP_ROW and 
+		xs:integer(@*:r) ge $firstRow and 
 		exists(*:c[fn:starts-with(@*:r, "A")])][last()]/@*:r
 	return 
 		if (not(exists($lastARowAttrib))) then 0
@@ -389,12 +433,12 @@ declare function xlsx:excelLastRow($sheet as node(), $sheetName as xs:string,
 			let $lastARow := xs:integer($lastARowAttrib)
 			let $firstEmptyRow := 0
 			let $lastPopRow := 0
-			let $_ := for $row in $FIRST_PROP_ROW to $lastARow return
+			let $_ := for $row in $firstRow to $lastARow return
 				let $cellVal := xlsx:excelCell($sheet, $sheetName, $stringTable, "A"||$row, $pt, ())
 
 				return 
 					if ($firstEmptyRow eq 0 and (count($cellVal) eq 0 or $cellVal eq "")) then (
-						if ($row eq $FIRST_PROP_ROW) then () else xdmp:set($lastPopRow, $row - 1),
+						if ($row eq $firstRow) then () else xdmp:set($lastPopRow, $row - 1),
 						xdmp:set($firstEmptyRow, $row)
 					)
 					else ()
@@ -448,6 +492,7 @@ declare function xlsx:transform(
   let $xmiDoc := xlsx:convert($excelDoc, $problems)
 
   (: Run the regular XMI2ES transform :)
+  
   let $xmi2ESDocs := xmi2es:transform(
   	map:new((
   		map:entry("uri", $xmiURI), 

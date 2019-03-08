@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_n13BxnR0EeilsZ_N7KCVsg http:///MarkLogicEntityServicesProfile/xes.ecore /RunningRaceEMFProject/model/MLProfile.profile.uml#_n13B-HR0EeilsZ_N7KCVsg">
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.sem="http:///MarkLogicEntityServicesProfile/sem.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_q-SUive3Eei9je1P-4okgQ http:///MarkLogicEntityServicesProfile/sem.ecore /MLProfileProject/MLProfile.profile.uml#_q-SU9Pe3Eei9je1P-4okgQ http:///MarkLogicEntityServicesProfile/xes.ecore /MLProfileProject/MLProfile.profile.uml#_q-SUxve3Eei9je1P-4okgQ">
   <uml:Model xmi:id="_cbGAkLIMEeiBv8houo55Zg" name="DeclarativeCity">
     <packageImport xmi:type="uml:PackageImport" xmi:id="_cbwu8LIMEeiBv8houo55Zg">
       <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
@@ -34,35 +34,39 @@
     </packagedElement>
     <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_cbUDALIMEeiBv8houo55Zg">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_cbUqELIMEeiBv8houo55Zg" source="http://www.eclipse.org/uml2/2.0.0/UML">
-        <references xmi:type="ecore:EPackage" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_n13Bw3R0EeilsZ_N7KCVsg"/>
+        <references xmi:type="ecore:EPackage" href="/MLProfileProject/MLProfile.profile.uml#_q-SUh_e3Eei9je1P-4okgQ"/>
       </eAnnotations>
-      <appliedProfile xmi:type="uml:Profile" href="/RunningRaceEMFProject/model/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
+      <appliedProfile xmi:type="uml:Profile" href="/MLProfileProject/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
     </profileApplication>
   </uml:Model>
   <MarkLogicEntityServicesProfile.es:esModel xmi:id="_9rQc4LIQEeiBv8houo55Zg" version="0.0.1" baseUri="http://org.jude/ml/uml2es/declarativeMapper/city" base_Package="_cbGAkLIMEeiBv8houo55Zg"/>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_KAIH0LIREeiBv8houo55Zg" base_Property="_fWcXYLIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('name')]]</triplesPO>
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('city_name')]]</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('name')]]&quot;&quot;&quot;</triplesPO>
+    <triplesPO>mapper:funbase,&quot;&quot;&quot;[[extract('city_name')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_LWW68LIREeiBv8houo55Zg" base_Property="_gOARgLIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('country')]]</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('country')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_MSz8ILIREeiBv8houo55Zg" base_Property="_hF7YALIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('population') * 1000 ]]</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('population') * 1000 ]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_NJcpMLIREeiBv8houo55Zg" base_Property="_mk2e0LIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,[[extract('metroPopulation') * 1000 ]]</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[extract('metroPopulation') * 1000 ]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_N-2nMLIREeiBv8houo55Zg" base_Property="_oI2oMLIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,&quot;[[if((@'population' / @'metro-population') > 0.75, 'dense', 'sparse')]]&quot;</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[if((@'population' / @'metro-population') > 0.75, 'dense', 'sparse')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_PCGM4LIREeiBv8houo55Zg" base_Property="_iYJ4ELIQEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/dmdemo,&quot;[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]&quot;</triplesPO>
-    <triplesPO>http://marklogic.com/xmi2es/xes/mapper/funbase,[[extract('country')]]</triplesPO>
+    <triplesPO>mapper:dmdemo,&quot;&quot;&quot;[[lookup('/countries.json', extract('country'), coalesce(@language, 'en'))]]&quot;&quot;&quot;</triplesPO>
+    <triplesPO>mapper:funbase,&quot;&quot;&quot;[[extract('country')]]&quot;&quot;&quot;</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.xes:xImplHints xmi:id="_ty0IELIREeiBv8houo55Zg" base_Class="_dWq4ALIMEeiBv8houo55Zg">
-    <triplesPO>http://marklogic.com/xmi2es/xes/hasMapper,dmdemo</triplesPO>
-    <triplesPO>http://marklogic.com/xmi2es/xes/hasMapper,funbase</triplesPO>
+    <triplesPO>xes:hasMapper,mapper:dmdemo</triplesPO>
+    <triplesPO>xes:hasMapper,mapper:funbase</triplesPO>
   </MarkLogicEntityServicesProfile.xes:xImplHints>
   <MarkLogicEntityServicesProfile.es:xmlNamespace xmi:id="_HObGsLT6EeiBv8houo55Zg" prefix="dm" base_Package="_cbGAkLIMEeiBv8houo55Zg" url="http://org.jude/ml/uml2es/declarativeMapper/city"/>
+  <MarkLogicEntityServicesProfile.sem:semPrefixes xmi:id="_x7UlcPilEei1_vev7xPtVA" base_Package="_cbGAkLIMEeiBv8houo55Zg">
+    <prefixesPU>xes,http://marklogic.com/xmi2es/xes/</prefixesPU>
+    <prefixesPU>mapper,http://marklogic.com/xmi2es/xes/mapper/</prefixesPU>
+  </MarkLogicEntityServicesProfile.sem:semPrefixes>
 </xmi:XMI>

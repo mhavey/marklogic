@@ -1,0 +1,5 @@
+UML2ES includes two Excel templates, included in this folder:
+
+- uml2es-excel-template.xlsx: One fancy buzzword says it all: *Excel2ES*. If you prefer Excel to UML to define your data model, use this template. It expresses mostly everything a UML model can express. Whereas in UML a class is a box on the canvas, in Excel the class is a sheet in a workbook. If you want to try the Excel2ES approach, copy this template and fill in the contents to build your model. There are instructions inside. There is a good example here: [../examples/hrexcel](../examples/hrexcel).
+
+- uml2es-excel-mapping-template.xlsx: This is a template for defining the mapping of source system data to your UML or Excel data model. It is the job of a source data SME to author such a mapping. Copy this template and customize it for your model. A step-by-step build can be found in the mega tutorial [../tutorials/employeeCradleToGrave.md](../tutorials/employeeCradleToGrave.md). The [../examples/hr](../examples/hr) also showcases this feature.

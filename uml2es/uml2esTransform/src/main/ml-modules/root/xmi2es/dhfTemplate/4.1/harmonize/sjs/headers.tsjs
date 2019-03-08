@@ -1,0 +1,24 @@
+${EntityXHeaderEnable}const xesgen = require("/modelgen/${ModelName}/lib.sjs");
+const util = require("/xmi2es/util.sjs");
+
+/*
+ * Create Headers Plugin
+ *
+ * @param id       - the identifier returned by the collector
+ * @param content  - the output of your content plugin
+ * @param options  - an object containing options. Options are sent from Java
+ *
+ * @return - an object of headers
+ */
+function createHeaders(id, content, options) {
+  ${EntityXHeaderEnable}var lang = "${EntityDataFormat}";
+  ${EntityXHeaderEnable}var ioptions = util.getIOptions(id,options);
+  ${EntityXHeaderEnable}return xesgen.setHeaders_${EntityX}(id, content, ioptions, lang);
+  ${EntityXHeaderDisable}return {};
+
+  // TODO nested headers
+}
+
+module.exports = {
+  createHeaders: createHeaders
+};

@@ -1,78 +1,20 @@
-<export><workspace name="XMI2ESExcel"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="15751155738580382161" server="12273054844966295427" database-name="xmi2es-examples-hrexcel-content" server-name="xmi2es-examples-hrexcel" mode="javascript">'use strict';
+<export><workspace name="XMI2ESExcel"><query name="Check Diff" focus="true" listorder="1" taborder="1" active="true" database="3522764003932159206" server="3060368382857171451" database-name="xmi2es-examples-hrexcel-content" server-name="xmi2es-examples-hrexcel" mode="javascript">'use strict';
 
-var sem = require("/MarkLogic/semantics.xqy");
+const util = require("/xmi2es/util.sjs");
 
-const SKIPS = ["description"];
-
-// Make the JSON source in an alphabetized form for easy comparison
-function makeESComparable(source) {
-  if (source !== Object(source)) {
-    // it's a scalar
-    return source;
-  }  
-  
-  if (Array.isArray(source)) {
-    // it's an array
-
-    // step 1 - alphabetize the elements
-    var elems = [];
-    for (var i = 0; i &lt; source.length; i++) {
-      elems.push({
-        "index" : i,
-        "contents" : JSON.stringify(source[i])
-      });
-    }
-    elems.sort(function(a,b) { 
-      if (a.contents &lt; b.contents) return -1; 
-      else if (b.contents &lt; a.contents) return 1; 
-      else return 0;});
-
-    // step 2 - recurse on each element in alphabetical order
-    var comparable = [];
-    for (var i = 0; i &lt; elems.length; i++) {
-      comparable[i] = makeESComparable(source[[ elems[i].index ]]);
-    }
-    return comparable;
-  } else  {
-    // it's an object
-
-    // step 1 - get the props in alphabetical order
-    var props = [];
-    for (var prop in source) {
-      if (source.hasOwnProperty(prop) &amp;&amp; SKIPS.indexOf(""+prop) &lt; 0) {
-        props.push(prop);
-      }
-    }
-    props.sort();
-
-    // step 2 - recurse on each
-    var comparable = {};
-    for (var i = 0; i &lt; props.length; i++) {
-      comparable[props[i]] = makeESComparable(source[props[i]]);
-    }
-    return comparable;
-  }
+function makeComp(source) {
+  var doc = cts.doc(source).toObject();
+  var json = util.makeESComparable(doc, []);
+  return JSON.stringify(json);
 }
 
-function makeXESComparable(source) {
-  var triples = sem.rdfParse(source, ["turtle"]).toArray().sort();
-  triples.forEach(function(item, index, object) {
-    if ((""+sem.triplePredicate(item)).endsWith("relationship")) {
-      object.splice(index, 1);
-    }
-  });
-  return triples.join("\n");
+function makeXComp(source) {
+  var doc = cts.doc(source).toObject();
+  return util.makeXESComparable(doc);
 }
 
-var esModels = [
-    JSON.stringify(makeESComparable(cts.doc("/xmi2es/es/DHFEmployeeSample.json").toObject())),
-    JSON.stringify(makeESComparable(cts.doc("/xmi2es/es/HRExcel.json").toObject())) ];
+"Models are the same? " + (makeComp("/xmi2es/es/DHFEmployeeSample.json") == makeComp("/xmi2es/es/HRExcel.json")) +
+"\nExtended models are the same? " + (makeXComp("/xmi2es/extension/DHFEmployeeSample.ttl") == makeXComp("/xmi2es/extension/HRExcel.ttl")) 
 
-var xesModels = [
-    makeXESComparable(cts.doc("/xmi2es/extension/DHFEmployeeSample.ttl")),
-    makeXESComparable(cts.doc("/xmi2es/extension/HRExcel.ttl")) ];
-
-"Models are the same? " + (esModels[0] == esModels[1]) +
-"\nExtended models are the same? " + (xesModels[0] == xesModels[1])
 
 </query></workspace></export>

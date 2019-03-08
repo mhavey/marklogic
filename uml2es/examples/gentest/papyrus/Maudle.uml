@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_pIDeHgR-EemupvhyGp5tTA http:///MarkLogicEntityServicesProfile/xes.ecore /MLProfileProject/MLProfile.profile.uml#_pIDeWgR-EemupvhyGp5tTA">
+  <uml:Model xmi:id="_7Loz8Dw1EemEE_GkmS6oaw" name="Maudle">
+    <packageImport xmi:type="uml:PackageImport" xmi:id="_7QuvUDw1EemEE_GkmS6oaw">
+      <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+    </packageImport>
+    <packagedElement xmi:type="uml:Class" xmi:id="_9iDRsDw1EemEE_GkmS6oaw" name="A">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_OBPA8Dw2EemEE_GkmS6oaw" name="id">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_O1XMkDw2EemEE_GkmS6oaw" name="uri">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_hd_UkDw2EemEE_GkmS6oaw" name="format">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_qATT4Dw2EemEE_GkmS6oaw" name="header">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_-HGfgDw1EemEE_GkmS6oaw" name="B">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_7YIiYDw2EemEE_GkmS6oaw" name="id">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_74xxUDw2EemEE_GkmS6oaw" name="uri">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_8QGFIDw2EemEE_GkmS6oaw" name="format">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_8xnd0Dw2EemEE_GkmS6oaw" name="header">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_PC_jcDw3EemEE_GkmS6oaw" name="a">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_QkMQcDw3EemEE_GkmS6oaw" name="b">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="_RO6BYDw3EemEE_GkmS6oaw" name="c">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_7OU7kDw1EemEE_GkmS6oaw">
+      <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_7OXX0Dw1EemEE_GkmS6oaw" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <references xmi:type="ecore:EPackage" href="/MLProfileProject/MLProfile.profile.uml#_pIDeGwR-EemupvhyGp5tTA"/>
+      </eAnnotations>
+      <appliedProfile xmi:type="uml:Profile" href="/MLProfileProject/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
+    </profileApplication>
+  </uml:Model>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_CRSA8Dw2EemEE_GkmS6oaw" version="0.0.1" baseUri="http://jude.org/maudle" base_Package="_7Loz8Dw1EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xDocument xmi:id="_HQcCkDw2EemEE_GkmS6oaw" base_Class="_9iDRsDw1EemEE_GkmS6oaw">
+    <collections>A</collections>
+    <collections>Maudle</collections>
+  </MarkLogicEntityServicesProfile.xes:xDocument>
+  <MarkLogicEntityServicesProfile.xes:xDocument xmi:id="_IQ29wDw2EemEE_GkmS6oaw" base_Class="_-HGfgDw1EemEE_GkmS6oaw">
+    <collections>B</collections>
+    <collections>Maudle</collections>
+  </MarkLogicEntityServicesProfile.xes:xDocument>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="_dhlwcDw2EemEE_GkmS6oaw" base_Property="_OBPA8Dw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xURI xmi:id="_o4josDw2EemEE_GkmS6oaw" base_Property="_O1XMkDw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xCalculated xmi:id="_o49RUDw2EemEE_GkmS6oaw" base_Property="_O1XMkDw2EemEE_GkmS6oaw">
+    <concat>&quot;/&quot;</concat>
+    <concat>$attribute(id)</concat>
+    <concat>&quot;.&quot;</concat>
+    <concat>$attribute(format)</concat>
+  </MarkLogicEntityServicesProfile.xes:xCalculated>
+  <MarkLogicEntityServicesProfile.xes:xHeader xmi:id="_rPVS0Dw2EemEE_GkmS6oaw" base_Property="_qATT4Dw2EemEE_GkmS6oaw" field="headerFromContent"/>
+  <MarkLogicEntityServicesProfile.es:PK xmi:id="__DrAADw2EemEE_GkmS6oaw" base_Property="_7YIiYDw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xURI xmi:id="_C3AHsDw3EemEE_GkmS6oaw" base_Property="_74xxUDw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xCalculated xmi:id="_C3ZwUDw3EemEE_GkmS6oaw" base_Property="_74xxUDw2EemEE_GkmS6oaw">
+    <concat>&quot;/&quot;</concat>
+    <concat>$attribute(id)</concat>
+    <concat>&quot;.&quot;</concat>
+    <concat>$attribute(format)</concat>
+  </MarkLogicEntityServicesProfile.xes:xCalculated>
+  <MarkLogicEntityServicesProfile.es:exclude xmi:id="_C3xjwDw3EemEE_GkmS6oaw" base_Property="_74xxUDw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.es:exclude xmi:id="_I01YEDw3EemEE_GkmS6oaw" base_Property="_8xnd0Dw2EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xHeader xmi:id="_I1PAsDw3EemEE_GkmS6oaw" base_Property="_8xnd0Dw2EemEE_GkmS6oaw" field="headerFromContent"/>
+  <MarkLogicEntityServicesProfile.xes:xCalculated xmi:id="_ZplusDw3EemEE_GkmS6oaw" base_Property="_RO6BYDw3EemEE_GkmS6oaw">
+    <concat>$attribute(a)</concat>
+    <concat>$attribute(b)</concat>
+  </MarkLogicEntityServicesProfile.xes:xCalculated>
+  <MarkLogicEntityServicesProfile.es:exclude xmi:id="_hDq6oDw3EemEE_GkmS6oaw" base_Property="_PC_jcDw3EemEE_GkmS6oaw"/>
+  <MarkLogicEntityServicesProfile.xes:xCalculated xmi:id="_gQhpoDw7EemEE_GkmS6oaw" base_Property="_PC_jcDw3EemEE_GkmS6oaw">
+    <concat>$attribute(format)</concat>
+  </MarkLogicEntityServicesProfile.xes:xCalculated>
+</xmi:XMI>

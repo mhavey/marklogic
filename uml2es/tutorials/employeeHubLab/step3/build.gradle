@@ -1,0 +1,74 @@
+buildscript {
+  repositories {
+    maven {url 'http://developer.marklogic.com/maven2/'}
+  }
+}
+
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make the Data Hub Framework do its magic
+    id 'com.marklogic.ml-data-hub' version '4.1.0'
+}
+
+repositories {
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
+
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
+
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+}
+
+configurations {
+  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
+  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
+  // shown below.  Need to force to use certain version of xml-apis library.
+  mlcp {
+      resolutionStrategy {
+        force "xml-apis:xml-apis:1.4.01"
+      }
+    }
+}
+
+dependencies {
+    // this allows you to write custom java code that depends
+    // on the Data Hub Framework library
+    compile 'com.marklogic:marklogic-data-hub:4.1.0'
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
+
+    mlcp "com.marklogic:mlcp:9.0.6"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
+}
+
+task prepHRModel(type: Copy) {
+    from "data/papyrus/EmployeeHubModel/EmployeeHubModel.uml"
+    into "data/model"
+    rename '(.*).uml', '$1.xml'
+}
+
+task runUML2ESDeploy(type: GradleBuild) {
+  buildFile = "uml2es4dhf.gradle"
+  tasks = ["uDeployModel"]
+}
+
+task deployHRModel() {
+  dependsOn "prepHRModel"
+  dependsOn "runUML2ESDeploy"
+  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepHRModel'
+}

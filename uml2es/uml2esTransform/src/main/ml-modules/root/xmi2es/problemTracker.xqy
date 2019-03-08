@@ -15,10 +15,10 @@ Examples:
 - But is a class has multiple PKs, let that flow through to ES and have ES reject it.
 :)
 
-(: TODO - remove the ones we dont use :)
-
+declare variable $MODEL-NO-NAME := "Model has no name";
 declare variable $MODEL-INVALID:= "!!!Model fails ES validation!!!";
 declare variable $MODEL-NOT-FOUND := "Model not found";
+declare variable $MODEL-BASE-URI-NOT-FOUND := "Model base URI not found";
 declare variable $MODEL-VERSION-NOT-FOUND := "Model version not found";
 declare variable $MODEL-DUPLICATE-CLASSES := "Model has duplicate class names";
 declare variable $CLASS-NO-NAME := "Class has no name";
@@ -27,7 +27,7 @@ declare variable $CLASS-MULTIFIELD-URI := "Class has multiple URI fields";
 declare variable $CLASS-MULTIFIELD-SEM-IRI := "Class has multiple SEM IRI fields";
 declare variable $CLASS-MULTIFIELD-SEM-LABEL := "Class has multiple SEM label fields";
 declare variable $CLASS-SEM-NO-IRI := "SEM Class has no IRI";
-declare variable $ATTRIB-ILLEGAL-INDEX := "Illegal index type";
+declare variable $ATTRIB-NO-NAME := "Attrib has no name";
 declare variable $ATTRIB-COLLATION-NONSTRING := "Collation provided for non-string datatype";
 declare variable $ATTRIB-CARDINALITY-ONE := "Cardinality of element should be one";
 declare variable $ATTRIB-CARDINALITY-ZERO-ONE := "Cardinality of element should be zero or one";
@@ -37,6 +37,13 @@ declare variable $ILLEGAL-TRIPLE-PO := "Illegal triple PO in hint";
 declare variable $ILLEGAL-PERM := "Illegal perm kev-value pair";
 declare variable $ILLEGAL-METADATA := "Illegal metadata kev-value pair";
 declare variable $ILLEGAL-XES-TRIPLE := "Illegal XES triple";
+declare variable $ILLEGAL-SEM-PREFIX := "Illegal sem prefix";
+declare variable $ILLEGAL-SEM-FACT := "Illegal sem fact";
+declare variable $ILLEGAL-SEM-QUAL := "Illegal sem qual";
+declare variable $ILLEGAL-MUSICAL := "Illegal musical expression";
+declare variable $ILLEGAL-CSV := "Illegal CSV";
+declare variable $ILLEGAL-IRI-TYPE := "Illegal type for attribute used as IRI";
+declare variable $ILLEGAL-CARDINALITY := "Unexpected cardinality";
 
 (:
 initialize the problem tracker
@@ -46,7 +53,7 @@ declare function pt:init() as json:array {
 };
 
 declare function pt:addProblem($problems as json:array, 
-	$subjectIRI as xs:string?, $subjectAlt as xs:string?, 
+	$subjectIRI as sem:iri?, $subjectAlt as xs:string?, 
 	$problemType as xs:string, $param) {
 	let $problem := map:new((
 		if (exists($subjectIRI)) then map:entry("subjectIRI", $subjectIRI) else(),

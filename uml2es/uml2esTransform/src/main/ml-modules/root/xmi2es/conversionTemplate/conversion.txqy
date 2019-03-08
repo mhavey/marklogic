@@ -1,0 +1,13 @@
+(:
+${ModelDesc}
+:)
+
+xquery version '1.0-ml';
+
+module namespace plugin = "http://marklogic.com/data-hub/plugins";
+
+import module namespace xesgen = "${ModelGenURI}" at "/modelgen/${ModelName}/lib.xqy" ;
+
+declare option xdmp:mapping 'false';
+
+${ContentXBuilder}

@@ -1,0 +1,31 @@
+/*
+${ModelDesc}
+*/
+
+const xesgen = require("/modelgen/${ModelName}/lib.sjs");
+
+${EntityContentEnableDMIn}
+const dm = require('/ext/declarative-mapper.sjs');
+const DM_MAPPING_CONFIG_URI = "${EntityXContentDMMapper}";
+function getDMMapper(options) {
+  if (!options.mapper) {
+    const ctx = dm.newCompilerContext(DM_MAPPING_CONFIG_URI);
+    const mapper = dm.prepare(ctx);
+    options.mapper = mapper;
+  }
+  return options.mapper;
+}
+${EntityContentEnableDMOut}
+
+var options = {};
+
+function createContent(source, options) {
+  var id = "dontcare";
+  return buildContent_${EntityX}(id, source, options, options);
+}
+
+${ContentBuilder}
+
+module.exports = {
+  createContent: createContent
+};

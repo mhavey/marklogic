@@ -16,47 +16,114 @@ xquery version '1.0-ml';
 
 (:
 Your model has the following extended facts. These facts are also saved as triples in your content DB:
-@prefix p2: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/CompanyContributor/> .
-@prefix p5: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/PersonContributor/> .
-@prefix p0: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/> .
-@prefix p1: <http://marklogic.com/xmi2es/xes/> .
-@prefix p6: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Role/> .
-@prefix p4: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/> .
-@prefix p3: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/UserDocument/> .
+@prefix p0: <http://com.marklogic.es.uml.movie/> .
+@prefix p6: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/CompanyContributor/> .
+@prefix p9: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/PersonContributor/> .
+@prefix p2: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/> .
+@prefix xs: <http://www.w3.org/2001/XMLSchema#> .
+@prefix p8: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/Movie/> .
+@prefix p3: <http://marklogic.com/entity-services#> .
+@prefix p1: <http://marklogic.com/xmi2es/xes#> .
+@prefix p4: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/MovieContributor/> .
+@prefix p7: <http://com.marklogic.es.uml.movie/MovieModel-0.0.1/UserDocument/> .
 
-p3:movieDoc     p1:FK           "self" ;
-                p1:relationship "association" .
+p6:filmography  p1:reference    p2:Movie ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p1:associationClass
+                                p2:Role .
 
-p5:filmography  p1:FK           "self" ;
-                p1:relationship "association" .
+p0:MovieModel-0.0.1
+                p1:excludes     p2:MovieContributor ;
+                p3:definitions  p2:MovieContributor .
 
-p0:UserDocument p1:reminder     "if docText is larger than 1MB, store in a separate text document.>" .
+p8:cast         p1:reference    p2:MovieContributor ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p1:associationClass
+                                p2:Role .
 
-p5:docs         p1:exclude      "self" ;
-                p1:relationship "composite" .
+p2:Movie        p1:excludes     p8:docs ;
+                p3:property     p8:docs .
 
-p6:refMovie     p1:FK           "self" .
+p2:PersonContributor
+                p1:excludes     p9:docs ;
+                p1:baseClass    p2:MovieContributor ;
+                p3:property     p9:docs .
 
-p4:cast         p1:FK           "self" ;
-                p1:relationship "association" .
+p2:CompanyContributor
+                p1:baseClass    p2:MovieContributor .
 
-p4:parentalCerts
-                p1:relationship "composite" .
+p9:docs         p1:reference    p2:UserDocument ;
+                p1:relationship "composite" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p3:title        "docs" .
 
-p4:docs         p1:exclude      "self" ;
-                p1:relationship "composite" .
+_:bnode4074117855254172692
+                p1:associationClassEndAttribute
+                                p4:filmography ;
+                p1:associationClassEndFK
+                                "true"^^xs:boolean ;
+                p1:associationClassEndClass
+                                p2:MovieContributor .
 
-p6:refMovieContributor
-                p1:FK           "self" .
+p9:filmography  p1:reference    p2:Movie ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p1:associationClass
+                                p2:Role .
 
-p0:MovieContributor
-                p1:exclude      "self" .
+_:bnode11343196493162823818
+                p1:associationClassEndAttribute
+                                p8:cast ;
+                p1:associationClassEndFK
+                                "true"^^xs:boolean ;
+                p1:associationClassEndClass
+                                p2:Movie .
 
-p3:contribDoc   p1:FK           "self" ;
-                p1:relationship "association" .
+p2:UserDocument p1:reminder     "if docText is larger than 1MB, store in a separate text document." .
 
-p2:filmography  p1:FK           "self" ;
-                p1:relationship "association" .
+p4:filmography  p1:reference    p2:Movie ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p1:associationClass
+                                p2:Role .
+
+p8:docs         p1:reference    p2:UserDocument ;
+                p1:relationship "composite" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p3:title        "docs" .
+
+p8:parentalCerts
+                p1:reference    p2:ParentalCertificate ;
+                p1:relationship "composite" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
+
+p2:Role         p1:hasAssociationClassEnd
+                                _:bnode4074117855254172692 ,
+                                _:bnode11343196493162823818 ;
+                p1:isAssociationClass
+                                "true"^^xs:boolean .
+
+p2:MovieContributor
+                p3:title        "MovieContributor" .
+
+p7:contribDoc   p1:reference    p2:PersonContributor ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
+
+p7:movieDoc     p1:reference    p2:Movie ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
 :)
 

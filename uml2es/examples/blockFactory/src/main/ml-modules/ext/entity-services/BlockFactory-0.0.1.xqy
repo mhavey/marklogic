@@ -24,53 +24,87 @@ from MLCP. This allows the function to adjust URI, collections, perms, and other
 
 Here is the big comment:
 
-Your model has the following extended facts. These facts are also saved as triples in your content DB:
-@prefix p6: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/BlockModelPart/> .
+Your model has the following extended facts. These facts are also saved as triples in your content DB:@prefix p7: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/BlockModelPart/> .
+@prefix xs: <http://www.w3.org/2001/XMLSchema#> .
 @prefix p0: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/> .
-@prefix p1: <http://marklogic.com/xmi2es/xes/> .
-@prefix p4: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/CustomBlockModel/> .
+@prefix p5: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/CustomBlockModel/> .
 @prefix p2: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/Block/> .
-@prefix p3: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/BlockModel/> .
-@prefix p5: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/BlockColor/> .
-@prefix p7: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/Similarity/> .
+@prefix p4: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/BlockModel/> .
+@prefix p1: <http://marklogic.com/xmi2es/xes#> .
+@prefix p6: <http://com.marlogic.es.umldemo.blockfactory/BlockFactory-0.0.1/BlockColor/> .
 
-p4:blocks       p1:relationship "composite" .
+p5:blocks       p1:reference    p0:BlockModelPart ;
+                p1:relationship "composite" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
-p0:Block        p1:doc-collection
-                                "part" .
+p0:Block        p1:collections  "part" .
 
-p0:BlockModel   p1:doc-collection
-                                "product" .
+p0:BlockModel   p1:collections  "product" .
 
-p3:blocks       p1:relationship "composite" .
+p4:blocks       p1:reference    p0:BlockModelPart ;
+                p1:relationship "composite" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
-p5:alternatives p1:FK           "self" ;
-                p1:relationship "association" .
+_:bnode4721720869404596580
+                p1:associationClassEndAttribute
+                                p6:alternatives ;
+                p1:associationClassEndFK
+                                "true"^^xs:boolean ;
+                p1:associationClassEndClass
+                                p0:BlockColor .
 
-p3:instructions p1:relationship "shared" .
+p6:alternatives p1:reference    p0:BlockColor ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean ;
+                p1:associationClass
+                                p0:Similarity .
 
-p2:material     p1:FK           "self" ;
-                p1:relationship "association" .
+p4:instructions p1:reference    p0:Instructions ;
+                p1:relationship "shared" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
-p4:clientRequester
-                p1:FK           "self" ;
-                p1:relationship "association" .
+p2:material     p1:reference    p0:Material ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
-p4:instructions p1:relationship "shared" .
+p5:instructions p1:reference    p0:Instructions ;
+                p1:relationship "shared" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
-p2:color        p1:FK           "self" ;
-                p1:relationship "association" .
+p5:clientRequester
+                p1:reference    p0:Client ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
-p6:blockSummary p1:reminder     "abbrev and denorm>" ;
-                p1:relationship "association" .
+p2:color        p1:reference    p0:BlockColor ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
+
+p0:Similarity   p1:hasAssociationClassEnd
+                                _:bnode4721720869404596580 ;
+                p1:isAssociationClass
+                                "true"^^xs:boolean .
+
+p7:blockSummary p1:reference    p0:Block ;
+                p1:reminder     "abbrev and denorm" ;
+                p1:relationship "association" ;
+                p1:typeIsReference
+                                "true"^^xs:boolean .
 
 p0:CustomBlockModel
-                p1:doc-collection
-                                "product" ,
-                                "custom" .
+                p1:collections  "product" ,
+                                "custom" ,
+                                "product" ;
+                p1:baseClass    p0:BlockModel .
 
-p7:alternatives p1:FK           "self" ;
-                p1:relationship "association" .
 :)
 
 

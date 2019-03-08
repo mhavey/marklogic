@@ -1,32 +1,37 @@
 buildscript {
-
   repositories {
-    jcenter{url "http://jcenter.bintray.com/"}
-    mavenLocal()
-    maven { url "http://plugins.gradle.org/m2" }
-  }
-  dependencies {
-    classpath "com.marklogic:ml-gradle:3.2.0"
-    classpath "net.saliman:gradle-properties-plugin:1.4.6"
+    maven {url 'http://developer.marklogic.com/maven2/'}
   }
 }
 
 plugins {
-   id 'com.marklogic.ml-data-hub' version '2.0.2'
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make the Data Hub Framework do its magic
+    id 'com.marklogic.ml-data-hub' version '4.1.0'
 }
 
-apply plugin: "net.saliman.properties"
-apply plugin: "com.marklogic.ml-gradle"
-    
 repositories {
-  jcenter{url "http://jcenter.bintray.com/"}
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
 
-  // Needed for mlcp dependencies
-  maven { url "http://plugins.gradle.org/m2" }
-  maven { url "http://developer.marklogic.com/maven2/" }
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
 
-  // Needed for hadoop dependencies for mlcp
-  maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
 }
 
 configurations {
@@ -40,29 +45,15 @@ configurations {
     }
 }
 
-/**
- * ML 8.0-5 and 7.0-6 introduced a single mlcp dependency - see http://developer.marklogic.com/maven2/com/marklogic/mlcp/.
- * The 8.0-5 mlcp may very well work on ML versions prior to 8.0-5. If it doesn't, try the mlcp-Hadoop2
- * and marklogic-mapreduce2 dependencies that are commented out by default instead of the mlcp dependency.
- *
- * Note that at least with version 8.0-5 of mlcp, mlcp will complain on Windows that it cannot find
- * bin/winutils.exe. This does not appear to have any impact on mlcp behavior though.
- */
 dependencies {
+    // this allows you to write custom java code that depends
+    // on the Data Hub Framework library
+    compile 'com.marklogic:marklogic-data-hub:4.1.0'
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
 
-  mlcp "com.marklogic:mlcp:8.0.6.3"
-
-  /**
-   * If you need to import delimited text, be sure to include this dependency as well.
-   */
-  mlcp "org.apache.commons:commons-csv:1.2"
-
-  /**
-   * mlcp uses Log4j for logging, and if Log4j can't find a configuration file, it will complain and you'll
-   * get none of mlcp's usually-useful logging. It is recommended then that your Gradle configuration for
-   * mlcp include a directory or some other resource that provides a log4j.properties file.
-   */
-  mlcp files("lib")
+    mlcp "com.marklogic:mlcp:9.0.6"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
 }
 
 task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
@@ -77,7 +68,7 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "json"
+  document_type = "xml"
   input_file_path =  "data/hr/GlobalCorp/employee/EmployeeTable.csv"
   input_file_type ="delimited_text" 
 
@@ -87,7 +78,7 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/employee/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -106,7 +97,7 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "json"
+  document_type = "xml"
   input_file_path =  "data/hr/GlobalCorp/employee/SalaryTable.csv"
   input_file_type ="delimited_text" 
 
@@ -116,7 +107,7 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/salary/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -133,7 +124,7 @@ task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "json"
+  document_type = "xml"
   input_file_path =  "data/hr/GlobalCorp/department"
   input_file_type ="delimited_text" 
 
@@ -143,7 +134,7 @@ task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_prefix = "/hr/department/global/"
   output_uri_suffix = ".xml"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Department,flow-name=LoadDepartment"	
 }
@@ -169,7 +160,7 @@ task loadAcme(type: com.marklogic.gradle.task.MlcpTask) {
   output_uri_replace = regex 
   output_uri_prefix = "/hr/employee/acme/"
 
-  transform_module="/com.marklogic.hub/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
   transform_param "entity-name=Employee,flow-name=LoadEmployee"	
 }
@@ -197,100 +188,27 @@ task runInputMLCP() {
 
 task includeXMI2ESTransform(type: Copy) {
     from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
-    into "plugins/xmi2es"
+    into "src/main/ml-modules/root/xmi2es"
 }
 
-task loadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
-  def unixDir = xmiDir.replace('\\', '/');
-  def regex = '"' + unixDir + ",'',/,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "xml"
-  input_file_path = xmiDir + "/DHFEmployeeSample.xml"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/xmi/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "xmi2es"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-
-  transform_module = "/xmi2es/xmi2esTransform.xqy"
-  transform_namespace ="http://marklogic.com/xmi2es"
-  transform_param = '{"genlang":"xqy"}'
+task includeUGradle(type: Copy) {
+    from "../../uml2esTransform/uml2es4dhf.gradle"
+    into "."
 }
 
-
-task fetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "EXPORT"
-  output_file_path = "data/entity-services-dump"
-  collection_filter = "xmi2es"
-  host = mlHost
-  port = mlFinalPort.toInteger()
+task includeModel(type: Copy) {
+    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+    from xmiDir + "/DHFEmployeeSample.xml"
+    into "data/model"
 }
 
-task deleteESDump(type: Delete) {
-    delete "data/entity-services-dump"
+task setup() {
+  dependsOn('includeXMI2ESTransform')
+  dependsOn('includeModel')
+  dependsOn('includeUGradle')
 }
 
-task copyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es/DHFEmployeeSample.json"
-    into "data/entity-services" 
-}
-
-task copyESExt(type: Copy) {
-    from "data/entity-services-dump/xmi2es/extension/DHFEmployeeSample.ttl"
-    into "data/entity-services-extension" 
-}
-
-task ingestModel() {
-  dependsOn 'deleteESDump'
-  dependsOn 'loadXMI'
-  dependsOn 'fetchDescriptors'
-  dependsOn 'copyES'
-  dependsOn 'copyESExt'
-  tasks.findByName('loadXMI').mustRunAfter 'deleteESDump'
-  tasks.findByName('fetchDescriptors').mustRunAfter 'loadXMI'
-  tasks.findByName('copyES').mustRunAfter 'fetchDescriptors'
-  tasks.findByName('copyESExt').mustRunAfter 'fetchDescriptors'
-}
-
-task clearGenerated(type: Delete) {
-  dependsOn 'deleteESDump'
-  delete 'user-config/schemas'
-  delete "src/main"
-}
-
-task loadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-  database = mlFinalDbName
-
-  input_file_path =  "data/entity-services-extension/*.ttl" 
-  input_file_type = "rdf" 
-  output_uri_prefix = "/triplestore"
-}
-
-task workaroundDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/entity-services";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "json"
-  input_file_path = "data/entity-services"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/marklogic.com/entity-services/models/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "http://marklogic.com/entity-services/models"
-  host = mlHost
-  port = mlFinalPort.toInteger()
+task tweakHarmonization(type: Copy) {
+  from "data/tweaks"
+  into "plugins/entities"
 }

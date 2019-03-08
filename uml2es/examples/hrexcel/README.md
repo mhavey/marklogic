@@ -5,7 +5,7 @@ In this example, we build a data model using an Excel spreadsheet. No UML! ... W
 
 Our toolkit has the generic capability to generate an Entity Services model from an Excel document that follows the template, which you can find here: (../../excel/uml2es-excel-template.xlsx). In this example, we use that template to build a human resources data model of employees, departments, and their relationships. Our example shows how to transform the Excel model into Entity Services by running a gradle task. 
 
-Our spreadsheet is HRExcel.xlsx. Here is a snapshot of it 
+Our spreadsheet is data/model-execl/HRExcel.xlsx. Here is a snapshot of it 
 
 ![HRExcel](HRExcel.png) 
 
@@ -37,7 +37,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i includeXMI2ESTransform mlDeploy
+gradle -PenvironmentName=local -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-hrexcel.
@@ -46,35 +46,32 @@ Confirm:
 
 Run the following to load the Excel HR model:
 
-gradle -PenvironmentName=local -i loadExcel
+gradle -b uml2es.gradle -PenvironmentName=local -PmodelName=HRExcel -i uDeployModel
 
 Confirm:
-- Content DB has the following documents
-	* /xmi2es/es/HRExcel.json - Excel-originated entity services model descriptor
-	* /xmi2es/excel/findings/HRExcel.xml - Excel-to-XMI conversion findings. Should be no problems.
+- Content DB includes several documents created when loading the Excel, including:
+	* /marklogic.com/entity-services/models/HRExcel.json - the ES model from the Excel
+	* /xmi2es/extension/HRExcel.ttl - the extended ES model from the Excel
+	* /xmi2es/findings/HRExcel.xml - findings during the transform of the Excel
 	* /xmi2es/excel/HRExcel.xlsx - Original Excel file
-	* /xmi2es/extension/HRExcel.ttl - Excel extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/HRExcel.txt - Excel dxtended model described textually
-	* /xmi2es/findings/HRExcel.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/HRExcel.txt - Generated code for DHF
-	* /xmi2es/intermediate/HRExcel.xml - XMI/ES intermediate form
 	* /xmi2es/xmi/HRExcel.xml - Excel model converted to XMI form.
+
+Check the /xmi2es/findings/HRExcel.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
 ### Transform HR UML to ES
 
 For comparison, we will load the HR UML model from examples/hr. Run the following:
 
-gradle -PenvironmentName=local -i loadUML
+gradle -b uml2es.gradle -PenvironmentName=local -PmodelName=DHFEmployeeSample -i uDeployModel
 
 Confirm:
-- Content DB now has, in addition to the document created in the previous step, the following documents
-	* /xmi2es/es/DHFEmployeeSample.json	 - UML-originated Entity Services Model
-	* /xmi2es/extension/DHFEmployeeSample.ttl - UML extended model as semantic triples (Turtle format)
-	* /xmi2es/extension/DHFEmployeeSample.txt - UML extended model described textually
-	* /xmi2es/findings/DHFEmployeeSample.xml - Findings while converting to Entity Services. Should be no problems.
-	* /xmi2es/gen/DHFEmployeeSample.txt - Generated code for DHF
-	* /xmi2es/intermediate/DHFEmployeeSample.xml - XMI/ES intermediate form
-	* /xmi2es/xmi/DHFEmployeeSample.xml - XMI form of UML model
+- Content DB now has, in addition to the documents created in the previous step, the following documents
+	* /marklogic.com/entity-services/models/DHFEmployeeSample.json	 - the ES model from the UML
+	* /xmi2es/extension/DHFEmployeeSample.ttl - the extended ES model from the UML
+	* /xmi2es/findings/DHFEmployeeSample.xml - findings during the transform of the UML.
+	* /xmi2es/xmi/DHFEmployeeSample.xml - the original UML model in XMI form.
+
+Check the /xmi2es/findings/DHFEmployeeSample.xml file. This indicates whether there were any issues during the transform. Verify there are none.
 
 ## Check Model Differences
 In Query Console, import XMI2ESExcel.xml workspace. In the tab entitled Check Diff, run to confirm the Excel- and UML-based models are the same.
