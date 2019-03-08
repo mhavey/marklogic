@@ -2,7 +2,7 @@
 
 ## Intro
 
-This is a toolkit to support modeling MarkLogic data in UML and mapping that UML model to Entity Services. For background, refer to the following blog posts:
+UML2ES is a toolkit to support modeling MarkLogic data in UML and mapping that UML model to Entity Services. For background, refer to the following blog posts:
 
 - <http://www.marklogic.com/blog/how-to-model-manage-entities-uml/>
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services>
