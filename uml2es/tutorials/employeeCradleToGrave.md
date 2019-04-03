@@ -7,6 +7,10 @@ In this tutorial, we cook an HR data hub from scratch. This tutorial is a recipe
 
 There is more than one cook in the kitchen. In a real-world project different people contribute in different roles. In our case, we need a data designer/architect to design the model, a source data subject-matter expert (SME) to tie the model to the raw source data set, a developer to bring the model and data into a servicable form in MarkLogic, and a build/admin person to provide a source code repo, a deployment process, and a runtime environment for the hub.
 
+You get to be all the stickmen in the following figure: 
+
+![Tutorial overview](images/cradleoverview.png)
+
 ## Step 1: Standup a MarkLogic Environment and Source Code Repo (Build Person)
 
 <details><summary>Click to view/hide this section</summary>
