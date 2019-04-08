@@ -11,6 +11,10 @@ You get to be all the stickmen in the following figure:
 
 ![Tutorial overview](images/cradleoverview.png)
 
+For more overview, watch the following video:
+
+- <https://www.youtube.com/watch?v=VkpH3LgMz3M&feature=youtu.be>
+
 ## Step 1: Standup a MarkLogic Environment and Source Code Repo (Build Person)
 
 <details><summary>Click to view/hide this section</summary>
