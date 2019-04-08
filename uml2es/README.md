@@ -8,6 +8,10 @@ UML2ES is a toolkit to support modeling MarkLogic data in UML and mapping that U
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services>
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>
 
+Also watch the following video:
+
+- <https://www.youtube.com/watch?v=VkpH3LgMz3M&feature=youtu.be>
+
 It works like this:
 
 ![toolkit](toolkit.png)
