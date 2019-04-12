@@ -576,6 +576,11 @@ function parseEntityForDM(dmTemplate, input, entityName, level) {
 //  return parts;	  
 }
 
+/*
+Walk the calculated attributes and make variables for them (and their dependents).
+Add calculated attributes to our content[1] - this is the content of "options" to be passed forward 
+to headers, triples, and writers in the harmonization.
+ */
 function defineVarsForDM(dmTemplate, input, attributes, attribute) {
 	var modelName = input.modelName;
 	var entityName = input.entityName;
@@ -601,7 +606,7 @@ function defineVarsForDM(dmTemplate, input, attributes, attribute) {
 			defineVarsForDM(dmTemplate, input, attributes, depAttrib);
 		}
 		dmTemplate.outputs.main.variables[attribName] = `xcalc('${modelName}', '${entityName}', '${attribName}', '${contentMode}' ${deps})`;
-		dmTemplate.outputs.main.content[1][attribName] = `[[ $${attribName} ]]`;
+		dmTemplate.outputs.main.content[1][attribName] = `[[ $${attribName} ]]`; // for options
 	}
 	else {
 		dmTemplate.outputs.main.variables[attribName] = `[[ extract('//TODO') ]]`;
