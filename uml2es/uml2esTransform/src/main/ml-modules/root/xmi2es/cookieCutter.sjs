@@ -253,6 +253,30 @@ select ?document ?physicalName where {
 	return ret;
 }
 
+function showViewAttributeDiscoveryJS(input, entityName, attributeName) {
+	var splits = attributeName.split(".");
+	if (splits.length > 1) attributeName = splits[0];
+	var ret = {
+		"SimilarPhysicalAttributes": 
+			fn.subsequence(sem.sparql(`
+select ?document ?physicalName where {
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/attribute> "${attributeName}" .
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/physical> ?physicalName .
+	?document <http://marklogic.com/xmi2es/discovery/attributeMatchesModel> ?placeholder
+	}`,
+			{}, [], sem.store(null, cts.documentQuery(input.reportURI))), 1, 4).toArray(),
+		"SimilarPhysicalPredicates": 
+			fn.subsequence(sem.sparql(`
+select ?document ?physicalName where {
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/attribute> "${attributeName}" .
+	?placeholder <http://marklogic.com/xmi2es/discovery/match/physical> ?physicalName .
+	?document <http://marklogic.com/xmi2es/discovery/predicateMatchesModel> ?placeholder
+	}`,
+			{}, [], sem.store(null, cts.documentQuery(input.reportURI))), 1, 4).toArray()
+	};
+	return ret;
+}
+
 function describeFacts(subjectIRI) {
   var res = runXESQuery(subjectIRI);
   var isList = checkIfRDFList(res);
@@ -302,7 +326,7 @@ function describeFacts(subjectIRI) {
   }
 }
 
-function describeModel(input) {
+function describeModel(input, norender) {
 	var modelIRI = input.modelIRI;
 	var descJ = {};
 	descJ[`Model ${modelIRI} is stereotyped in the model as follows:`] = describeFacts(modelIRI);
@@ -317,10 +341,11 @@ function describeModel(input) {
 			descJ["Comments below include discovery findings. See the full report at this URI:"] = input.reportURI;
 		}
 	}
+	if (norender) return descJ;
 	return render(descJ);
 }
 
-function describeClass(input, entityName) {
+function describeClass(input, entityName, norender) {
 	var descJ = {};
 	descJ[`Class ${entityName} is stereotyped in the model as follows:`] = 
 		describeFacts(input.modelIRI + "/" + entityName);
@@ -340,10 +365,11 @@ function describeClass(input, entityName) {
 			}
 		}
 	}
+	if (norender) return descJ;
 	return render(descJ);
 }
 
-function describeAttrib(input, entityName, attributeName) {
+function describeAttrib(input, entityName, attributeName, norender) {
 	var descJ = {};
 	descJ[`Attribute ${attributeName} is stereotyped in the model as follows:`] = 
 		describeFacts(input.modelIRI + "/" + entityName + "/" + attributeName);
@@ -377,9 +403,9 @@ function describeAttrib(input, entityName, attributeName) {
 		}
 	}
 
+	if (norender) return descJ;
 	return render(descJ);
 }
-
 
 function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 	var contentNode =content;
@@ -420,44 +446,166 @@ function cutContent(input, template) {
 	else return cutContentES(input, template);
 }
 
+
 function cutContentDM(input, template) {
 
 	// These are Javascript template subs. The name of each matches the ${X} sub in the template.
 	// DON'T CHANGE THE NAME.
-	var ModelDesc = "Hi";
+	var templateFolder = "/dm/mapper/" + input.modelName + "/" + input.entityName + "/";
+	var templateName = input.moduleName + ".json";
+	var EntityXContentDMMapper = templateFolder + templateName;
+	var ModelDesc = "Experimental UML2ES/DM Code. Inspect and tweak DM template " + EntityXContentDMMapper;
+	var renderDesc = render(ModelDesc)
 	var EntityContentEnableDMIn = "";
 	var EntityContentEnableDMOut = "";
 	var EntityX = input.entityName;
 	var ModelName = input.modelName;
 	var ModelGenURI = input.modelIRI;
-	var EntityXContentDMMapper = "/dm/mapper/" + input.entityName + "/" + input.flowName + ".json";
 	var ContentBuilder = `
 function buildContent_${EntityX}(id, source, options, ioptions) {
-   mapper = getDMMapper(options);
-   return mapper(source);
-};
-`;
-	var dmTemplate = {};
-	dmTemplate.config = {"format": "JSON"};
-	dmTemplate.config.template = {};
-	dmTemplate.config.template[input.entityName] = {};
+	var mapper = getDMMapper(options);
+	var mapping = mapper(source);
+	var doptions = mapping[1];
+	for (dopt in doptions) {
+		ioptions[dopt] = doptions[dopt];
+	}
+	return mapping[0];
+}
+`; 
 
-	// walk the entity and map its attributes; 
-	// pay attention to calculated attributes; they need to be vars
-	// walk into sub-documents; be aware of loops
-	// watch for circular
-	// look at cutContentES for how to traverse; there it's a bit different but it helps
+	var dmTemplate = { 
+		description: describeModel(input, "norender"),
+		modules: { "functionLibraries": ["/xmi2es/dm.sjs"] },
+		input: { 
+			format: "json" 
+		}, outputs: {
+			main: {
+				format: "json",
+				variables: {},
+				content: [
+				]
+			}
+		}
+	};
+	parseEntityForDM(dmTemplate, input, input.entityName, 0);
+	//dmTemplate.content.push(entityParts.template);
+	//dmTemplate.description = entityParts.description;
+	//dmTemplate.variables = entityParts.variables;
+    //dmTemplate.outputs.main = entityParts.template;
 
-	// also, eventually use the mapping Hints
-
-	// we need to save the mapper; 
-	// TODO - build.gradle will need to export it back to the gradle
-	// TODO - need process to upload it as part of build
-	xdmp.documentInsert(EntityXContentDMMapper, dmTemplate);
+	writeFile(templateFolder, templateName, dmTemplate, false, input.modelName, "dm");
 
 	// we return module
 	var tpl = eval('`'+template+'`');
 	return tpl;
+}
+
+function parseEntityForDM(dmTemplate, input, entityName, level) {
+  var entityDesc = describeClass(input, entityName, "norender");
+  dmTemplate.description[entityName] = {description: entityDesc};
+
+  // variable at level zero only
+  var attributes = orderAttributes(getAttributes(input.modelIRI, entityName));
+  if (level == 0) {
+	for (var i = 0; i < attributes.length; i++) {
+		if (attributes[i].attributeIsCalculated == true) {
+			defineVarsForDM(dmTemplate, input, attributes, attributes[i]);
+		}
+	}
+  }
+
+  // TODO - for attribs that have variables, just map them to the variable value!
+
+  //parts.description[entityName].attributes = {};
+  // Process each attribute in the entity
+  /*
+  for (var i = 0; i < attributes.length; i++) {
+    
+    var attributeName = attributes[i].attributeName;
+	var attributeType = attributes[i].attributeType;
+	var attributeIsRequired = attributes[i].attributeIsRequired;
+	var attributeIsArray = attributes[i].attributeIsArray;
+	var AttribDesc = describeAttrib(input, entityName, attributeName);
+    var DescText = render(AttribDesc);
+    //parts.description[entityName].attributes[attributeName] = {};
+    //parts.description[entityName].attributes[attributeName].description = [];
+    //parts.description[entityName].attributes[attributeName].description.push(AttribDesc);
+	    
+    if (attributes[i].attributeIsCalculated == true) {}
+	else if (attributes[i].attributeIsExcluded == true) {}
+	else if (attributes[i].attributeIsSimpleType == true) {
+	  var source = attributeName;
+	  if(AttribDesc.MappingFacts != null) {
+	    source = AttribDesc.MappingFacts[0].SourceMapping;
+	  }
+  	  parts.template[attributeName] = "[[extract('//" + source + "')]]";
+  	  */
+      /***
+       * Code from cutContentES: ret["${attributeName}"] = "TODO"; // type: ${attributeType}, req'd: ${attributeIsRequired}, array: ${attributeIsArray}
+       */
+       /*
+	}							
+	else {
+      if (attributeIsArray == true) {
+	    parts.template[attributeName] = [];
+	    var subEntity = parseEntityForDM(input, attributeType, level + 1);
+	    parts.template[attributeName].push("%%[[extract('//" + source + "', true)]]");
+	    parts.template[attributeName].push(subEntity.template);
+	    //parts.description[entityName].attributes[attributeType] = {};
+	    //parts.description[entityName].attributes[attributeType].description = subEntity.description;
+	    */
+        /***
+         *	while (1 == 1) {
+      	 *	  ret["${attributeName}"].push(buildContent_${entity2}(id,source,options,ioptions));
+      	 *  }
+      	 */
+      	 /*
+ 	  }
+	  else {
+	    var subEntity = parseEntityForDM(input, attributeName, level + 1);
+        parts.template[attributeName] = subEntity.template;
+        //parts.description[entityName].attributes[attributeName].description.push(subEntity.description);
+        */
+		/***
+		 * ret["${attributeName}"] = buildESEntity_${entity2}(id,source,options);
+	     */
+	  //}
+    //}
+    
+  //};
+  
+//  return parts;	  
+}
+
+function defineVarsForDM(dmTemplate, input, attributes, attribute) {
+	var modelName = input.modelName;
+	var entityName = input.entityName;
+	var attribName = attribute.attributeName;
+	var contentMode = attribute.attributeIsExcluded == true ? "options": "content";
+	var deps = "";
+	if (attribute.attributeIsCalculated == true) {
+		for (var i = 0; i < attribute.attributeCalcDependencies.length; i++) {
+			var depAttribName = attribute.attributeCalcDependencies[i];
+			var depContentMode = "dontknow";
+			var depAttrib = null;
+			for (var j = 0; j < attributes.length; j++) {
+				if (attributes[j].attributeName == depAttribName) {
+					depAttrib = attributes[j];
+					break;
+				}
+			}
+			if (depAttrib == null) {
+				throw "Programming error: deps for *" + attribute.attributeName + "* on dep *" + depAttributeName + "*";
+			}
+			depContentMode = depAttrib.attributeIsExcluded ? "options" : "content"
+			deps += ` , '${depAttribName}', '@{depAttribName}', '${depContentMode}' `;
+			defineVarsForDM(dmTemplate, input, attributes, depAttrib);
+		}
+		dmTemplate.outputs.main.variables[attribName] = `xcalc('${modelName}', '${entityName}', '${attribName}', '${contentMode}' ${deps})`;
+	}
+	else {
+		dmTemplate.outputs.main.variables[attribName] = `[[ extract('//TODO') ]]`;
+	}
 }
 
 function cutContentES(input, template) {

@@ -388,6 +388,7 @@ println js
 
 task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
+  directoryFilter += ",/dm/mapper/" + project.findProperty("modelName") + "/"
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = ""
