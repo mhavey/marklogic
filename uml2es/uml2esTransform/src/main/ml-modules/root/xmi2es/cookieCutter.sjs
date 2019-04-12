@@ -482,8 +482,7 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 			main: {
 				format: "json",
 				variables: {},
-				content: [
-				]
+				content: [{}, {}]
 			}
 		}
 	};
@@ -602,6 +601,7 @@ function defineVarsForDM(dmTemplate, input, attributes, attribute) {
 			defineVarsForDM(dmTemplate, input, attributes, depAttrib);
 		}
 		dmTemplate.outputs.main.variables[attribName] = `xcalc('${modelName}', '${entityName}', '${attribName}', '${contentMode}' ${deps})`;
+		dmTemplate.outputs.main.content[1][attribName] = `[[ $${attribName} ]]`;
 	}
 	else {
 		dmTemplate.outputs.main.variables[attribName] = `[[ extract('//TODO') ]]`;
