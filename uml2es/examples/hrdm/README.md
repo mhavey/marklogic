@@ -114,7 +114,7 @@ We now tweak the content modules of the generation harmonization. We cooked thos
 
 To promote your DM tweaks, run the following:
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -Ppath=data/tweaks uLoadDMTemplate
+gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -PdmPath=data/tweaks uLoadDMTemplate
 
 To promote you harmonization tweak, run the following:
 
