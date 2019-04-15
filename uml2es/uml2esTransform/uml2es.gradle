@@ -615,7 +615,7 @@ task uLoadDMTemplate(type: com.marklogic.gradle.task.MlcpTask) {
 
   def srcDir = new File("${projectDir}").getAbsolutePath()
   def unixDir = srcDir.replace('\\', '/') + "/"  + project.findProperty("dmPath")
-  def regex = '"' + unixDir + ",'',/,''" + '"'
+  def regex = '"' + unixDir + ",''" + '"'
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
@@ -627,7 +627,7 @@ task uLoadDMTemplate(type: com.marklogic.gradle.task.MlcpTask) {
   def pathDir = unixDir  + "/dm/mapper"
   def dmModelName = null
   def pathFiles = file(pathDir).list()
-  if (pathFiles != null || pathFiles.size() == 1) {
+  if (pathFiles != null && pathFiles.size() == 1) {
     dmModelName = pathFiles[0];
   }
   enabled = project.findProperty("dmPath") != null && dmModelName != null
