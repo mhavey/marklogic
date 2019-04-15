@@ -124,7 +124,7 @@ gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -Ppath=data/tweaks uLoadD
 
 To promote you harmonization tweak, run the following:
 
-gradle -b -PenvironmentName=local -i tweakHarmonization mlReloadModules
+gradle -PenvironmentName=local -i tweakHarmonization mlReloadModules
 
 Confirm:
 - The code in plugins/entities/Employee/harmonization has the tweaks.
