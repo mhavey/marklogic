@@ -4,13 +4,13 @@
 
 This is a MarkLogic-internal example that shows harmonization using Declarative Mapper rather than Entity Services.
 
-In this example, we use the model from the [Employee Cradle To Grave tutorial](../tutorials/employeeCradleToGrave.md). Here is the main model, showing Employee and Department classes.
+In this example, we use the model from the [Employee Cradle To Grave tutorial](../../tutorials/employeeCradleToGrave.md). Here is the main model, showing Employee and Department classes.
 
-![DHFEmployeeSample](../tutorials/images/emp_setup37.png)
+![DHFEmployeeSample](../../tutorials/images/emp_setup37.png)
 
 Here are the definitions for the common classes: Address, Phone, Email:
 
-![DHFEmployeeSample](../tutorials/images/emp_setup20.png)
+![DHFEmployeeSample](../../tutorials/images/emp_setup20.png)
 
 Using UML2ES, we generate a DHF harmonization process that uses a Declarative Mapper template to map employee source data to the Employee class form in the UML model. 
 
