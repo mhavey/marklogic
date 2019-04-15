@@ -607,6 +607,61 @@ task uCreateConversionModule() {
   tasks.findByName('_cPromoteCutConversionModule').mustRunAfter '_cFetchCutConversionModule'
 }
 
+/*
+uLoadDMTemplate : Loads DM template into FINAL DB.  You would have obtained the local copy from 
+uCreateDHFHarmonizationFlow or uCreateConversionModule with contentMode=dm. Having made your tweaks to that template,
+you now ingest it back to MarkLogic. This task ensures the template has the right URI and collections.
+
+Example:
+  /dm/mapper/EmployeeHubModel/Employee/harmonizeGlobalDM.json
+  dm, cookieCutter, http://marklogic.com/entity-services/models, EmployeeHubModel
+
+Input: 
+- dmPath - mandatory
+Dependencies: 
+- dmPth contains file dm/mapper/<ModelName>/<EntityName>/<harmonizationName>.json
+- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
+- Standard DHF environment properties: mlHost, mlFinalPort
+Effects:
+- Target database has your template
+*/
+task uLoadDMTemplate(type: com.marklogic.gradle.task.MlcpTask) {
+
+
+  def srcDir = new File("${projectDir}").getAbsolutePath()
+  def unixDir = srcDir.replace('\\', '/') + "/"  + project.findProperty("dmPath")
+  def regex = '"' + unixDir + ",'',/,''" + '"'
+
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
+  def myPort = project.findProperty("mlAppServicesPort")
+  if (myPort == null) myPort = project.findProperty("mlRestPort")
+  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+
+  // check the pathness and extract the modelName
+  def pathDir = unixDir  + "/dm/mapper"
+  def dmModelName = null
+  def pathFiles = file(pathDir).list()
+  if (pathFiles != null || pathFiles.size() == 1) {
+    dmModelName = pathFiles[0];
+  }
+  enabled = project.findProperty("dmPath") != null && dmModelName != null
+
+  def collections = "dm,cookieCutter,http://marklogic.com/entity-services/models," + dmModelName
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  document_type = "json"
+  input_file_path = unixDir + "/dm/mapper/*/*/*.json"
+  input_file_type = "documents"
+  output_uri_replace = regex
+  output_uri_prefix = ""
+  output_permissions = "rest-reader,read,rest-writer,update"
+  output_collections = collections
+  host = myHost
+  port = myPort.toInteger()
+}
+
 //Edit this to enable/disable code generation of mlGenerateModelArtifacts
 ext {   
   def mdb = project.findProperty("mlFinalDbName")
