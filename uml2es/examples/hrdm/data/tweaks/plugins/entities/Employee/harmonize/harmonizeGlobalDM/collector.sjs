@@ -7,7 +7,7 @@
  */
 function collect(options) {
   // by default we return the URIs in the same collection as the Entity name
-  return cts.uris(null, null, cts.collectionQuery(options.entity));
+  return cts.uris(null, null, cts.directoryQuery("/hr/employee/global/"));
 }
 
 module.exports = {

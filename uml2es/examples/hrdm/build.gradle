@@ -152,7 +152,7 @@ task setup() {
   dependsOn('includeUGradle')
 }
 
-task tweakDMHarmonization(type: Copy) {
-  from "data/tweaks/Employee/harmonize/harmonizeESGlobal/collector.sjs"
-  into "plugins/entities/Employee/harmonize/harmonizeDMGlobal"
+task tweakHarmonization(type: Copy) {
+  from "data/tweaks/plugins/entities/Employee/harmonize/harmonizeGlobalDM/"
+  into "plugins/entities/Employee/harmonize/harmonizeGlobalDM"
 }

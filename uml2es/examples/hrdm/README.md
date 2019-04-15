@@ -113,12 +113,22 @@ Confirm:
 
 ### Tweak the Harmonization Flow
 
-We now tweak the content modules of the generation harmonization. We cooked those beforehand. Let's overwrite the generated code and deploy the changes. (These steps are automated through gradle, but we recommend you open the generated and tweaked code in your favorite diff tool and eyeball the differences.)
+We now tweak the content modules of the generation harmonization. We cooked those beforehand. They are in data/tweaks. We have two tweaks:
 
-gradle -PenvironmentName=local -i tweakHarmonization mlReloadModules
+- Changed collector.sjs for the harmonization flow. See under data/tweaks/plugins/entities.
+- Changed the DM template. See under data/tweaks/dm.
+
+To promote your DM tweaks, run the following:
+
+gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -Ppath=data/tweaks uLoadDMTemplate
+
+To promote you harmonization tweak, run the following:
+
+gradle -b -PenvironmentName=local -i tweakHarmonization mlReloadModules
 
 Confirm:
-- The code in plugins/entities/Department/harmonization and plugins/entities/Employee/harmonization has the tweaks.
+- The code in plugins/entities/Employee/harmonization has the tweaks.
+- Your DM changes are in the xmi2es-examples-hrdm-FINAL database at URI	/dm/mapper/EmployeeHubModel/Employee/harmonizeGlobalDM.json. 
 
 ### Harmonize
 Run harmonization to move employee and department data to FINAL.
