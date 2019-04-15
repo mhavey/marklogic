@@ -504,8 +504,9 @@ function walkModelForDM(dmTemplate, input, entityName, visited) {
   }
 
   // variable at level zero only
+  var topLevel = visited.length == 0;
   var attributes = orderAttributes(getAttributes(input.modelIRI, entityName));
-  if (visited.length == 0) {
+  if (topLevel == true) {
 	for (var i = 0; i < attributes.length; i++) {
 		if (attributes[i].attributeIsCalculated == true) {
 			defineVarsForDM(dmTemplate, input, attributes, attributes[i]);
@@ -515,6 +516,7 @@ function walkModelForDM(dmTemplate, input, entityName, visited) {
 
   // Process each attribute in the entity
   var entityContents = {};
+
   visited.push(entityName);
   for (var i = 0; i < attributes.length; i++) { 
   	if (attributes[i].attributeIsExcluded == true) continue;
@@ -525,7 +527,7 @@ function walkModelForDM(dmTemplate, input, entityName, visited) {
 			describeAttrib(input, entityName, attributeName, "norender");    	
     }
 
-  	if (visited.length == 0 && dmTemplate.outputs.main.variables(attributeName)) {
+  	if (topLevel == true && dmTemplate.outputs.main.variables[attributeName]) {
 	    // special case -this attribute has already been declared as a variable
   		entityContents[attributeName] = `[[ $${attributeName} ]]`;
   	}
@@ -576,11 +578,13 @@ function defineVarsForDM(dmTemplate, input, attributes, attribute) {
 				throw "Programming error: deps for *" + attribute.attributeName + "* on dep *" + depAttributeName + "*";
 			}
 			depContentMode = depAttrib.attributeIsExcluded ? "options" : "content"
-			deps += ` , '${depAttribName}', '@{depAttribName}', '${depContentMode}' `;
+			deps += ` , '${depAttribName}', '@${depAttribName}', '${depContentMode}' `;
 			defineVarsForDM(dmTemplate, input, attributes, depAttrib);
 		}
 		dmTemplate.outputs.main.variables[attribName] = `xcalc('${modelName}', '${entityName}', '${attribName}', '${contentMode}' ${deps})`;
-		dmTemplate.outputs.main.content[1][attribName] = `[[ $${attribName} ]]`; // for options
+		if (contentMode == "options") {
+			dmTemplate.outputs.main.content[1][attribName] = `[[ $${attribName} ]]`; // for options
+		}
 	}
 	else {
 		dmTemplate.outputs.main.variables[attribName] = `[[ extract('//TODO') ]]`;

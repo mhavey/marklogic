@@ -128,10 +128,10 @@ task includeUGradle(type: Copy) {
 }
 
 task includeModel(type: Copy) {
-    def xmiDir = new File("${projectDir}").getParentFile().getParentFile().getAbsolutePath() + "/tutorials/employeeHubLab/step2/EmployeeHubModel"
-    from xmiDir + "/EmployeeHubModel.uml"
+    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
+    from xmiDir + "/DHFEmployeeSample.xml"
     into "data/model"
-    rename '(.*).uml', '$1.xml'
+    filter { it.replaceAll('&quot;.xml&quot;', '&quot;.json&quot;')}
 }
 
 task includeMapping(type: Copy) {

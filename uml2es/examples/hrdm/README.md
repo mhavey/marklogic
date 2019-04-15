@@ -4,17 +4,11 @@
 
 This is a MarkLogic-internal example that shows harmonization using Declarative Mapper rather than Entity Services.
 
-In this example, we use the model from the [Employee Cradle To Grave tutorial](../../tutorials/employeeCradleToGrave.md). Here is the main model, showing Employee and Department classes.
+In this example, we use the model from the [../hr](../hr) example:
 
-![DHFEmployeeSample](../../tutorials/images/emp_setup37.png)
-
-Here are the definitions for the common classes: Address, Phone, Email:
-
-![DHFEmployeeSample](../../tutorials/images/emp_setup20.png)
+![DHFEmployeeSample](../umlModels/DHFEmployeeSample.png)
 
 Using UML2ES, we generate a DHF harmonization process that uses a Declarative Mapper template to map employee source data to the Employee class form in the UML model. 
-
-This example is also very similar to [../hr](../hr). Review that example with focus on its ES-based harmonization. Compare the ES- and DM-harmonization approaches.
 
 ## How to run:
 
@@ -37,7 +31,7 @@ Confirm:
 - You have new databases, including xmi2es-examples-hr-FINAL and xmi2es-examples-hr-STAGING.
 - You have new app servers, including xmi2es-examples-hrdm-FINAL
 - You have local file data/mapping/global-mapping.xlsx
-- You have local file data/model/EmployeeHubModel.xml
+- You have local file data/model/DHFEmployeeSample.xml (slightly modified to calculate URI as .json rather than .xml)
 - You have the local directory data/hr
 - You have local file uml2es4dhf.gradle
 - Your xmi2es-examples-hr-MODULES database includes the following modules:
@@ -48,17 +42,17 @@ Confirm:
 
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -PmodelName=EmployeeHubModel uDeployModel 
+gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -PmodelName=DHFEmployeeSample uDeployModel 
 
 Confirm:
 - Final DB (xmi2es-examples-hrdm-FINAL) includes the following documents
-  * /marklogic.com/entity-services/models/EmployeeHubModel.json (The deployed ES model)
+  * /marklogic.com/entity-services/models/DHFEmployeeSample.json (The deployed ES model)
   * /xmi2es/findings/DHFEmployeeSample.xml (Problems found during transformation. Check it. Confirm no issues.)
 
 ### Create DHF Entities From the HR Model
 Now we create our DHF entity plugins. We leverage's the toolkit's ability to cut/generate code. First, ask the toolkit to create the basic plugins (without any flows). It will infer which classes in the model should be plugins. 
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFEntities -PmodelName=EmployeeHubModel -PentitySelect=infer 
+gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
 
 Confirm:
 - In gradle project there are new folders 
@@ -104,7 +98,7 @@ Confirm:
 ### Create Harmonization Flows
 We now have UML2ES create a DM-based mapping:
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=EmployeeHubModel -PflowName=harmonizeGlobalDM -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json
+gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeGlobalDM -PentityName=Employee -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json
 
 Confirm:
 - Local copy of harmonization is in gradle folder at data/cookieCutter-dump/cookieCutter
@@ -128,7 +122,7 @@ gradle -PenvironmentName=local -i tweakHarmonization mlReloadModules
 
 Confirm:
 - The code in plugins/entities/Employee/harmonization has the tweaks.
-- Your DM changes are in the xmi2es-examples-hrdm-FINAL database at URI	/dm/mapper/EmployeeHubModel/Employee/harmonizeGlobalDM.json. 
+- Your DM changes are in the xmi2es-examples-hrdm-FINAL database at URI	/dm/mapper/DHFEmployeeSample/Employee/harmonizeGlobalDM.json. 
 
 ### Harmonize
 Run harmonization to move employee and department data to FINAL.
