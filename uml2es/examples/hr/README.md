@@ -242,8 +242,5 @@ Confirm:
   * In sampleHarmonizeDHF, triples.xqy and headers.xqy is boilerplate code. In harmonizeESGlobal, these modules use stereotypes from the model to determine how to produce the headers and triples sections of the envelope. They call previously-generated functions xesgen:setHeaders_Employee and xesgen:setTriples_Employee respectively. 
   * In sampleHarmonizeDHF content.xqy constructs, on a field-by-field basis, content that conforms to the ES model. HarmonizeESGlobal does this too, but it also embeds in the comments helpful information from the model itself (e.g., stereotypes), from the mapping spec produced by the source system SME, and from the data discovery process. Additionally, HarmonizeESGlobal populates calculated attributes. For example, the call xesgen:doCalculation_Employee_empLabel sets the value of the employee label. This value doesn't appear in the envelope instance, but it is needed for headers and triples generation.
 
-### Extra Credit: UML2ES, Declarative Mapper, and Harmonization (MarkLogic Internal)
-As discussed in [dm.md](dm.md).
-
 ## Explore the Data
 In Query Console, import the workspace XMI2ESHR.xml. In each tab, try the query to explore an aspect of the data.

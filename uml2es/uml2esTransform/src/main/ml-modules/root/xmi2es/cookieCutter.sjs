@@ -486,12 +486,7 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 			}
 		}
 	};
-	parseEntityForDM(dmTemplate, input, input.entityName, 0);
-	//dmTemplate.content.push(entityParts.template);
-	//dmTemplate.description = entityParts.description;
-	//dmTemplate.variables = entityParts.variables;
-    //dmTemplate.outputs.main = entityParts.template;
-
+	dmTemplate.outputs.main.content[0] = walkModelForDM(dmTemplate, input, input.entityName, []);
 	writeFile(templateFolder, templateName, dmTemplate, false, input.modelName, "dm");
 
 	// we return module
@@ -499,13 +494,18 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 	return tpl;
 }
 
-function parseEntityForDM(dmTemplate, input, entityName, level) {
-  var entityDesc = describeClass(input, entityName, "norender");
-  dmTemplate.description[entityName] = {description: entityDesc};
+function walkModelForDM(dmTemplate, input, entityName, visited) {
+  var describing = false;
+  if (!dmTemplate.description[entityName]) {
+  	  describing = true;
+	  var entityDesc = describeClass(input, entityName, "norender");
+	  dmTemplate.description[entityName] = {description: entityDesc};
+	  dmTemplate.description[entityName].attributes = {};  	
+  }
 
   // variable at level zero only
   var attributes = orderAttributes(getAttributes(input.modelIRI, entityName));
-  if (level == 0) {
+  if (visited.length == 0) {
 	for (var i = 0; i < attributes.length; i++) {
 		if (attributes[i].attributeIsCalculated == true) {
 			defineVarsForDM(dmTemplate, input, attributes, attributes[i]);
@@ -513,67 +513,41 @@ function parseEntityForDM(dmTemplate, input, entityName, level) {
 	}
   }
 
-  // TODO - for attribs that have variables, just map them to the variable value!
-
-  //parts.description[entityName].attributes = {};
   // Process each attribute in the entity
-  /*
-  for (var i = 0; i < attributes.length; i++) {
-    
+  var entityContents = {};
+  visited.push(entityName);
+  for (var i = 0; i < attributes.length; i++) { 
+  	if (attributes[i].attributeIsExcluded == true) continue;
+
     var attributeName = attributes[i].attributeName;
-	var attributeType = attributes[i].attributeType;
-	var attributeIsRequired = attributes[i].attributeIsRequired;
-	var attributeIsArray = attributes[i].attributeIsArray;
-	var AttribDesc = describeAttrib(input, entityName, attributeName);
-    var DescText = render(AttribDesc);
-    //parts.description[entityName].attributes[attributeName] = {};
-    //parts.description[entityName].attributes[attributeName].description = [];
-    //parts.description[entityName].attributes[attributeName].description.push(AttribDesc);
-	    
-    if (attributes[i].attributeIsCalculated == true) {}
-	else if (attributes[i].attributeIsExcluded == true) {}
-	else if (attributes[i].attributeIsSimpleType == true) {
-	  var source = attributeName;
-	  if(AttribDesc.MappingFacts != null) {
-	    source = AttribDesc.MappingFacts[0].SourceMapping;
-	  }
-  	  parts.template[attributeName] = "[[extract('//" + source + "')]]";
-  	  */
-      /***
-       * Code from cutContentES: ret["${attributeName}"] = "TODO"; // type: ${attributeType}, req'd: ${attributeIsRequired}, array: ${attributeIsArray}
-       */
-       /*
-	}							
-	else {
-      if (attributeIsArray == true) {
-	    parts.template[attributeName] = [];
-	    var subEntity = parseEntityForDM(input, attributeType, level + 1);
-	    parts.template[attributeName].push("%%[[extract('//" + source + "', true)]]");
-	    parts.template[attributeName].push(subEntity.template);
-	    //parts.description[entityName].attributes[attributeType] = {};
-	    //parts.description[entityName].attributes[attributeType].description = subEntity.description;
-	    */
-        /***
-         *	while (1 == 1) {
-      	 *	  ret["${attributeName}"].push(buildContent_${entity2}(id,source,options,ioptions));
-      	 *  }
-      	 */
-      	 /*
- 	  }
-	  else {
-	    var subEntity = parseEntityForDM(input, attributeName, level + 1);
-        parts.template[attributeName] = subEntity.template;
-        //parts.description[entityName].attributes[attributeName].description.push(subEntity.description);
-        */
-		/***
-		 * ret["${attributeName}"] = buildESEntity_${entity2}(id,source,options);
-	     */
-	  //}
-    //}
-    
-  //};
-  
-//  return parts;	  
+    if (describing == true) {
+		dmTemplate.description[entityName].attributes[attributeName] = 
+			describeAttrib(input, entityName, attributeName, "norender");    	
+    }
+
+  	if (visited.length == 0 && dmTemplate.outputs.main.variables(attributeName)) {
+	    // special case -this attribute has already been declared as a variable
+  		entityContents[attributeName] = `[[ $${attributeName} ]]`;
+  	}
+  	else {
+  		if (attributes[i].attributeIsSimpleType == true) {
+	  		entityContents[attributeName] = `[[ extract('//TODO') ]]`;
+  		}
+  		else {
+  			var entity2 = attributes[i].attributeType;
+  			if (visited.indexOf(entity2) >= 0) continue;
+  			var childContents = walkModelForDM(dmTemplate, input, entity2, visited);
+  			// the type is that of another entity - either just one or an array
+			if (attributes[i].attributeIsArray == true) {
+		  		entityContents[attributeName] = [`%%[[ extract('//LOOPCOUNTER') ]]`, childContents];
+			}  	
+			else {
+		  		entityContents[attributeName] = childContents;
+			}	
+  		}
+  	}
+  }
+  return entityContents;
 }
 
 /*

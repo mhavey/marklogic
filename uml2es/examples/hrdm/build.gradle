@@ -68,7 +68,7 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "xml"
+  document_type = "json"
   input_file_path =  "data/hr/GlobalCorp/employee/EmployeeTable.csv"
   input_file_type ="delimited_text" 
 
@@ -76,11 +76,11 @@ task loadGlobalEmployee(type: com.marklogic.gradle.task.MlcpTask) {
   output_permissions= "rest-reader,read,rest-writer,update" 
   output_uri_replace=regex
   output_uri_prefix = "/hr/employee/global/"
-  output_uri_suffix = ".xml"
+  output_uri_suffix = ".json"
 
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
-  transform_param "entity-name=Employee,flow-name=LoadEmployee"	
+  transform_param "entity-name=Employee,flow-name=LoadEmployee" 
 }
 
 task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
@@ -97,7 +97,7 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   port = mlStagingPort.toInteger()
   database = mlStagingDbName
 
-  document_type = "xml"
+  document_type = "json"
   input_file_path =  "data/hr/GlobalCorp/employee/SalaryTable.csv"
   input_file_type ="delimited_text" 
 
@@ -105,85 +105,16 @@ task loadGlobalSalary(type: com.marklogic.gradle.task.MlcpTask) {
   output_permissions= "rest-reader,read,rest-writer,update" 
   output_uri_replace=regex
   output_uri_prefix = "/hr/salary/global/"
-  output_uri_suffix = ".xml"
+  output_uri_suffix = ".json"
 
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
   transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
-  transform_param "entity-name=Employee,flow-name=LoadEmployee"	
-}
-
-task loadGlobalDepartment(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/hr/GlobalCorp/department";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  host = mlHost
-  port = mlStagingPort.toInteger()
-  database = mlStagingDbName
-
-  document_type = "xml"
-  input_file_path =  "data/hr/GlobalCorp/department"
-  input_file_type ="delimited_text" 
-
-  output_collections= "Department,LoadDepartment,input" 
-  output_permissions= "rest-reader,read,rest-writer,update" 
-  output_uri_replace=regex
-  output_uri_prefix = "/hr/department/global/"
-  output_uri_suffix = ".xml"
-
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
-  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
-  transform_param "entity-name=Department,flow-name=LoadDepartment"	
-}
-
-task loadAcme(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/hr/AcmeTech";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  host = mlHost
-  port = mlStagingPort.toInteger()
-  database = mlStagingDbName
-
-  document_type = "json"
-  input_file_path =  "data/hr/AcmeTech" 
-  input_file_type = "documents" 
-
-  output_collections "Employee,LoadEmployee,input" 
-  output_permissions "rest-reader,read,rest-writer,update" 
-  output_uri_replace = regex 
-  output_uri_prefix = "/hr/employee/acme/"
-
-  transform_module="/data-hub/4/transforms/mlcp-flow-transform.xqy" 
-  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
-  transform_param "entity-name=Employee,flow-name=LoadEmployee"	
-}
-
-task loadSummaryOrgTriples(type: com.marklogic.gradle.task.MlcpTask) {
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-  database = mlFinalDbName
-
-  document_type = "json"
-  input_file_path =  "data/triples/global-org.ttl" 
-  input_file_type = "rdf" 
-  output_uri_prefix = "/triplestore"
-  output_graph = "http://www.w3.org/ns/org"
+  transform_param "entity-name=Employee,flow-name=LoadEmployee" 
 }
 
 task runInputMLCP() {
-  dependsOn 'loadAcme'
   dependsOn 'loadGlobalEmployee'
   dependsOn 'loadGlobalSalary'
-  dependsOn 'loadGlobalDepartment'
 }
 
 task includeXMI2ESTransform(type: Copy) {
@@ -197,14 +128,23 @@ task includeUGradle(type: Copy) {
 }
 
 task includeModel(type: Copy) {
-    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
-    from xmiDir + "/DHFEmployeeSample.xml"
+    def xmiDir = new File("${projectDir}").getParentFile().getParentFile().getAbsolutePath() + "/tutorials/employeeHubLab/step2/EmployeeHubModel"
+    from xmiDir + "/EmployeeHubModel.uml"
     into "data/model"
+    rename '(.*).uml', '$1.xml'
+}
+
+task includeMapping(type: Copy) {
+    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/data/mapping"
+    from xmiDir + "/EmployeeHubModel.uml"
+    into "data/model"
+    rename '(.*).uml', '$1.xml'
 }
 
 task setup() {
   dependsOn('includeXMI2ESTransform')
   dependsOn('includeModel')
+  dependsOn('includeMapping')
   dependsOn('includeUGradle')
 }
 
@@ -213,3 +153,7 @@ task tweakHarmonization(type: Copy) {
   into "plugins/entities"
 }
 
+task tweakDMHarmonization(type: Copy) {
+  from "data/tweaks/Employee/harmonize/harmonizeESGlobal/collector.sjs"
+  into "plugins/entities/Employee/harmonize/harmonizeDMGlobal"
+}
