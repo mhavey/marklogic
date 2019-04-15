@@ -135,22 +135,21 @@ task includeModel(type: Copy) {
 }
 
 task includeMapping(type: Copy) {
-    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/data/mapping"
-    from xmiDir + "/EmployeeHubModel.uml"
-    into "data/model"
-    rename '(.*).uml', '$1.xml'
+    from new File("${projectDir}").getParentFile().getAbsolutePath() + "/hr/data/mapping/global-mapping.xlsx"
+    into "data/mapping"
+}
+
+task includeSourceData(type: Copy) {
+    from new File("${projectDir}").getParentFile().getAbsolutePath() + "/hr/data/hr"
+    into "data/hr"
 }
 
 task setup() {
   dependsOn('includeXMI2ESTransform')
   dependsOn('includeModel')
   dependsOn('includeMapping')
+  dependsOn('includeSourceData')
   dependsOn('includeUGradle')
-}
-
-task tweakHarmonization(type: Copy) {
-  from "data/tweaks"
-  into "plugins/entities"
 }
 
 task tweakDMHarmonization(type: Copy) {
