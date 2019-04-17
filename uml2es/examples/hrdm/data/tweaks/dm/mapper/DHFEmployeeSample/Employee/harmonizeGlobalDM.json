@@ -519,20 +519,18 @@
 	"input" : {
 		"format" : "json"
 	},
+	"variables" : {
+		"firstName" : "extract('//first_name')",
+		"lastName" : "extract('//last_name')",
+		"employeeName" : "xcalc('DHFEmployeeSample', 'Employee', 'employeeName', 'options'  , 'firstName', $firstName, 'content'  , 'lastName', $lastName, 'content' )",
+		"empLabel" : "xcalc('DHFEmployeeSample', 'Employee', 'empLabel', 'options'  , 'employeeName', $employeeName, 'options' )",
+		"employeeId" : "extract('//employeeRecord//emp_id')",
+		"empIRI" : "xcalc('DHFEmployeeSample', 'Employee', 'empIRI', 'options'  , 'employeeId', $employeeId, 'content' )",
+		"uri" : "xcalc('DHFEmployeeSample', 'Employee', 'uri', 'options'  , 'employeeId', $employeeId, 'content' )"
+	},
 	"outputs" : {
 		"main" : {
 			"format" : "json",
-			"variables" : {
-				TODO - lookup from salary table...
-
-				"lastName" : "[[ extract('//TODO') ]]",
-				"firstName" : "[[ extract('//TODO') ]]",
-				"employeeName" : "xcalc('DHFEmployeeSample', 'Employee', 'employeeName', 'options'  , 'lastName', '@lastName', 'content'  , 'firstName', '@firstName', 'content' )",
-				"empLabel" : "xcalc('DHFEmployeeSample', 'Employee', 'empLabel', 'options'  , 'employeeName', '@employeeName', 'options' )",
-				"employeeId" : "[[ extract('//TODO') ]]",
-				"empIRI" : "xcalc('DHFEmployeeSample', 'Employee', 'empIRI', 'options'  , 'employeeId', '@employeeId', 'content' )",
-				"uri" : "xcalc('DHFEmployeeSample', 'Employee', 'uri', 'options'  , 'employeeId', '@employeeId', 'content' )"
-			},
 			"content" : [ {
 				"addresses" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
 					"addressType" : "[[ extract('//TODO') ]]",
@@ -547,18 +545,18 @@
 					"zip" : "[[ extract('//TODO') ]]"
 				} ],
 				"firstName" : "[[ $firstName ]]",
-				"bonus" : "[[ extract('//TODO') ]]",
-				"dateOfBirth" : "[[ extract('//TODO') ]]",
-				"effectiveDate" : "[[ extract('//TODO') ]]",
+				"bonus" : "[[ extract('//bonus') ]]",
+				"dateOfBirth" : "[[ extract('//dob') ]]",
+				"effectiveDate" : "[[ extract('//job_effective_date') ]]",
 				"emails" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
 					"emailAddress" : "[[ extract('//TODO') ]]",
 					"emailType" : "[[ extract('//TODO') ]]"
 				} ],
-				"title" : "[[ extract('//TODO') ]]",
-				"status" : "[[ extract('//TODO') ]]",
+				"title" : "[[ extract('//job_title') ]]",
+				"status" : "[[ extract('//status') ]]",
 				"employeeId" : "[[ $employeeId ]]",
-				"baseSalary" : "[[ extract('//TODO') ]]",
-				"hireDate" : "[[ extract('//TODO') ]]",
+				"baseSalary" : "[[ extract('//base_salary') ]]",
+				"hireDate" : "[[ extract('//hire_date') ]]",
 				"lastName" : "[[ $lastName ]]",
 				"phones" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
 					"phoneNumber" : "[[ extract('//TODO') ]]",

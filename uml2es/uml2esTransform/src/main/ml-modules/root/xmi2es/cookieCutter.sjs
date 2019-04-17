@@ -466,22 +466,81 @@ function buildContent_${EntityX}(id, source, options, ioptions) {
 	var mapper = getDMMapper(options);
 	var mapping = mapper(source);
 	var doptions = mapping[1];
-	for (dopt in doptions) {
+	for (var dopt in doptions) {
 		ioptions[dopt] = doptions[dopt];
 	}
 	return mapping[0];
 }
-`; 
+`;
+
+/*
+This code snippet works. Aiming to build something like this:
+
+'use strict';
+
+const dm = require('/ext/declarative-mapper.sjs');
+
+var template = {
+  input: {"format": "json"}, 
+  variables: {
+      v1: "extract('//firstName')",
+      v2: "concat($v1, '-andmore')",
+      v3: "'hi'"
+  },
+  outputs: {
+    main: {
+      format: "json",
+      content: [
+        {
+          goodness: "[[$v2]]",
+          name: "[[concat(extract('/firstName'), extract('//lastName'))]]" ,
+          andSome: {
+            hail: "[[extract('//more/grace')]]"
+          },
+          xfirstName: "hi" ,
+          a: "[[extract('//firstName') => upperCase()]]",
+          tongs : [ "%%[[ extract('//things', true) ]]", {
+					  athing : "[[ extract('a') ]]"
+          }]
+        },
+        {
+          someName: "[[extract('//lastName')]]"        
+        }
+      ]
+    }
+  },
+  //description: {"a": "1"},
+};
+
+var dmContext = dm.newCompilerContext(template);
+dmContext.flags.trace = true;
+var dmTransformer = dm.prepare(dmContext);
+
+//[
+  dmTransformer({
+    "firstName": "mike", 
+    "lastName": "havey", 
+    more: {luck : 1, grace: 2}, 
+    things: [ {a: 1}, {a: 2}]
+  })
+                 //,
+//  dmContext
+//]
+
+*/
+
+
 
 	var dmTemplate = { 
 		description: describeModel(input, "norender"),
 		modules: { "functionLibraries": ["/xmi2es/dm.sjs"] },
 		input: { 
 			format: "json" 
-		}, outputs: {
+		}, 
+		variables: {},
+		outputs: {
 			main: {
 				format: "json",
-				variables: {},
 				content: [{}, {}]
 			}
 		}
@@ -527,7 +586,7 @@ function walkModelForDM(dmTemplate, input, entityName, visited) {
 			describeAttrib(input, entityName, attributeName, "norender");    	
     }
 
-  	if (topLevel == true && dmTemplate.outputs.main.variables[attributeName]) {
+  	if (topLevel == true && dmTemplate.variables[attributeName]) {
 	    // special case -this attribute has already been declared as a variable
   		entityContents[attributeName] = `[[ $${attributeName} ]]`;
   	}
@@ -578,16 +637,16 @@ function defineVarsForDM(dmTemplate, input, attributes, attribute) {
 				throw "Programming error: deps for *" + attribute.attributeName + "* on dep *" + depAttributeName + "*";
 			}
 			depContentMode = depAttrib.attributeIsExcluded ? "options" : "content"
-			deps += ` , '${depAttribName}', '@${depAttribName}', '${depContentMode}' `;
+			deps += ` , '${depAttribName}', $${depAttribName}, '${depContentMode}' `;
 			defineVarsForDM(dmTemplate, input, attributes, depAttrib);
 		}
-		dmTemplate.outputs.main.variables[attribName] = `xcalc('${modelName}', '${entityName}', '${attribName}', '${contentMode}' ${deps})`;
+		dmTemplate.variables[attribName] = `xcalc('${modelName}', '${entityName}', '${attribName}', '${contentMode}' ${deps})`;
 		if (contentMode == "options") {
 			dmTemplate.outputs.main.content[1][attribName] = `[[ $${attribName} ]]`; // for options
 		}
 	}
 	else {
-		dmTemplate.outputs.main.variables[attribName] = `[[ extract('//TODO') ]]`;
+		dmTemplate.variables[attribName] = `extract('//TODO')`;
 	}
 }
 

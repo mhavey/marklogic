@@ -1,6 +1,7 @@
-function xcalc(extractorDontCare, dsl, contextDontCare) {
+function xcalc(...dsl) {
   if (dsl.length < 4 || ((dsl.length -4) % 3) != 0) {
-    throw "xcalc model entity attrib content|options (depAttrib depValue content|options)+";
+    throw "Expected xcalc model entity attrib content|options (depAttrib depValue content|options)* but got " 
+      + JSON.stringify(dsl);
   }
   var model = dsl[0];
   var entity = dsl[1];
@@ -23,9 +24,10 @@ function xcalc(extractorDontCare, dsl, contextDontCare) {
         throw "Illegal option *" + depContentOptions;
     }
   }
-
-  var xlib = require("/modelgen/" + model + "/lib.sjs");
-  xdmp.eval(`xlib.doCalculation_${entity}_${attrib}('dontcare', content, options)`, {content:content, options:options}, {});
+  
+  xdmp.eval(`
+    var xlib = require("/modelgen/${model}/lib.sjs");
+    xlib.doCalculation_${entity}_${attrib}('dontcare', content, options)`, {content:content, options:options}, {});
   switch(contentOptions) {
     case "content":
       return content[attrib];
@@ -35,3 +37,9 @@ function xcalc(extractorDontCare, dsl, contextDontCare) {
         throw "Illegal option *" + depContentOptions;
   }
 }
+
+function registerFunctions(registrationFn, compilerContext, defaultFnMeta) {
+    registrationFn(xcalc, defaultFnMeta);
+}
+
+exports.registerFunctions = registerFunctions;
