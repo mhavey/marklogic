@@ -520,11 +520,11 @@
 		"format" : "json"
 	},
 	"variables" : {
-		"firstName" : "extract('//first_name')",
-		"lastName" : "extract('//last_name')",
+		"firstName" : "extract('//TODO')",
+		"lastName" : "extract('//TODO')",
 		"employeeName" : "xcalc('DHFEmployeeSample', 'Employee', 'employeeName', 'options'  , 'firstName', $firstName, 'content'  , 'lastName', $lastName, 'content' )",
 		"empLabel" : "xcalc('DHFEmployeeSample', 'Employee', 'empLabel', 'options'  , 'employeeName', $employeeName, 'options' )",
-		"employeeId" : "extract('//employeeRecord//emp_id')",
+		"employeeId" : "extract('//TODO')",
 		"empIRI" : "xcalc('DHFEmployeeSample', 'Employee', 'empIRI', 'options'  , 'employeeId', $employeeId, 'content' )",
 		"uri" : "xcalc('DHFEmployeeSample', 'Employee', 'uri', 'options'  , 'employeeId', $employeeId, 'content' )"
 	},
@@ -545,18 +545,18 @@
 					"zip" : "[[ extract('//TODO') ]]"
 				} ],
 				"firstName" : "[[ $firstName ]]",
-				"bonus" : "[[ extract('//bonus') ]]",
-				"dateOfBirth" : "[[ extract('//dob') ]]",
-				"effectiveDate" : "[[ extract('//job_effective_date') ]]",
+				"bonus" : "[[ extract('//TODO') ]]",
+				"dateOfBirth" : "[[ extract('//TODO') ]]",
+				"effectiveDate" : "[[ extract('//TODO') ]]",
 				"emails" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
 					"emailAddress" : "[[ extract('//TODO') ]]",
 					"emailType" : "[[ extract('//TODO') ]]"
 				} ],
-				"title" : "[[ extract('//job_title') ]]",
-				"status" : "[[ extract('//status') ]]",
+				"title" : "[[ extract('//TODO') ]]",
+				"status" : "[[ extract('//TODO') ]]",
 				"employeeId" : "[[ $employeeId ]]",
-				"baseSalary" : "[[ extract('//base_salary') ]]",
-				"hireDate" : "[[ extract('//hire_date') ]]",
+				"baseSalary" : "[[ extract('//TODO') ]]",
+				"hireDate" : "[[ extract('//TODO') ]]",
 				"lastName" : "[[ $lastName ]]",
 				"phones" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
 					"phoneNumber" : "[[ extract('//TODO') ]]",
@@ -566,10 +566,7 @@
 				"employeeName" : "[[ $employeeName ]]",
 				"empLabel" : "[[ $empLabel ]]",
 				"empIRI" : "[[ $empIRI ]]",
-				"uri" : "[[ $uri ]]",
-
-				"reportsTo": "http://www.w3.org/ns/org#e[[extract('//reports_to')]]",
-				"memberOf": "http://www.w3.org/ns/org#d[[extract('//dept_num')]]"
+				"uri" : "[[ $uri ]]"
 			} ]
 		}
 	}

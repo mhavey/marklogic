@@ -57,8 +57,6 @@ function buildContent_Employee(id, source, options, ioptions) {
 	var mapper = getDMMapper(options);
 
   var salaryURI = fn.replace(id, "/employee/", "/salary/");
-  xdmp.log("SALARY RECORD FOR *" + id +  "* is *" + salaryURI + "*");
-
   var globalSource = {
     employeeRecord: source,
     salaryRecord: cts.doc(salaryURI).toObject()
@@ -69,6 +67,7 @@ function buildContent_Employee(id, source, options, ioptions) {
 	for (var dopt in doptions) {
 		ioptions[dopt] = doptions[dopt];
 	}
+  xdmp.log("Options for " + id + " are " + JSON.stringify(ioptions));
 	return mapping[0];
 }
 
