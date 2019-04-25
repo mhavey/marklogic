@@ -107,9 +107,10 @@ Confirm:
 
 ### Tweak the Harmonization Flow
 
-We now tweak the content modules of the generation harmonization. We cooked those beforehand. They are in data/tweaks. We have two tweaks:
+We now tweak the content modules of the generation harmonization. We cooked those beforehand. They are in data/tweaks. We have three tweaks:
 
-- Changed collector.sjs for the harmonization flow. See under data/tweaks/plugins/entities.
+- Changed collector.sjs for the harmonization flow. Change: constrain harmonization job to a specific URI directory from staging. See under data/tweaks/plugins/entities.
+- Changed content.sjs for the harmonization flow. Change: Change DM input to be the combination of employee and salary records. See under data/tweaks/plugins/entities.
 - Changed the DM template. See under data/tweaks/dm.
 
 To promote your DM tweaks, run the following:

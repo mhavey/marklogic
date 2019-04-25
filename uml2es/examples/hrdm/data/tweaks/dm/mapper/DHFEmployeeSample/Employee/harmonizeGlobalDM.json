@@ -532,17 +532,20 @@
 		"main" : {
 			"format" : "json",
 			"content" : [ {
-				"addresses" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
-					"addressType" : "[[ extract('//TODO') ]]",
-					"city" : "[[ extract('//TODO') ]]",
-					"country" : "[[ extract('//TODO') ]]",
+				"addresses" : [ {
+					"addressType" : "Primary",
+					"city" : "[[ extract('//city') ]]",
+					"country" : "USA",
 					"geoCoordinates" : {
-						"latitude" : "[[ extract('//TODO') ]]",
-						"longitude" : "[[ extract('//TODO') ]]"
+						"latitude" : "[[ extract('//latitude') ]]",
+						"longitude" : "[[ extract('//longitude') ]]"
 					},
-					"lines" : "[[ extract('//TODO') ]]",
-					"state" : "[[ extract('//TODO') ]]",
-					"zip" : "[[ extract('//TODO') ]]"
+					"lines" : [
+						"[[ extract('//addr1') ]]", 
+						"[[ extract('//addr2') ]]"
+					], 
+					"state" : "[[ extract('//state') ]]",
+					"zip" : "[[ extract('//zip') ]]"
 				} ],
 				"firstName" : "[[ $firstName ]]",
 				"bonus" : "[[ extract('//bonus') ]]",
