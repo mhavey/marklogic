@@ -12,8 +12,6 @@ Using UML2ES, we generate a DHF harmonization process that uses a Declarative Ma
 
 ## How to run:
 
-First, run through all the steps of the HR example described in [README.md](README.md). 
-
 ### Obtain Declarative Mapper
 
 DM is on MarkLogic's internal BitBucket. The repo is https://project.marklogic.com/repo/scm/int/declarative-mapper.git. Clone the json-sc branch. Then copy from your DM clone the directory declarative-mapper/src/main/ml-modules/root/ext to the HR examples' src/main/ml-modules/root/ext. Do it so that in HR example you have the file src/main/ml-modules/root/ext/declarative-mapper.sjs. 
