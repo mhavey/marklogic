@@ -160,7 +160,7 @@ How do you string these tasks together to build useful code from a model? Here a
 
 The [../examples](../examples) and [../tutorials](../tutorials) of this toolkit show this gradle build in action. There are several ways to use it:
 
-- Movie it into your gradle project as a build script solely for UML2ES. Keep a separate build script for your main build work. The examples and tutorials take this approach. When using it this way, edit plugin versions if needed. 
+- Move it into your gradle project as a build script solely for UML2ES. Keep a separate build script for your main build work. The examples and tutorials take this approach. When using it this way, edit plugin versions if needed. 
 - Copy its tasks into your existing gradle build file. 
 - Copy it into your gradle project and use it as your main gradle build file. Add app-specific build tasks to it as needed.
 
