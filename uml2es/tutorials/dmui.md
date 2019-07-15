@@ -53,13 +53,13 @@ Under dmHub/data, create the following subfolders:
 
 Under dmHub/src, create the subfolder main.
 
-Under dmHub/src/main, creat the subfolder ml-modules.
+Under dmHub/src/main, create the subfolder ml-modules.
 
-Under dmHub/src/main/ml-modules, create the subfolder root.
+Under dmHub/src/main/ml-modules, create the subfolders root and ext
 
-Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that the location, remove what you copied and try again at the correct level. 
+Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. 
 
-Copy into dmHub/src/main/ml-modules/ext the Declarative Mapper engine code. Copy from your local DM engine clone the directory declarative-mapper/src/main/ml-modules/root/ext to dmHub/src/main/ml-modules/ext. You did it right if you can see the dmHub/src/main/ml-modules/ext/declarative-mapper.sjs. If you don't see the file in exactly that the location, remove what you copied and try again at the correct level. 
+Copy into dmHub/src/main/ml-modules/ext the Declarative Mapper engine code. Copy from your local DM engine clone the directory declarative-mapper/src/main/ml-modules/root/ext to dmHub/src/main/ml-modules/root/ext. You did it right if you can see dmHub/src/main/ml-modules/ext/declarative-mapper.sjs and dmHub/src/main/ml-modules/ext/declarative-mapper/runtime.sjs. If you don't see the files in exactly that this location, remove what you copied and try again at the correct level. 
 
 Copy into the main folder dmHub the UML2ES build file [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).
 
