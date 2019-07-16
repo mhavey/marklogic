@@ -194,6 +194,8 @@ Similarly for baseUri enter the value http://xyz.org/marklogicModels.
 
 In the same Properties window select UML and change the name from Root Element to Person.
 
+![Root element](images/dmui_setup17.png)
+
 We are done modelling. Click File | Save All.
 
 ((( TODO - do  I need collections and URI ??? Not sure how calculated would work with DMUI. )))
