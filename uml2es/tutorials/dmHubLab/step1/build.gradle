@@ -67,8 +67,16 @@ task runUML2ESDeploy(type: GradleBuild) {
   tasks = ["uDeployModel"]
 }
 
+task makeEntity(type: Copy) {
+    from "data/entity-services/PWIModel.json"
+    into "plugins/entities/Person"
+    rename 'PWIModel.json', 'Person.entity.json'
+}
+
 task deployPWIModel() {
   dependsOn "prepPWIModel"
   dependsOn "runUML2ESDeploy"
+  dependsOn "makeEntity"
   tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
+  tasks.findByName('makeEntity').mustRunAfter 'runUML2ESDeploy'
 }

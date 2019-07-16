@@ -192,6 +192,8 @@ Click OK. Back in the Properties panel, you see the esModel has been added. Expa
 
 Similarly for baseUri enter the value http://xyz.org/marklogicModels.
 
+In the same Properties window select UML and change the name from Root Element to Person.
+
 We are done modelling. Click File | Save All.
 
 ((( TODO - do  I need collections and URI ??? Not sure how calculated would work with DMUI. )))
@@ -205,40 +207,8 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 
 <details><summary>Click to view/hide this section</summary>
 <p>
-Next is a quick verification that the UML model can be deployed to MarkLogic as part of the build process. This gives the data architect the assurance that the model "works in ML." It gives the developer a first look at the model and how it is represented in ML. It gives the build person knowledge of the steps to deploy the UML model to ML.
 
-We won't have any actual DHF code when this step completes. That comes later. But we will have proved that our UML model can be transformed to Entity Services. And with that assurance, we're off and running with ES-based development.
-
-First, the build person modifies the build.gradle and gradle.properties files created in Step 1. Put on your build person hat and make the following edits:
-
-- To build.gradle, add the following code at the end:
-
-```
-task prepPWIModel(type: Copy) {
-    from "data/papyrus/PWIModel/PWIModel.uml"
-    into "data/model"
-    rename '(.*).uml', '$1.xml'
-}
-
-task runUML2ESDeploy(type: GradleBuild) {
-  buildFile = "uml2es4dhf.gradle"
-  tasks = ["uDeployModel"]
-}
-
-task deployPWIModel() {
-  dependsOn "prepPWIModel"
-  dependsOn "runUML2ESDeploy"
-  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
-}
-```
-
-- To gradle.properties, add the following line at the end:
-
-modelName=PWIModel
-
-If you're not sure you did this correctly, look at pre-cooked files [employeeHubLab/step3/build.gradle](employeeHubLab/step3/build.gradle) and [employeeHubLab/step3/gradle.properties](employeeHubLab/step3/gradle.properties). 
-
-To transform the UML model to Entity Services and deploy it to MarkLogic, you, still in the role of build person, run the following from the command line in the gradle project folder you created in Step 1.
+Next, as the data architect, with help from the build person, you will convert the UML model you created in Step 2 to a MarkLogic Entity Services model. Run the following from the command line in the gradle project folder that the build person created in Step 1.
 
 gradle -i deployPWIModel
 
@@ -294,8 +264,6 @@ function doCalculation_Employee_uri(id, content, ioptions) {
 The step is nearly complete. If you are keeping the gradle project in a source code repo, add the following newly created files to the repo: 
 - data/entity-services/EmployeeHubMode.json
 - src/main/ml-modules/root/modelgen/EmployeeHubModel/*
-
-Also push your changes to build.gradle and gradle.properties.
 
 </p>
 </details>
