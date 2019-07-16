@@ -55,3 +55,20 @@ dependencies {
     mlcp "org.apache.commons:commons-csv:1.2"
     mlcp files("lib")
 }
+
+task prepPWIModel(type: Copy) {
+    from "data/papyrus/PWIModel/PWIModel.uml"
+    into "data/model"
+    rename '(.*).uml', '$1.xml'
+}
+
+task runUML2ESDeploy(type: GradleBuild) {
+  buildFile = "uml2es4dhf.gradle"
+  tasks = ["uDeployModel"]
+}
+
+task deployPWIModel() {
+  dependsOn "prepPWIModel"
+  dependsOn "runUML2ESDeploy"
+  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
+}
