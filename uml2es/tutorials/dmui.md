@@ -132,210 +132,71 @@ Click Finish. In Papyrus, you now see two projects in your workspace:
 
 ![Papyrus projects](images/dmui_setup6.png)
 
-### Step 2b: Create Model and Package Structure
+### Step 2b: Create Classes
 
 We will design a relatively simple model consisting of two main classes: Person and Hobby. In the palette select Class and drag it onto the canvas. It creates a class called Class1.
 
+![New class](images/dmui_setup7.png)
 
+In the bottom panel, select Properties. Change the name of the class to Person.
 
+![Person class](images/dmui_setup8.png)
 
-Create the HRCommon package by dragging a Package from the Palette onto the diagram EmployeeodelHub.di. In the Properties pane edit the name of the package. Change it from Package1 to HRCommon. 
+Create a second class by selecting Class in the palette and dragging it onto the canvas. It creates a class called Class1. In the bottom panel, select Properties and change its name to Hobby.
 
-![HRCommon](images/emp_setup9.png)
+![Person and hobby classes](images/dmui_setup9.png)
 
-Create a second package in the same way. Name this one HRMain. 
+In the canvas, hover over the Person class. From the bar select Add Property Class Attribute Label.
 
-Next, configure model-level attributes. In the diagram, click anywhere on the white background outside the packages you just created. In the Properties pane, in the UML section change the name from RootElement to HRModel.
+![Person attribute](images/pap_model_attribute.png)
 
-![HRModel](images/emp_setup10.png)
+It creates an attribute called Attribute1. Select the attribute and in the properties change the name to "id" and the type to String (under UML Primitives).
 
-Still in the Properties pane, move to the Profile section and scroll down to the Applied Stereotypes. Click on the + symbol. In the popup window, under Applicable Stereotypes select esModel. 
+![Person id](images/dmui_setup10.png)
 
-![HRModel Profile](images/emp_setup11.png) 
+Create two more attributes in Person: firstName and lastName. Both are strings. In the Hobby class create two attributes: name and coolness. Name is a string; coolness is an integer (found under UML Primitives).
 
-Move it over to the Applied Stereotypes section by clicking the button with an arrow that points right. When done click OK to close the popup.
+![Person and hobby](images/dmui_setup11.png)
 
-![HRModel Profile](images/emp_setup12.png) 
+In the palette under Edges select Association. Drag it onto the canvas. Connect Person class to Hobby class. 
 
-Back in the Properties pane, in the Applied Stereotyes part of the Profile section still, select version under esModel. Enter the value 0.0.1
+![Association](images/dmui_setup12.png)
 
-![HRModel Profile](images/emp_setup13.png) 
+Select the association in the Properties. Change the leftmost Member End's name from "hobby" to "hobbies". Also change its mulitiplicity to 0..* and its Aggregation to shared.
 
-Similarly for baseUri enter the value http://com.marklogic.es.uml.hr. Save the model (File | Save All).
+![Association](images/dmui_setup13.png)
 
-We have now a properly named model with packages for its two main parts.
+### Step 2c: Stereotyping the Model
 
-### Step 2c: Define HRCommon Classes
+To help map this to Entity Services, we'll add a few stereotypes to our model.
 
-For the remainder of this step you will need the Model Explorer. If it is not open in your workspace, open it by selecting Window | Show View | Papyrus | Model Explorer. 
+First we will make the id attribute of Person a primary key. To do this, select the id attribute. In the Properties panel select Profile. Click the + button above Applied Stereotypes. From the list of applicable stereotypes select PK and click the arrow to move it to Applied Stereotypes.
 
-![Model explorer](images/emp_setup7.png)
+![id PK](images/pap_model_idpk.png)
 
-Model Explorer will now appear as a new pane, likely on the bottom or right part of the screen.
+Click OK. The class now looks like this.
 
-![Model explorer](images/emp_setup8.png)
+![Person PK](images/dmui_setup14.png)
 
-Using the Model Explorer, we will now create two new class diagrams, one for each package. Select the HRCommon package, right-click, and from the menu choose New Diagram | Class Diagram. 
+Using a similar approach, add the elementRangeIndex stereotype to the two Hobby attributes.
 
-![New Class Diagram](images/emp_setup14.png)
+![Hobby stereotypes](images/dmui_setup15.png)
 
-Give it the name HRClassDiagram. Similarly for HRMain, create a class diagram called HRMainClassDiagram. Your Model Explorer should now show the following:
+We will give our model a version and a namespace. Click in a blank part of the canvas. Under Properties select Profile. Under Applied Stereotype click the +. (If you can't see Applied Stereotypes, make the properties panel larger.) Under Applicable Properties select esModel and click the arrow button to move it to Applied Properties.
 
-![Packages and Diagrams](images/emp_setup15.png)
+![esModel](images/pap_model_esmodel.png)
 
-Select the HRCommonClassDiagram in Model Explorer. Drag a Class from the Palette onto the HRCommonClassDiagram canvas. Name it Address. Similarly create classes Phone and Email. Your diagram should look like this:
+Click OK. Back in the Properties panel, you see the esModel has been added. Expand it, click on version. In the right text box type 0.0.1.
 
-![Common](images/emp_setup16.png)
+![esModel version](images/dmui_setup16.png)
 
-Let's add attributes to each class. Select the Address class. From the context menu that appears, choose Add Property Class Attribute Label. 
+Similarly for baseUri enter the value http://xyz.org/marklogicModels.
 
-![Attribute](images/emp_setup17.png)
+We are done modelling. Click File | Save All.
 
-Then in the UML section of the Properties pane, change its name from Attribute1 to addressType. Set the Type to UML Primitive Types | String. Keep the Multiplicity at 1.
+((( TODO - do  I need collections and URI ??? Not sure how calculated would work with DMUI. )))
 
-![Attribute](images/emp_setup18.png)
-
-At this point your diagram looks like this:
-
-![Attribute](images/emp_setup19.png)
-
-Add these attributes to Address:
-
-- lines, type: string, multiplicity: 1..*
-- city, type: string, multiplicity: 1
-- state, type: string, multiplicity: 1
-- zip, type: string, multiplicity: 1
-- country, type: string, multiplicity: 1
-
-Add these attributes to Phone:
-
-- phoneType, type: string, multiplicity: 1
-- phoneNumber, type: string, multiplicity: 1
-
-Add these attributes to Email:
-
-- emailType, type: string, multiplicity: 1
-- emailAddress, type: string, multiplicity: 1
-
-When you are done, your diagram should look like this:
-
-![Attributes](images/emp_setup20.png)
-
-### Step 2d: Define HRMain Classes
-
-Now switch to the HRMainClassDiagram by double-clicking it in the Model Explorer. The canvas above is blank. Drag two classes onto it. Name them Employee and Department.
-
-![Main](images/emp_setup21.png)
-
-Add the following attributes to Employee:
-
-- employeeId, type: string, multiplicity: 1
-- firstName, type: string, multiplicity: 1
-- lastName, type: string, multiplicity: 1
-- status, type: string, multiplicity: 1
-- hireDate, type: none, multiplicity: 1
-- effectiveDate, type: none, multiplicity: 0..1
-- baseSalary, type: real, multiplicity: 0..1
-- bonus, type: real, multiplicity: 0..1
-- dateOfBirth, type: none, multiplicity: 1
-- uri, type: string, multiplicity: 1
-
-Add the following attributes to Department:
- 
-- departmentId, type: integer, multiplicity: 1
-- name, type: string, multiplicity: 1
-- uri, type: string, multiplicity: 1
-
-Here's what you should have so far:
-
-![Main](images/emp_setup22.png)
-
-Next we configure a few relationships. First, let's represent the memberOf relationship. An employee is a member of a department. To represent this, draw an association between the Employee class and the Department class. In the Palette select Association. Then with your mouse draw a line from Employee to Department. 
-
-![memberOf](images/emp_setup23.png)
-
-Select the association link you just drew and see the details of it in the Properties pane. You see two Member Ends. For the Member End on the right (labelled employee), ensure Navigable is set to false. For the Member End on the left, change the name from department to memberOf. Change the multiplicity to 0..1.
-
-![memberOf](images/emp_setup24.png)
-
-Next to do is the reportsTo relationship between employees. Draw an association from the Employee class to itself by selecting Association in the Palette and drawing a line from Employee back to itself. Then select that line you drew and in the Properties pane make sure the right Member End has Navigable set to false. For the left Member End, change the name to reportsTo and set multiplicity to 0..1.
-
-![reportsTo](images/emp_setup25.png)
-
-Now let's bring into this diagram the Address, Phone, and Email classes from our HRCommon package. In Model Explorer, under HRCommon select Address and drag it into the current diagram. Do the same with Phone and Email.
-
-![common](images/emp_setup26.png)
-
-In our model, both Employee and Department have addresses, phones, and emails. We use aggregration relationships to represent this. Draw six association links: Employee to Address, Employee to Phone, Employee to Email, Department to Address, Department to Phone, and Department to Email. Because of all the arrows the diagram might be a bit messy. Let's make it pretty. First, move the classes into a good spot on the canvas:
-
-![common](images/emp_setup27.png)
-
-Next, remove unnecessary arrow labelling. Right-click on the white part of the diagram and from the context menu choose Select | All Connectors. Right-click again and choose Filters | Manage Connector Labels. In the popup, click Deselect All. Then manually select Target Role and Target Multiplicity under A_memberOf_employee and A_reportsTo_employee. 
-
-![pretty](images/emp_setup28.png)
-
-Click OK to close the popup. Lastly, select Address, Phone, and Email. Right-click and select Filters | Show/Hide Compartments. In the popup click Deselect All. Click OK. We end up a more pleasant diagram:
-
-![gorgeous](images/emp_setup29.png)
-
-To complete the step, modify the configuration of each of the six associations to Address, Phone, and Email. For each, select the arrow in the diagram. In the Properties pane, ensure the right Member End is non-navigable. For the left Member End, change the multiplicity to 0..*, the aggregation to shared, and the name to the plural (addresses, phones, and emails rather than address, phone, and email). Here is what the configuration looks like for the link between department and email:
-
-![aggregation](images/emp_setup30.png)
-
-At this point, your model looks like this:
-
-![aggregation](images/emp_setup31.png)
-
-### Step 2e: Add Class and Attribute Stereotypes
-
-Lastly, let's prepare the model for MarkLogic by stereotyping it. First, let's associate with the class Department the MarkLogic collection named "Department". To do this, select Department in the diagram. In the Properties pane, switch to the Profile section. In the Applied Stereotypes, click the + button. In the popup move xDocument from Applicable Stereotypes to Applied Stereotypes. 
-
-![xDocument](images/emp_setup32.png)
-
-Click OK. Then back in the Properties pane, add the value Department for the collections tag of xDocument.
-
-![collections](images/emp_setup33.png)
-
-Do the same for the Employee class. Assign it the stereotype xDocument with the collections value Employee.
-
-Next, stereotype several of the attributes by first selecting the atttibute in the diagram and then stereotyping and tagging it in the Profile section of the Properties pane:
-
-- Give Department.departmentId the stereotype PK.
-- Give Employee.employeeId the stereotype PK.
-- Give Employee.hireDate, Employee.effectiveDate, and Employee.dateOfBirth the stereotype esProperty with mlType "date".
-- Give Department.uri the stereotypes xCalculated and xURI. For xCalculated, its tagged value concat consists of three strings with the quotes included:
-	* "/department/"
-	* $attribute(departmentId)
-	* ".json"
-
-![concat](images/emp_setup34.png)
-
-- Give Employee.uri the stereotypes xCalculated and xURI. For xCalculated, its tagged value concat consists of three strings with the quotes included:
-	* "/employee/"
-	* $attribute(employeeId)
-	* ".json"
-
-Your last step is to configure the memberOf and reportsTo relationships to use reference rather than containment. In MarkLogic, you want Employee's memberOf attribute to contain the primary key of the Department rather than a copy of the Department object itself. You want Employee's reportsTo attribute to contain the primary key of the other Employee rather than a copy of the other Employee object itself. (The relationships from Department and Employee to Address, Phone, and Type, on the other hand, will be containment, not reference.)
-
-To make the memberOf attribute referential, in the diagram, select the Employee class. In the Properties pane, go to the UML section. Under Owned Attribute, select memberOf. Double-click it. In the Edit Property popup, switch to the Profile tab. Click the + button. Move from Applicable Stereotypes to Applied Stereotypes the FK stereotype.
-
-![memberOf](images/emp_setup35.png)
-
-![memberOf](images/emp_setup36.png)
-
-Do the same for reportsTo.
-
-And here's the final diagram:
-
-![memberOf](images/emp_setup37.png)
-
-Save your work (File | Save All). If the build person has created a source code repository, push your model to that repo. Specifically, add the folders data/papyrus/MLProfileProject and data/papyrus/EmployeeHubModel to the repo.
-
-### Step 2 Summary
-
-You created a model with two packages: HRCommon, containing classes Address, Phone, and Email; and HRMain, containing classes Department and Employee. There are numerous relationships in your model, and your model includes several stereotypes. 
-
-If you think you might have messed up along the way, a pre-cooked model is available under [employeeHubLab/step2/EmployeeHubModel](employeeHubLab/step2/EmployeeHubModel). If you want it in your workspace, the simplest way is to copy each of its files over yours. You can also delete the EmployeeHubModel project from your workspace (by right-clicking the project and selecting Delete, but keeping the contents!) and import the pre-cooked project (File | Import | Existing Projects Into Workspace). 
+If you think you might have messed up along the way, a pre-cooked model is available under [dmHubLab/step2/PWIModel](dmHubLab/step2/PWIModel). If you want it in your workspace, the simplest way is to copy each of its files over yours. You can also delete the PWIModel project from your workspace (by right-clicking the project and selecting Delete, but keeping the contents!) and import the pre-cooked project (File | Import | Existing Projects Into Workspace). 
 
 </p>
 </details>
