@@ -1,7 +1,7 @@
 # Zero Code Model-Map-Harmonize (MarkLogic Internal)
 
 ## Intro
-This tutorial shows how, *without having to write any code*, to move raw, messy data into MarkLogic and convert it to a much better form that conforms to a UML model. Our approach can best be described as *model-driven declarative mapping*. There's no coding; developers aren't needed. Rather, the brunt of the work is done by the two roles you would expect: 
+This tutorial shows how you, *without having to write any code*, can move raw, messy data into MarkLogic and convert it to a much better form that conforms to a UML model. Our approach can best be described as *model-driven declarative mapping*. There's no coding; developers aren't needed. Rather, the brunt of the work is done by the two roles you would expect: 
 
 - A data architect, who creates the data model in a third-party UML tool (in our case, Papyrus).
 - A source-data subject-matter expert (SME), who uses the Declarative Mapper UI tool to define the source-to-target mapping. This SME is an expert in the messy source data and works closely with the data architect to understand the UML-defined target data format.
@@ -32,6 +32,7 @@ For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an o
 
 <details><summary>Click to view/hide this section</summary>
 <p>
+
 We get started by having you, in the role of build person, setup a data hub, with UML2ES and the Declarative Mapper, on MarkLogic.
 
 Pre-requisites:
@@ -87,16 +88,15 @@ gradle -i mlDeploy
 
 When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-dmHub-STAGING, xmi2es-tutorials-dmHub-FINAL, and xmi2es-tutorials-emuiHub-MODULES. Check in admin console you have these.
 
-![Step 2 - folder structure](images/dmui_setup2.png)
 </p>
 </details>
 
-## Step 2: Design UML Model for Employee Hub (Data Architect)
+## Step 2: Design UML Model - PersonWithInterest (Data Architect)
 
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-Next you get to play the role of data architect. You will use the UML modeling tool Papyrus to design a class model for employees. The file containing your model resides in the employeeHub folder that the build person (performed convincingly by you) created in Step 1. 
+Next you get to play the role of data architect. You will use the UML modeling tool Papyrus to design a *person with interests* (PWI) data model. The purpose of the model is to define the structure of persons and their hobbies/interests. The model is straightforward; the mapping, as we will see in step 4, has interesting nuances.
 
 ### Step 2a: Setup Workspace and Projects
 
@@ -104,7 +104,7 @@ Pre-requisite: You need Papyrus. If you don't have Papyrus, install it. See [How
 
 Open Papyrus in a new workspace. The location of the workspace on your local machine is unimportant. 
 
-To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. In Step 1 you copied it from the UML2ES clone to employeeHub/data/papyrus/MLProfileProject. To import into Papyrus, from the File menu select Import | General | Existing Projects Into Workspace. 
+To use your new model with MarkLogic, you need to add the UML-to-Entity Service profile. In Step 1 you copied it from the UML2ES clone to dmHub/data/papyrus/MLProfileProject. To import into Papyrus, from the File menu select Import | General | Existing Projects Into Workspace. 
 
 ![Import profile project](images/pap_profile2_import.png)
 
@@ -112,7 +112,7 @@ Click Next. In the Import Projects dialog, make sure "Select root directory" is 
 
 ![Import profile project](images/emp_setup3.png)
 
-Click Finish. You should now see the profile project in the Project Explorer pane in the upper-right corner of Eclipse. Next, create a project for the employee model. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
+Click Finish. You should now see the profile project in the Project Explorer pane in the upper-right corner of Eclipse. Next, create a project for the PWI model. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
 
 ![New project in Papyrus](images/pap_model_create.png)
 
@@ -120,7 +120,7 @@ Click Next. In the Diagram Language window, select UML.
 
 ![New project in Papyrus](images/pap_model_uml.png)
 
-Click Next. In the next window enter the project name as EmployeeHubModel. Select the model file name as EmployeeHubModel. For the location, uncheck "Use default location". For location, browse to the employeeHub/data/papyrus folder you created in Step 1. To this path append EmployeeHubModel.
+Click Next. In the next window enter the project name as PWIModel. Select the model file name as PWIModel. For the location, uncheck "Use default location". For location, browse to the dmHub/data/papyrus folder you created in Step 1. To this path append PWIModel.
 
 ![New project in Papyrus](images/emp_setup4.png)
 
@@ -337,7 +337,7 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 </p>
 </details>
 
-## Step 3: Confirm Model Works in MarkLogic (Build Person, Data Architect, Developer)
+## Step 3: Transform UML to ES Model (Data Architect, Build Person)
 
 <details><summary>Click to view/hide this section</summary>
 <p>
@@ -350,8 +350,8 @@ First, the build person modifies the build.gradle and gradle.properties files cr
 - To build.gradle, add the following code at the end:
 
 ```
-task prepHRModel(type: Copy) {
-    from "data/papyrus/EmployeeHubModel/EmployeeHubModel.uml"
+task prepPWIModel(type: Copy) {
+    from "data/papyrus/PWIModel/PWIModel.uml"
     into "data/model"
     rename '(.*).uml', '$1.xml'
 }
@@ -361,22 +361,22 @@ task runUML2ESDeploy(type: GradleBuild) {
   tasks = ["uDeployModel"]
 }
 
-task deployHRModel() {
-  dependsOn "prepHRModel"
+task deployPWIModel() {
+  dependsOn "prepPWIModel"
   dependsOn "runUML2ESDeploy"
-  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepHRModel'
+  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
 }
 ```
 
 - To gradle.properties, add the following line at the end:
 
-modelName=EmployeeHubModel
+modelName=PWIModel
 
 If you're not sure you did this correctly, look at pre-cooked files [employeeHubLab/step3/build.gradle](employeeHubLab/step3/build.gradle) and [employeeHubLab/step3/gradle.properties](employeeHubLab/step3/gradle.properties). 
 
 To transform the UML model to Entity Services and deploy it to MarkLogic, you, still in the role of build person, run the following from the command line in the gradle project folder you created in Step 1.
 
-gradle -i deployHRModel
+gradle -i deployPWIModel
 
 That command should run successfully; you should see "BUILD SUCCESSFUL" when its completes. Now it's time for everyone, especially the data architect and the developer, to observe the effects of gradle deployment command just run. Playing these roles, open Query Console and navigate to the xmi2es-tutorials-empHub-FINAL database. Click on Explore. Among the documents created are the following:
 
