@@ -108,9 +108,9 @@ To use your new model with MarkLogic, you need to add the UML-to-Entity Service 
 
 ![Import profile project](images/pap_profile2_import.png)
 
-Click Next. In the Import Projects dialog, make sure "Select root directory" is selected. Use the Browse button to locate the ML profile in employeeHub/data/papyrus/MLProfileProject. 
+Click Next. In the Import Projects dialog, make sure "Select root directory" is selected. Use the Browse button to locate the ML profile in dmHub/data/papyrus/MLProfileProject. 
 
-![Import profile project](images/emp_setup3.png)
+![Import profile project](images/dmui_setup3.png)
 
 Click Finish. You should now see the profile project in the Project Explorer pane in the upper-right corner of Eclipse. Next, create a project for the PWI model. From the File menu choose New | Other. From the Select wizard, choose Papyrus project.
 
@@ -122,7 +122,7 @@ Click Next. In the Diagram Language window, select UML.
 
 Click Next. In the next window enter the project name as PWIModel. Select the model file name as PWIModel. For the location, uncheck "Use default location". For location, browse to the dmHub/data/papyrus folder you created in Step 1. To this path append PWIModel.
 
-![New project in Papyrus](images/emp_setup4.png)
+![New project in Papyrus](images/dmui_setup4.png)
 
 Click Next.  In the next page, under Diagram Kind, select Class Diagram. Click the box "A UML model with basic primitive types." Under "Choose a profile to apply", select Browse Workspace and select MLProjectProfile|MLProfile.profile.uml. 
 
@@ -130,11 +130,14 @@ Click Next.  In the next page, under Diagram Kind, select Class Diagram. Click t
 
 Click Finish. In Papyrus, you now see two projects in your workspace:
 
-![Papyrus projects](images/emp_setup6.png)
+![Papyrus projects](images/dmui_setup6.png)
 
 ### Step 2b: Create Model and Package Structure
 
-We will design a relatively simple model consisting of two main classes (Department, Employee) and a set of common location classes (Address, Phone, Email). We will split these classes into two packages: Department and Employee will go into the HRMain packages; the location classes will go in the HRCommon package.
+We will design a relatively simple model consisting of two main classes: Person and Hobby. In the palette select Class and drag it onto the canvas. It creates a class called Class1.
+
+
+
 
 Create the HRCommon package by dragging a Package from the Palette onto the diagram EmployeeodelHub.di. In the Properties pane edit the name of the package. Change it from Package1 to HRCommon. 
 
