@@ -80,8 +80,6 @@ gradle -i hubInit
 
 This creates a few additional subfolders: plugins, src/main/hub-internal-config, src/main/ml-config, src/main/ml-schemas, build, gradle, and .gradle. 
 
-If you wish, add the contents of the dmHub folder to your source code repository. Don't add build, gradle, and .gradle; these folders contain temporary files that aren't meant to be shared.
-
 Finally, let's create an instance of the data hub. In the command prompt, run the following
 
 gradle -i mlDeploy
@@ -214,66 +212,17 @@ Next, as the data architect, with help from the build person, you will convert t
 
 gradle -i deployPWIModel
 
-That command should run successfully; you should see "BUILD SUCCESSFUL" when its completes. Now it's time for everyone, especially the data architect and the developer, to observe the effects of gradle deployment command just run. Playing these roles, open Query Console and navigate to the xmi2es-tutorials-empHub-FINAL database. Click on Explore. Among the documents created are the following:
-
-- /marklogic.com/entity-services/models/EmployeeHubModel.json: This is the ES model corresponding to our UML model. Here is an excerpt. Notice that its structure is exactly as we defined it UML. This will reassure the data architect.
-
-![ES Model](images/emp_setup38.png)
-
-- /xmi2es/extension/EmployeeHubModel.ttl: There is more to the model than the JSON descriptor we just examined. You'll notice that the descriptor does not mention some of our stereotypes. Where, for example, is the xDocument and xCalculated configuration? The JSON descriptor is the *core* model, but in Entity Services there is also an *extended* model. The extended model expresses, using semantic triples, facts about the entities and attributes of the model that fall outside the core model. /xmi2es/extension/EmployeeHubModel.ttl is a Turtle representation of those facts. Open that document and peruse it. Alternatively, in Query Console open a tab of type SPARQL Query pointed to the xmi2es-tutorials-empHub-FINAL database. Run the following query:
-
-select * where {?s ?o ?p}
-
-Nearly 300 triples come back from this query, but most of them are out-of-the-box *core* triples. One of our extended triples indicates that the Employee entity's collection is "Employee":
-
-	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Employee> <http://marklogic.com/xmi2es/xes#collections> "Employee"
-
-These triples show the calculated value of uri in the Department entity:
-
-	* <http://com.marklogic.es.uml.hr/HRModel-0.0.1/Department/uri>,<http://marklogic.com/xmi2es/xes#calculation>,_:bnode7470cb4106d8a9b6
-	* _:bnode7470cb4106d8a9b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>,"\"/department/\""
-	* _:bnode7470cb4106d8a9b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>,_:bnode7411cb4716d8c8b6
-	* _:bnode7411cb4716d8c8b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>,"$attribute(departmentId)"
-	* _:bnode7411cb4716d8c8b6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>,_:bnode7432cb4526d8ebb6
-	* _:bnode7432cb4526d8ebb6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>,"\".json\""
-	* _:bnode7432cb4526d8ebb6,<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>,<http://www.w3.org/1999/02/22-rdf-syntax-ns#nil>
-
-Those triples are not pretty, but both the data architect and developer will be happy to see that the stereotypes are accounted for in the MarkLogic model. These extended facts will be used in the DHF harmonization logic. Significantly, the UML2ES toolkit generates useful (and relatively pretty) harmonization code from the extended model. 
-
-- /xmi2es/gen/EmployeeHubModel/lib.sjs: And here is the first bit of that generated code. Notice the following generated Javascript functions. runWriter_Employee creates an Employee JSON document and, according to the extended model, writes it to the "Employee" collection. doCalculation_Employee_uri constructs the uri attribute of Employee as the string concatenation of "/employee/", the employeeId attribute value, and ".json". We'll see in a later step how these functions are brought together in the harmonization.
-
-```
-function runWriter_Employee(id, envelope, ioptions) {
-  var uri = extractEnvelopeInstanceValue(envelope, "uri");
-  var dioptions = {};
-  var collections = [];
-  collections.push("Employee");
-  dioptions.collections = collections;
-  dioptions.permissions = xdmp.defaultPermissions();
-  xdmp.documentInsert(uri, envelope, dioptions);
-}
-function doCalculation_Employee_uri(id, content, ioptions) {
-  var c = "";
-  c += "/employee/";
-  c += content.employeeId;
-  c += ".json";
-  content.uri = c;
-}
-```
-
-- /xmi2es/findings/EmployeeHubModel.xml: This file records problems found during transformation. Stop and open this up. Check to make sure it reports no issues.
-
-The step is nearly complete. If you are keeping the gradle project in a source code repo, add the following newly created files to the repo: 
-- data/entity-services/EmployeeHubMode.json
-- src/main/ml-modules/root/modelgen/EmployeeHubModel/*
+That command should run successfully; you should see "BUILD SUCCESSFUL" when its completes. The UML model has been convereted to ES and is setup as a data hub plugin. You can see the ES model in a few places. If you open Query Console and explore the xmi2es-tutorials-dmHub-FINAL database, its URI is /marklogic.com/entity-services/models/PWIModel.json. In your gradle project the same ES model is in plugins/entities/Person/Person.entity.json.
 
 </p>
 </details>
 
-## Step 4: Define Mapping Spec (Source Data SME)
+## Step 4: Defining the Mapping (Source Data SME)
 
 <details><summary>Click to view/hide this section</summary>
 <p>
+TODO ... 
+
 The goal of the employee hub is to represent employees and departments in the form expressed by the UML model. That's the FINAL form of the data. But the actual employee data we have from the company's source system is messy. We intend to ingest this data *as is* into STAGING and then *harmonize* that data into the FINAL form. Data Hub Framework is exactly the right tool for the job. Now all we need is to understand that messy source data.
 
 Luckily one of the members of the team is a source data SME. In this step, you play the SME's role. Your deliverable is an Excel spreadsheet that describes how to map source data to the UML model. 
