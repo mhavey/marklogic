@@ -41,12 +41,13 @@ Pre-requisites:
 - Local clone of Declarative Mapper engine. See [How to install Declarative Mapper](dm_install.md)
 - Declarative Mapper UI up and running. First obtain a local clone. Then setup and run. See [How to install Declarative Mapper](dm_install.md)
 
-To begin, create a folder called dmHub anywhere on your build machine. This folder will be a data hub gradle project that incorporates the UML2ES and the DM toolkits.
+To begin, create a folder called dmHub anywhere on your build machine. This folder will be a data hub gradle project that incorporates the UML2ES and the DM toolkits. C
+
+Copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see build.gradle and data/coolness/hobbyCoolness.json directly under dmHub. Otherwise, remove what you copied and try again at the correct level. 
+
 
 Under dmHub, create the following subfolders:
-- data
 - src
-- lib
 
 Under dmHub/data, create the following subfolders:
 - model
@@ -58,17 +59,13 @@ Under dmHub/src/main, create the subfolder ml-modules.
 
 Under dmHub/src/main/ml-modules, create the subfolders root and ext
 
-Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. 
+Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. What you just copied is the gradle build file, the gradle properties file, the log4j properties file, and the source person data. Tweak the gradle.properties once you've copied it over. For example, modify mlHost if you're ML server is not running on localhost; modify mlUsername and mlPassword if your admin username/password is not admin/admin.
 
 Copy into dmHub/src/main/ml-modules/ext the Declarative Mapper engine code. Copy from your local DM engine clone the directory declarative-mapper/src/main/ml-modules/root/ext to dmHub/src/main/ml-modules/root/ext. You did it right if you can see dmHub/src/main/ml-modules/ext/declarative-mapper.sjs and dmHub/src/main/ml-modules/ext/declarative-mapper/runtime.sjs. If you don't see the files in exactly that this location, remove what you copied and try again at the correct level. 
 
 Copy into the main folder dmHub the UML2ES build file [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).
 
 Copy into dmHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you can see the file dmHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
-
-Copy into the main folder dmHub your initial build file [dmHubLab/step1/build.gradle](dmHubLab/step1/build.gradle) and your initial gradle properties file [dmHubLab/step1/gradle.properties](dmHubLab/step1/gradle.properties). Tweak the gradle.properties once you've copied it over. For example, modify mlHost if you're ML server is not running on localhost; modify mlUsername and mlPassword if your admin username/password is not admin/admin.
-
-Copy into the lib folder a log4j properties file [dmHubLab/step1/log4j.properties](dmHubLab/step1/log4j.properties). You did it right if you can see the file dmHub/lib/log4j.properties. If you don't see the file in exactly that the location, remove what you copied and try again at the correct level. 
 
 When you are done, you should have the following folder structure:
 
@@ -176,7 +173,7 @@ Click OK. The class now looks like this.
 
 ![Person PK](images/dmui_setup14.png)
 
-Using a similar approach, add the elementRangeIndex stereotype to the two Hobby attributes.
+Using a similar approach, add the elementRangeIndex stereotype to the two Hobby attributes; this allows us to build a facet of hobby names and to perform numeric range queries on coolness. 
 
 ![Hobby stereotypes](images/dmui_setup15.png)
 
@@ -194,9 +191,11 @@ In the same Properties window select UML and change the name from Root Element t
 
 ![Root element](images/dmui_setup17.png)
 
-We are done modelling. Click File | Save All.
+Physically in MarkLogic, instances of the Person class are documents. Let's designate the id attribute as the URI of the document. Configuring this is straightforward; follow the same step as when setting id as PK. You end up with the following:
 
-((( TODO - do  I need collections and URI ??? Not sure how calculated would work with DMUI. )))
+![Final model](images/dmui_setup18.png)
+
+We are done modelling. Click File | Save All.
 
 If you think you might have messed up along the way, a pre-cooked model is available under [dmHubLab/step2/PWIModel](dmHubLab/step2/PWIModel). If you want it in your workspace, the simplest way is to copy each of its files over yours. You can also delete the PWIModel project from your workspace (by right-clicking the project and selecting Delete, but keeping the contents!) and import the pre-cooked project (File | Import | Existing Projects Into Workspace). 
 
@@ -233,7 +232,10 @@ Here is where you use DMUI to define the mapping. TODO...
 
 <details><summary>Click to view/hide this section</summary>
 <p>
-TODO
+
+First, from the model generate a harmonization flow:
+
+gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -PentityName=Person -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
 
 </p>
 </details>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_pIDeHgR-EemupvhyGp5tTA">
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_pIDeHgR-EemupvhyGp5tTA http:///MarkLogicEntityServicesProfile/xes.ecore /MLProfileProject/MLProfile.profile.uml#_pIDeWgR-EemupvhyGp5tTA">
   <uml:Model xmi:id="_k3LE0KfMEemVSZiNWOJCaA" name="Person">
     <packageImport xmi:type="uml:PackageImport" xmi:id="_k87HgKfMEemVSZiNWOJCaA">
       <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
@@ -44,4 +44,5 @@
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_M4MfAKfTEemVSZiNWOJCaA" base_Property="_ChdmoKfREemVSZiNWOJCaA"/>
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_OHTWcKfTEemVSZiNWOJCaA" base_Property="_DTKJUKfREemVSZiNWOJCaA"/>
   <MarkLogicEntityServicesProfile.es:esModel xmi:id="_kBq8AKfTEemVSZiNWOJCaA" baseUri="http://xyz.org/marklogicModels" base_Package="_k3LE0KfMEemVSZiNWOJCaA"/>
+  <MarkLogicEntityServicesProfile.xes:xURI xmi:id="_Kyt6sKx9EemVSZiNWOJCaA" base_Property="_fqb9YKfQEemVSZiNWOJCaA"/>
 </xmi:XMI>

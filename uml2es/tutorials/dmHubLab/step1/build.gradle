@@ -80,3 +80,24 @@ task deployPWIModel() {
   tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
   tasks.findByName('makeEntity').mustRunAfter 'runUML2ESDeploy'
 }
+
+task loadLookup(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/coolness";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlFinalPort.toInteger()
+  database = mlFinalDbName
+
+  document_type = "json"
+  input_file_path =  "data/coolness" 
+  input_file_type = "documents" 
+
+  output_collections "Employee,LoadEmployee,input" 
+  output_permissions "rest-reader,read,rest-writer,update" 
+  output_uri_replace = regex 
+}

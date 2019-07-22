@@ -1,0 +1,10 @@
+{
+  id: "123",
+  first_name: "mike",
+  last_name: "havey",
+  hobbies: [
+    "swimming", 
+    "banking",
+    "paragliding"
+  ]
+}
