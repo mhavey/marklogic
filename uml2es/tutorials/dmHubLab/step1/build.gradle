@@ -81,23 +81,43 @@ task deployPWIModel() {
   tasks.findByName('makeEntity').mustRunAfter 'runUML2ESDeploy'
 }
 
-task loadLookup(type: com.marklogic.gradle.task.MlcpTask) {
-  def dataDir = "${projectDir}";
-  def unixDir = dataDir.replace('\\', '/');
-  def regexDir = unixDir+"/data/coolness";
-  def regex = '"' + regexDir + ",'',/,''" + '"'
+task ingestLookup
+["Staging", "Final"].toList().each { envType ->
+  task "ingestLookup${envType}"(type: com.marklogic.gradle.task.MlcpTask) {
 
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  host = mlHost
-  port = mlFinalPort.toInteger()
-  database = mlFinalDbName
+ 
+    def port = mlStagingPort.toInteger()
+    def db = mlStagingDbName
+   
+    if ("${envType}" == "Final") {
+     port = mlFinalPort.toInteger()
+     db = mlFinalDbName
+    }
+    else if ("${envType}" == "Staging") {
+    }
+    else {
+      throw new GradleException("Illegal env ${envType}")
+    }
+    def dataDir = "${projectDir}";
+    def unixDir = dataDir.replace('\\', '/');
+    def regexDir = unixDir+"/data/coolness";
+    def regex = '"' + regexDir + ",'',/,''" + '"'
 
-  document_type = "json"
-  input_file_path =  "data/coolness" 
-  input_file_type = "documents" 
+    classpath = configurations.mlcp
+    command = "IMPORT"
+    host = mlHost
+    port = port
+    database = db
 
-  output_collections "Employee,LoadEmployee,input" 
-  output_permissions "rest-reader,read,rest-writer,update" 
-  output_uri_replace = regex 
-}
+    document_type = "json"
+    input_file_path =  "data/coolness" 
+    input_file_type = "documents" 
+
+    output_collections "Employee,LoadEmployee,input" 
+    output_permissions "rest-reader,read,rest-writer,update" 
+    output_uri_replace = regex 
+    output_uri_prefix = "/"
+
+  }
+  ingestLookup.dependsOn "ingestLookup${envType}"
+} 
