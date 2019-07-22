@@ -41,7 +41,7 @@ Pre-requisites:
 - Local clone of Declarative Mapper engine. See [How to install Declarative Mapper](dm_install.md)
 - Declarative Mapper UI up and running. First obtain a local clone. Then setup and run. See [How to install Declarative Mapper](dm_install.md)
 
-To begin, create a folder called dmHub anywhere on your build machine. This folder will be a data hub gradle project that incorporates the UML2ES and the DM toolkits. C
+To begin, create a folder called dmHub anywhere on your build machine. This folder will be a data hub gradle project that incorporates the UML2ES and the DM toolkits. 
 
 Copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see build.gradle and data/coolness/hobbyCoolness.json directly under dmHub. Otherwise, remove what you copied and try again at the correct level. 
 
