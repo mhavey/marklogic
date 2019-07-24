@@ -4,7 +4,7 @@
 This tutorial shows how you, *without having to write any code*, can move raw, messy data into MarkLogic and convert it to a much better form that conforms to a UML model. Our approach can best be described as *model-driven declarative mapping*. There's no coding; developers aren't needed. Rather, the brunt of the work is done by the two roles you would expect: 
 
 - A data architect, who creates the data model in a third-party UML tool (in our case, Papyrus).
-- A source-data subject-matter expert (SME), who uses the Declarative Mapper UI tool to define the source-to-target mapping. This SME is an expert in the messy source data and works closely with the data architect to understand the UML-defined target data format.
+- A source-data subject-matter expert (SME), who uses the Declarative Mapper IDE tool to define the source-to-target mapping. This SME is an expert in the messy source data and works closely with the data architect to understand the UML-defined target data format.
 
 The data architect and source-data SME are helped by a build person, who creates a gradle-based MarkLogic data hub environment that incorporates the UML and mapping tools. 
 
@@ -16,13 +16,13 @@ The diagram below outlines the steps of the zero-code effort
 
 2. The data architect, using the build environment created by the build person, uses UML2ES to convert the UML model to MarkLogic's Entity Services (ES) form. 
 
-3. The source-data SME works within the Declarative Mapper UI tool to map source data to the model form of the data. The model form is the Entity Services form produced in step 2.
+3. The source-data SME works within the Declarative Mapper IDE tool to map source data to the model form of the data. The model form is the Entity Services form produced in step 2.
 
 4. The source-data SME works with the build person to incorporate the declarative mapping (produced in step 3) into the a data hub harmonization process. When this harmonization process is run, the raw source data is converted to the model's form using the declarative mapping.
 
 There's no coding in this process... not even in step 4. All the work is done by data experts and tools! To see why, try out this tutorial! You will play each of the roles through all the above steps. 
 
-For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an open-source UML tool), the Declarative Mapper UI (a MarkLogic field tool), and the Declarative Mapper engine (another MarkLogic field tool). [The two Declarative Mapper tools are available on MarkLogic's internal BitBucket repository. This tutorial is MarkLogic internal.]
+For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an open-source UML tool), the Declarative Mapper IDE (a MarkLogic field tool), and the Declarative Mapper engine (another MarkLogic field tool). [The two Declarative Mapper tools are available on MarkLogic's internal BitBucket repository. This tutorial is MarkLogic internal.]
 
 - You will need a local clone of UML2ES
 - See [How to install Papyrus](papyrus_install.md) for instructions on installing Papyrus
@@ -39,7 +39,7 @@ Pre-requisites:
 - MarkLogic 9 (or greater) installation up and running
 - Local clone of UML2ES
 - Local clone of Declarative Mapper engine. See [How to install Declarative Mapper](dm_install.md)
-- Declarative Mapper UI up and running. First obtain a local clone. Then setup and run. See [How to install Declarative Mapper](dm_install.md)
+- Declarative Mapper IDE up and running. First obtain a local clone. Then setup and run. See [How to install Declarative Mapper](dm_install.md)
 
 To begin, create a folder called dmHub anywhere on your build machine. This folder will be a data hub gradle project that incorporates the UML2ES and the DM toolkits. 
 
@@ -221,13 +221,72 @@ That command should run successfully; you should see "BUILD SUCCESSFUL" when its
 <details><summary>Click to view/hide this section</summary>
 <p>
 
+In Step 4 you play the role of Source Data SME. Using the Declarative Mapper IDE, you map source data to the form of the UML PWI model created in Step 3. 
 
-Here is where you use DMUI to define the mapping. TODO...
+First, open the DM IDE tool; see [How to install Declarative Mapper](dm_install.md) for instructions. In the initial screen ("Recent Projects"), paste in the fully path of your gradle project. Then click the + button.
 
-TODO ... have a look at the source data in data/persons ... 
-TODO ... have a look at the source data in data/lookup ...  - allude to it.
+![IDE initial](images/dmui_setup20.png)
 
-call it PWIMaping...
+In the next screen, in the bottom left corner, click the Folder button. 
+
+![IDE folder prompt](images/dmui_setup21.png)
+
+This takes you back to Recent Projects. Click on the eye button.
+
+![IDE eye prompt](images/dmui_setup22.png)
+
+The next screen shows you the entities in the project. Click on Person. 
+
+![Person prompt](images/dmui_setup23.png)
+
+Under mappings, create a new mapping called PWIMapping. In the "Mapping name" text box type PWIMapping. Under actions, click +. 
+
+![PWI mapping](images/dmui_setup24.png)
+
+On the bottom select the PWIMAPPING tab. This brings up the PWI Mapping editor:
+
+![PWI mapping editor](images/dmui_setup25.png)
+
+Time to map! First, understand the source data. Look at person1.json in the data/persons directory of your gradle project (also in [dmHubLab/step1/data/persons](dmHubLab/step1/data/persons)):
+
+{
+  id: "123",
+  first_name: "mike",
+  last_name: "havey",
+  hobbies: [
+    "swimming", 
+    "banking",
+    "paragliding"
+  ]
+}
+
+Conceptually, the mapping to the model works as follows:
+- id, first_name, last_name in the source are mapped to the id, firstName, and lastName attributes of the Person entity. Well, id is not mapped exactly as is. Rather, the Person.id attribute is the concatenation of "/pwi/", the id source value and ".json".  Person.id ends up looking like a URI.
+- In the source object, hobbies is an array of strings (hobby names). In the model form, Person.hobbies is an array of Hobby objects, each consisting of a name and coolness. The source document has only the names. Coolness is determined by a lookup on the hobbyCoolness.json document in the data/coolness directory of your gradle project (also in [dmHubLab/step1/data/coolness](dmHubLab/step1/data/coolness)).
+
+{
+	"swimming": 1,
+	"banking": 3,
+	"steely-dan": 1000000, 
+	"paragliding": 100000,
+	"scotch": 100000,
+	"yoga": 0
+}
+
+
+Now that you understand how the mapping should work, use the DM IDE tool to create the mapping for real. Use the grammar of the Data Hub Framework field tool. Under Person, select id. In the editor on the right, under Expression, type [[ concat('/pwi/', extract('//id'), '.json') ]]
+
+![PWI id mapping](images/dmui_setup26.png)
+
+In a similar way, map first_name to [[ extract('//first_name') ]] and last_name to [[ extract('//last_name') ]]
+
+The hobby array requires special care. Click on the name attribute. Under expression enter [[extract('.') ]] Under condition enter %%[[extract('//hobbies', true)]] The condition is an array iterator; each hobby will iterate over the list of hobby names (//hobbies) in the source. The name expression is just the value of the name. 
+
+![PWI hobby mapping](images/dmui_setup27.png)
+
+For coolness, enter the expression: [[ lookup('/hobbyCoolness.json', extract('.')) ]] Coolness is the numeric value corresponding to the hobby name in hobbyCoolness.json. You don't need to enter a condition for coolness; it uses the same condition as name.
+
+Click the save button (bottom left corner) to save your mapping. It gets saved to plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json file in your gradle project. If you think you messed up, you can get the correct mapping file from [dmHubLab/step4/PWIMapping/PWIMapping.mapping.json](dmHubLab/step4/PWIMapping/PWIMapping.mapping.json). 
 
 </p>
 </details>
