@@ -1,0 +1,44 @@
+{
+  "info": {
+    "title": "testmapping",
+    "version": "0.0.0",
+    "engine": {
+      "name": "mapper.sch",
+      "version": "1.0.1"
+    },
+    "source": {},
+    "target": {},
+    "description": ""
+  },
+  "pathNamespaces": {},
+  "collector": {},
+  "contexts": {},
+  "definitions": {
+    "Person": {
+      "properties": {
+        "id": {
+          "enabled": true
+        },
+        "firstName": {
+          "enabled": true
+        },
+        "lastName": {
+          "enabled": true
+        },
+        "hobbies": {
+          "$ref": "#/definitions/Hobby"
+        }
+      }
+    },
+    "Hobby": {
+      "properties": {
+        "name": {
+          "enabled": true
+        },
+        "coolness": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}

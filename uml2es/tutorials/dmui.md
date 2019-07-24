@@ -224,6 +224,10 @@ That command should run successfully; you should see "BUILD SUCCESSFUL" when its
 
 Here is where you use DMUI to define the mapping. TODO...
 
+TODO ... have a look at the source data in data/persons ... 
+TODO ... have a look at the source data in data/lookup ...  - allude to it.
+
+call it PWIMaping...
 
 </p>
 </details>
@@ -233,9 +237,33 @@ Here is where you use DMUI to define the mapping. TODO...
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-First, from the model generate a harmonization flow:
+As the build person you now ingest and harmonize the data using the model and the mapping. You don't write any code. It's all gradle from here on out. 
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -PentityName=Person -PpluginFormat=sjs -PdataFormat=json -PcontentMode=dm 
+First, deploy (i.e., upload) the mapping you (as the source data SME) created in Step 4:
+
+gradle -i deployPWIModel
+
+Next, ingest the source person data in the data/persons directory (as well as the hobbyCoolness lookup in data/lookup). We'll create a DHF input flow and run MLCP to ingest the person data through that flow. 
+
+gradle -i hubCreateInputFlow -PflowName=LoadPerson -PuseES=false
+
+gradle -i mlReloadModules loadPersonSourceData ingestLookup
+
+If you look in the staging database (xmi2es-tutorials-dmHub-STAGING), you will see the ingested files /person1.json, /person2.json, and /hobbyCoolness.json.  
+
+![After source ingestion](images/dmui_setup50.png)
+
+Next, from the model generate a harmonization flow:
+
+gradle -b uml2es4dhf.gradle -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -PcontentMode=dm 
+
+What we generated won't need to be tweaked! We don't have to change the code; the generated code works as is. Mainly what it does is run the DM mapping template against the source.
+
+Last, but not least, run the harmonization:
+
+gradle -i hubRunFlow -PflowName=harmonizePWI
+
+TODO .. the results
 
 </p>
 </details>

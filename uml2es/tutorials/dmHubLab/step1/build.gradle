@@ -56,6 +56,10 @@ dependencies {
     mlcp files("lib")
 }
 
+/*
+ Private tasks
+ */
+
 task prepPWIModel(type: Copy) {
     from "data/papyrus/PWIModel/PWIModel.uml"
     into "data/model"
@@ -73,12 +77,43 @@ task makeEntity(type: Copy) {
     rename 'PWIModel.json', 'Person.entity.json'
 }
 
+// This is a workaround - DMUI can't open mapping unless at least two plugin entities
+task makeDummyEntity(type: Copy) {
+    from "data/hack/Dummy.entity.json"
+    into "plugins/entities/Dummy"
+    rename 'PWIModel.json', 'Person.entity.json'
+}
+
+task runUML2ESMappingUpload(type: GradleBuild) {
+  buildFile = "uml2es4dhf.gradle"
+  tasks = ["uLoadDMTemplate"]
+}
+
+task prepPWIMapping(type: Copy) {
+    from "plugins/entities/Person/harmonize/PWIMaping/PWIMapping.mapping.json"
+    into "data/dmtemplate/dm/mapper/PWIModel/Person"
+    rename 'PWIMMapping.mapping.json', 'harmonizePWI.json'
+}
+
+/*
+ Public tasks
+ */
+
 task deployPWIModel() {
   dependsOn "prepPWIModel"
-  dependsOn "runUML2ESDeploy"
+  dependsOn "runUML2ESMappingUpload"
   dependsOn "makeEntity"
+  dependsOn "makeDummyEntity" // workaround
   tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
   tasks.findByName('makeEntity').mustRunAfter 'runUML2ESDeploy'
+  tasks.findByName('makeDummyEntity').mustRunAfter 'makeEntity' // workaround
+}
+
+// george's tweak is in here...
+task deployPWIMapping() {
+  dependsOn "prepPWIMapping"
+  dependsOn "runUML2ESDeploy"
+  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
 }
 
 task ingestLookup
@@ -121,3 +156,30 @@ task ingestLookup
   }
   ingestLookup.dependsOn "ingestLookup${envType}"
 } 
+
+task loadPersonSourceData(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/persons";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlStagingPort.toInteger()
+  database = mlStagingDbName
+
+  document_type = "json"
+  input_file_path =  "data/persons" 
+  input_file_type = "documents" 
+
+  output_collections "Person,input" 
+  output_permissions "rest-reader,read,rest-writer,update" 
+  output_uri_replace = regex 
+  output_uri_prefix = "/"
+
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
+  transform_param "entity-name=Person,flow-name=LoadPerson" 
+}
+
