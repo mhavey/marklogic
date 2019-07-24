@@ -288,31 +288,29 @@ Click the save button (bottom left corner) to save your mapping. It gets saved t
 
 As the build person you now ingest and harmonize the data using the model and the mapping. You don't write any code. It's all gradle from here on out. 
 
-First, deploy (i.e., upload) the mapping you (as the source data SME) created in Step 4:
-
-gradle -i deployPWIMapping
-
-Next, ingest the source person data in the data/persons directory (as well as the hobbyCoolness lookup in data/lookup). We'll create a DHF input flow and run MLCP to ingest the person data through that flow. 
+First let's create a DHF input flow to ingest our Person source data into STAGING. Also, let's create a DHF harmonization flow to harmonize that data to FINAL from the source data. 
 
 gradle -i hubCreateInputFlow -PflowName=LoadPerson -PuseES=false
 
-gradle -i mlReloadModules loadPersonSourceData ingestLookup
+gradle -b uml2es4dhf.gradle -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -PcontentMode=dm 
+
+You just generated a bunch of code. The good news is, you won't need a developer to touch it. The Input Flow ingests the data as is. The harmonization produces data that conforms to the UML model using the mapping from Step 4. You do need to "deploy" that mapping:
+
+gradle -i mlReloadModules deployPWIMapping
+
+Next, ingest the source person data in the data/persons directory (as well as the hobbyCoolness lookup in data/lookup). We'll create a DHF input flow and run MLCP to ingest the person data through that flow. 
+
+gradle -i loadPersonSourceData ingestLookup
 
 If you look in the staging database (xmi2es-tutorials-dmHub-STAGING), you will see the ingested files /person1.json, /person2.json, and /hobbyCoolness.json.  
 
 ![After source ingestion](images/dmui_setup50.png)
 
-Next, from the model generate a harmonization flow:
-
-gradle -b uml2es4dhf.gradle -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -PcontentMode=dm 
-
-What we generated won't need to be tweaked! We don't have to change the code; the generated code works as is. Mainly what it does is run the DM mapping template against the source.
-
 Last, but not least, run the harmonization:
 
 gradle -i hubRunFlow -PflowName=harmonizePWI
 
-TODO .. the results
+TODO .. the results - aren't the results awesome????
 
 </p>
 </details>

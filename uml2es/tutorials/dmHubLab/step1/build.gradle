@@ -84,21 +84,6 @@ task makeDummyEntity(type: Copy) {
     rename 'PWIModel.json', 'Person.entity.json'
 }
 
-task runUML2ESMappingUpload(type: GradleBuild) {
-  buildFile = "uml2es4dhf.gradle"
-  tasks = ["uLoadDMTemplate"]
-}
-
-task prepPWIMapping(type: Copy) {
-    from "plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json"
-    into "data/dmtemplate/dm/mapper/PWIModel/Person"
-    rename 'PWIMapping.mapping.json', 'harmonizePWI.json'
-}
-
-task dmide2dmf(type: ServerEval) {
-  def javascript = 
-}
-
 /*
  Public tasks
  */
@@ -113,11 +98,16 @@ task deployPWIModel() {
   tasks.findByName('makeDummyEntity').mustRunAfter 'makeEntity' // workaround
 }
 
-// george's tweak is in here...
-task deployPWIMapping() {
-  dependsOn "prepPWIMapping"
-  dependsOn "runUML2ESMappingUpload"
-  tasks.findByName('runUML2ESMappingUpload').mustRunAfter 'prepPWIMapping'
+task deployPWIMapping(type: com.marklogic.gradle.task.ServerEvalTask) {
+def dmuiMappingURI = "/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json"
+def dmfMappingURI = "/dm/mapper/PWIModel/Person/harmonizePWI.json"
+def mainEntity = "Person"
+def js = "'use strict';\n"
+js += 'declareUpdate();\n'
+js += 'const converter = require("/dmIde2dmf.sjs");\n'
+js += 'converter.convertDmIde2DMF("' +dmuiMappingURI + '","' + dmfMappingURI + '","' + mainEntity + '");\n'
+println js
+  javascript = js;
 }
 
 task ingestLookup
