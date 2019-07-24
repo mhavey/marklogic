@@ -79,8 +79,8 @@ task makeEntity(type: Copy) {
 
 // This is a workaround - DMUI can't open mapping unless at least two plugin entities
 task makeDummyEntity(type: Copy) {
-    from "data/hack/Dummy.entity.json"
-    into "plugins/entities/Dummy"
+    from "data/hack/X.entity.json"
+    into "plugins/entities/X"
     rename 'PWIModel.json', 'Person.entity.json'
 }
 
@@ -90,9 +90,9 @@ task runUML2ESMappingUpload(type: GradleBuild) {
 }
 
 task prepPWIMapping(type: Copy) {
-    from "plugins/entities/Person/harmonize/PWIMaping/PWIMapping.mapping.json"
+    from "plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json"
     into "data/dmtemplate/dm/mapper/PWIModel/Person"
-    rename 'PWIMMapping.mapping.json', 'harmonizePWI.json'
+    rename 'PWIMapping.mapping.json', 'harmonizePWI.json'
 }
 
 /*
@@ -101,7 +101,7 @@ task prepPWIMapping(type: Copy) {
 
 task deployPWIModel() {
   dependsOn "prepPWIModel"
-  dependsOn "runUML2ESMappingUpload"
+  dependsOn "runUML2ESDeploy"
   dependsOn "makeEntity"
   dependsOn "makeDummyEntity" // workaround
   tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
@@ -112,8 +112,8 @@ task deployPWIModel() {
 // george's tweak is in here...
 task deployPWIMapping() {
   dependsOn "prepPWIMapping"
-  dependsOn "runUML2ESDeploy"
-  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
+  dependsOn "runUML2ESMappingUpload"
+  tasks.findByName('runUML2ESMappingUpload').mustRunAfter 'prepPWIMapping'
 }
 
 task ingestLookup

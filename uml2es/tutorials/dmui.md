@@ -81,7 +81,7 @@ Finally, let's create an instance of the data hub. In the command prompt, run th
 
 gradle -i mlDeploy
 
-When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-dmHub-STAGING, xmi2es-tutorials-dmHub-FINAL, and xmi2es-tutorials-emuiHub-MODULES. Check in admin console you have these.
+When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-dmHub-STAGING, xmi2es-tutorials-dmHub-FINAL, and xmi2es-tutorials-dmHub-MODULES. Check in admin console you have these.
 
 </p>
 </details>
@@ -241,7 +241,7 @@ As the build person you now ingest and harmonize the data using the model and th
 
 First, deploy (i.e., upload) the mapping you (as the source data SME) created in Step 4:
 
-gradle -i deployPWIModel
+gradle -i deployPWIMapping
 
 Next, ingest the source person data in the data/persons directory (as well as the hobbyCoolness lookup in data/lookup). We'll create a DHF input flow and run MLCP to ingest the person data through that flow. 
 
