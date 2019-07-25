@@ -44,10 +44,10 @@ function buildEntity(doc, entityName) {
     if (sprop == "") continue;
     var propDef = fn.head(doc.xpath("//definitions/" + entityName + "/properties/" + sprop));
 
-    var condition = ("" + fn.head(propDef.xpath("coalesce/condition"))).trim();
-    if (condition != "") {
+    var condition = fn.head(propDef.xpath("coalesce/condition"));
+    if (condition && condition != null && (""+condition) != "") {
       if (theOneCondition == null) {
-        theOneCondition = condition;
+        theOneCondition = ""+condition;
       }
       else if (theOneCondition != condition) {
         throw "Multiple conditions *" + theOneCondition + "*" + condition + "*";
