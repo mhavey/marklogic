@@ -327,7 +327,7 @@ Click on /pwi/123.json to see its contents.
     "triples": [],
     "instance": {
       "Person": {
-        "id": ",/pwi/,123,.json",
+        "id": "/pwi/123.json",
         "firstName": "mike",
         "lastName": "havey",
         "hobbies": [
