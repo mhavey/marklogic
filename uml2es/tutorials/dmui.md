@@ -310,7 +310,44 @@ Last, but not least, run the harmonization:
 
 gradle -i hubRunFlow -PflowName=harmonizePWI
 
-TODO .. the results - aren't the results awesome????
+If you now explore the FINAL database (xmi2es-tutorials-dmHub-FINAL), you will see two new documents in the Person collection. Their URIs are /pwi/123.json and /pwi/456.json. How did they end up with these URIs? - In the model we designated the id attribute as the "xURI". In the mapping, we defined id as the concatenation of "/pwi", the value of the id attibute from the source document, and ".json". 
+
+Click on /pwi/123.json to see its contents. 
+
+{
+  "envelope": {
+    "headers": {},
+    "triples": [],
+    "instance": {
+      "Person": {
+        "id": ",/pwi/,123,.json",
+        "firstName": "mike",
+        "lastName": "havey",
+        "hobbies": [
+          {
+            "Hobby": {
+              "name": "swimming",
+              "coolness": 1
+            }
+          },
+          {
+            "Hobby": {
+              "name": "banking",
+              "coolness": 3
+            }
+          },
+          {
+            "Hobby": {
+              "name": "paragliding",
+              "coolness": 100000
+            }
+          }
+        ]
+      }
+    },
+    "attachments": null
+  }
+}
 
 </p>
 </details>
