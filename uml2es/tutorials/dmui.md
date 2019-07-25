@@ -30,7 +30,9 @@ For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an o
 
 ## Why is this Tutorial Under Construction
 
-Model-based mapping is soon to be a built-in feature of MarkLogic. In this tutorial we use a separate field tool, the Declarative Mapper.  This tutorial will soon be revised to use the built-in MarkLogic mapper. The DM IDE tool is ever-changing. In this tutorial we use it for the Declarative Mapper field tool. But DM IDE could grow into an UI editor for MarkLogic's built-in mapper. 
+Model-based mapping is soon to be a built-in feature of MarkLogic. In this tutorial we use a separate field tool, the Declarative Mapper.  This tutorial will soon be revised to use the built-in MarkLogic mapper. 
+
+The DM IDE tool is ever-changing. In this tutorial we use it for the Declarative Mapper field tool. Currently it is intended to fit multiple mapping engines. But DM IDE could grow into a UI editor for MarkLogic's built-in mapper. When that happens, this tutorial will show how the source data SME uses DM IDE to create a mapping for the MarkLogic mapper! 
 
 ## Step 1: Standup a MarkLogic Environment and Build Process (Build Person)
 
@@ -356,8 +358,4 @@ Click on /pwi/123.json to see its contents.
 </p>
 </details>
 
-## Summary
-
-
-TODO
 
