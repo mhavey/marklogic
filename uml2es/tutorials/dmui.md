@@ -28,6 +28,10 @@ For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an o
 - See [How to install Papyrus](papyrus_install.md) for instructions on installing Papyrus
 - See [How to install Declarative Mapper](dm_install.md) for instructions on installing the Declarative Mapper UI and engine
 
+## Why is this Tutorial Under Construction
+
+Model-based mapping is soon to be a built-in feature of MarkLogic. In this tutorial we use a separate field tool, the Declarative Mapper.  This tutorial will soon be revised to use the built-in MarkLogic mapper. The DM IDE tool is ever-changing. In this tutorial we use it for the Declarative Mapper field tool. But DM IDE could grow into an UI editor for MarkLogic's built-in mapper. 
+
 ## Step 1: Standup a MarkLogic Environment and Build Process (Build Person)
 
 <details><summary>Click to view/hide this section</summary>
