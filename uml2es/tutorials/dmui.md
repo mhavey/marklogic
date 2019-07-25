@@ -8,19 +8,19 @@ This tutorial shows how you, *without having to write any code*, can move raw, m
 
 The data architect and source-data SME are helped by a build person, who creates a gradle-based MarkLogic data hub environment that incorporates the UML and mapping tools. 
 
-The diagram below outlines the steps of the zero-code effort
+The diagram below outlines the steps of the zero-code effort. 
 
 ![Zero-Code overview](images/dmui_overall.png)
 
-1. The data architect in Papyrus creates the UML data model. 
+A) The data architect in Papyrus creates the UML data model. 
 
-2. The data architect, using the build environment created by the build person, uses UML2ES to convert the UML model to MarkLogic's Entity Services (ES) form. 
+B) The data architect, using the build environment created by the build person, uses UML2ES to convert the UML model to MarkLogic's Entity Services (ES) form. 
 
-3. The source-data SME works within the Declarative Mapper IDE tool to map source data to the model form of the data. The model form is the Entity Services form produced in step 2.
+C) The source-data SME works within the Declarative Mapper IDE tool to map source data to the model form (UML, ES) of the data. 
 
-4. The source-data SME works with the build person to incorporate the declarative mapping (produced in step 3) into the a data hub harmonization process. When this harmonization process is run, the raw source data is converted to the model's form using the declarative mapping.
+D) The source-data SME works with the build person to incorporate the source data SME's declarative mapping into a data hub harmonization process. When this harmonization process is run, the raw source data is converted to the model's form using the declarative mapping.
 
-There's no coding in this process... not even in steps 4 and 5. All the work is done by data experts and tools! To see why, try out this tutorial! You will play each of the roles through all the above steps. 
+There's no coding in this process... not even in the step! All the work is done by data experts and tools! To see why, try out this tutorial! You will play each of the roles through all the above steps. 
 
 For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an open-source UML tool), the Declarative Mapper IDE (a MarkLogic field tool), and the Declarative Mapper engine (another MarkLogic field tool). [The two Declarative Mapper tools are available on MarkLogic's internal BitBucket repository. This tutorial is MarkLogic internal.]
 
