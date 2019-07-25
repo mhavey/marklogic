@@ -320,6 +320,7 @@ If you now explore the FINAL database (xmi2es-tutorials-dmHub-FINAL), you will s
 
 Click on /pwi/123.json to see its contents. 
 
+```
 {
   "envelope": {
     "headers": {},
@@ -354,6 +355,7 @@ Click on /pwi/123.json to see its contents.
     "attachments": null
   }
 }
+```
 
 </p>
 </details>
