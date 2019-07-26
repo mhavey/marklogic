@@ -21,7 +21,7 @@ function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
         "main": {
            "format": "json",
            "content": [
-             buildEntity(doc, "Person"), 
+             buildEntity(doc, mainEntity), 
              {}
            ]
         }
