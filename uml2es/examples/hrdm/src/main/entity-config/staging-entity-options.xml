@@ -13,11 +13,6 @@
       <search:element ns="" name="departmentId"/>
     </search:value>
   </search:constraint>
-  <search:constraint name="employeeId">
-    <search:value>
-      <search:element ns="" name="employeeId"/>
-    </search:value>
-  </search:constraint>
   <!--Uncomment to return no results for a blank search, rather than the default of all results
  <search:term xmlns:search="http://marklogic.com/appservices/search">
   <search:empty apply="no-results"/>

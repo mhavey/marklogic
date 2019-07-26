@@ -62,6 +62,7 @@ task includeUGradle() {
       from "../../uml2esTransform/uml2es.gradle"
       into "."
     }
+  }
 }
 
 task setup() {
