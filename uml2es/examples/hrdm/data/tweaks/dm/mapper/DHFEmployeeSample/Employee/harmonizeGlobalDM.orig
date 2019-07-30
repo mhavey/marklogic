@@ -1,0 +1,573 @@
+{
+	"description" : {
+		"Model http://com.marklogic.es.uml.hr/HR-0.0.1 is stereotyped in the model as follows:" : {
+			"hasFunction" : [ "doCalculation_Department_deptIRI",
+					"doCalculation_Department_uri",
+					"doCalculation_Employee_empIRI",
+					"doCalculation_Employee_empLabel",
+					"doCalculation_Employee_employeeName",
+					"doCalculation_Employee_uri", "runWriter_Department",
+					"runWriter_Employee", "setHeaders_Department",
+					"setHeaders_Employee", "setTriples_Department",
+					"setTriples_Employee" ],
+			"semPrefixes" : [ {
+				"semPrefix" : [ "org" ],
+				"semReference" : [ "http://www.w3.org/ns/org#" ]
+			} ]
+		},
+		"The model also has the specified mapping facts:" : {
+			"Mapping URI" : "/xmi2es/excel-mapper/global-mapping.json",
+			"Overall Mapping Source" : "GlobalCorp HR Data",
+			"Overall Mapping Notes" : "CSV Files Containing Employee, Department, and Salary Data"
+		},
+		"Comments below include discovery findings. See the full report at this URI:" : "/xmi2es/discovery/global-mapping.json",
+		"Employee" : {
+			"description" : {
+				"Class Employee is stereotyped in the model as follows:" : {
+					"collections" : [ "Employee" ],
+					"excludes" : [
+							"http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/empIRI",
+							"http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/empLabel",
+							"http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/employeeName",
+							"http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/memberOf",
+							"http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/reportsTo",
+							"http://com.marklogic.es.uml.hr/HR-0.0.1/Employee/uri" ],
+					"semType" : [ "http://xmlns.com/foaf/0.1/Agent" ]
+				},
+				"The class also has the specified mapping facts" : {
+					"Mapping Source" : [ "EmployeeTable.csv (Primary)",
+							"SalaryTable.csv (Additional)" ],
+					"Mapping Notes" : "Notice we map addresses inline. We could also have split them into a separate sheet. Inline makes more sense here. Same for phones and emails.",
+					"Mapping Collections For Discovery" : null,
+					"Mapping URI Patterns For Discovery" : null,
+					"Mapping Sample Data For Discovery" : null
+				},
+				"Discovery found the following:" : {
+					"Documents whose structure resembles the model" : [ {
+						"doc" : "/hr/salary/global/195.json",
+						"numMatches" : 7
+					}, {
+						"doc" : "/hr/salary/global/564.json",
+						"numMatches" : 7
+					}, {
+						"doc" : "/hr/salary/global/897.json",
+						"numMatches" : 7
+					}, {
+						"doc" : "/hr/salary/global/821.json",
+						"numMatches" : 7
+					} ],
+					"Possible collections" : [ "Employee", "LoadEmployee" ],
+					"Possible URIs" : [ "/hr/employee/global/171.json",
+							"/hr/employee/global/270.json",
+							"/hr/employee/global/370.json",
+							"/hr/employee/global/56.json",
+							"/hr/employee/global/690.json",
+							"/hr/employee/global/712.json",
+							"/hr/employee/global/884.json" ]
+				}
+			},
+			"attributes" : {
+				"addresses" : {
+					"Attribute addresses is stereotyped in the model as follows:" : {
+						"reference" : [ "http://com.marklogic.es.uml.hr/HR-0.0.1/Address" ],
+						"resolvedType" : [ "#/definitions/Address" ],
+						"typeIsReference" : [ "true" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "addresses.addressType",
+						"Source Mapping" : "\"Primary\"",
+						"Mapping Attribute Notes" : "constant",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.city",
+						"Source Mapping" : "city",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.country",
+						"Source Mapping" : "\"USA\"",
+						"Mapping Attribute Notes" : "constant",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.geoCoordinates.latitute",
+						"Source Mapping" : "latitude",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.geoCoordinates.longitude",
+						"Source Mapping" : "longitude",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.lines",
+						"Source Mapping" : "addr1, addr2",
+						"Mapping Attribute Notes" : "EmployeeTable, array",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.state",
+						"Source Mapping" : "states",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					}, {
+						"Model Path" : "addresses.zip",
+						"Source Mapping" : "zip",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"firstName" : {
+					"Attribute firstName is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "firstName",
+						"Source Mapping" : "first_name",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : "Larry",
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [
+								{
+									"document" : "/hr/employee/global/137.json",
+									"physicalName" : "first_name"
+								},
+								{
+									"document" : "/hr/employee/global/145.json",
+									"physicalName" : "first_name"
+								},
+								{
+									"document" : "/hr/employee/global/73.json",
+									"physicalName" : "first_name"
+								},
+								{
+									"document" : "/hr/employee/global/614.json",
+									"physicalName" : "first_name"
+								} ],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"bonus" : {
+					"Attribute bonus is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "float" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "bonus",
+						"Source Mapping" : "bonus from salary",
+						"Mapping Attribute Notes" : "SalaryTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [
+								{
+									"document" : "/hr/salary/global/47.json",
+									"physicalName" : "bonus"
+								}, {
+									"document" : "/hr/salary/global/635.json",
+									"physicalName" : "bonus"
+								}, {
+									"document" : "/hr/salary/global/295.json",
+									"physicalName" : "bonus"
+								}, {
+									"document" : "/hr/salary/global/354.json",
+									"physicalName" : "bonus"
+								} ],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"dateOfBirth" : {
+					"Attribute dateOfBirth is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "date" ]
+					}
+				},
+				"effectiveDate" : {
+					"Attribute effectiveDate is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "date" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "effectiveDate",
+						"Source Mapping" : "job_effective_date from salary",
+						"Mapping Attribute Notes" : "SalaryTable, date format",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"emails" : {
+					"Attribute emails is stereotyped in the model as follows:" : {
+						"reference" : [ "http://com.marklogic.es.uml.hr/HR-0.0.1/Email" ],
+						"resolvedType" : [ "#/definitions/Email" ],
+						"typeIsReference" : [ "true" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "emails.emailAddress",
+						"Source Mapping" : "home_email, work_email",
+						"Mapping Attribute Notes" : "EmployeeTable, 2",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"title" : {
+					"Attribute title is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "title",
+						"Source Mapping" : "job_title",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"status" : {
+					"Attribute status is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "status",
+						"Source Mapping" : "status from salary",
+						"Mapping Attribute Notes" : "SalaryTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [
+								{
+									"document" : "/hr/salary/global/363.json",
+									"physicalName" : "status"
+								}, {
+									"document" : "/hr/salary/global/915.json",
+									"physicalName" : "status"
+								}, {
+									"document" : "/hr/salary/global/994.json",
+									"physicalName" : "status"
+								}, {
+									"document" : "/hr/salary/global/444.json",
+									"physicalName" : "status"
+								} ],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"employeeId" : {
+					"Attribute employeeId is stereotyped in the model as follows:" : {
+						"header" : [ "entityId" ],
+						"resolvedType" : [ "int" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "employeeId",
+						"Source Mapping" : "emp_id",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"baseSalary" : {
+					"Attribute baseSalary is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "float" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "baseSalary",
+						"Source Mapping" : "base_salary from salary",
+						"Mapping Attribute Notes" : "SalaryTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [
+								{
+									"document" : "/hr/salary/global/47.json",
+									"physicalName" : "base_salary"
+								}, {
+									"document" : "/hr/salary/global/363.json",
+									"physicalName" : "base_salary"
+								}, {
+									"document" : "/hr/salary/global/588.json",
+									"physicalName" : "base_salary"
+								}, {
+									"document" : "/hr/salary/global/897.json",
+									"physicalName" : "base_salary"
+								} ],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"hireDate" : {
+					"Attribute hireDate is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "date" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "hireDate",
+						"Source Mapping" : "hire_date",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : null,
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [
+								{
+									"document" : "/hr/employee/global/394.json",
+									"physicalName" : "hire_date"
+								},
+								{
+									"document" : "/hr/employee/global/53.json",
+									"physicalName" : "hire_date"
+								},
+								{
+									"document" : "/hr/employee/global/113.json",
+									"physicalName" : "hire_date"
+								},
+								{
+									"document" : "/hr/employee/global/323.json",
+									"physicalName" : "hire_date"
+								} ],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"lastName" : {
+					"Attribute lastName is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					},
+					"The attribute also has the specified mapping facts:" : [ {
+						"Model Path" : "lastName",
+						"Source Mapping" : "last_name",
+						"Mapping Attribute Notes" : "EmployeeTable",
+						"Mapping Attribute Sample Data For Discovery" : "Fields",
+						"Mapping Attribute AKA For Discovery" : null
+					} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [
+								{
+									"document" : "/hr/employee/global/133.json",
+									"physicalName" : "last_name"
+								},
+								{
+									"document" : "/hr/employee/global/313.json",
+									"physicalName" : "last_name"
+								},
+								{
+									"document" : "/hr/employee/global/966.json",
+									"physicalName" : "last_name"
+								},
+								{
+									"document" : "/hr/employee/global/642.json",
+									"physicalName" : "last_name"
+								} ],
+						"Similar to physical predicate in candidate document" : []
+					}
+				},
+				"officeNumber" : {
+					"Attribute officeNumber is stereotyped in the model as follows:" : {
+						"reference" : [ "http://com.marklogic.es.uml.hr/HR-0.0.1/Address" ],
+						"resolvedType" : [ "#/definitions/Address" ],
+						"typeIsReference" : [ "true" ]
+					}
+				},
+				"phones" : {
+					"Attribute phones is stereotyped in the model as follows:" : {
+						"reference" : [ "http://com.marklogic.es.uml.hr/HR-0.0.1/Phone" ],
+						"resolvedType" : [ "#/definitions/Phone" ],
+						"typeIsReference" : [ "true" ]
+					},
+					"The attribute also has the specified mapping facts:" : [
+							{
+								"Model Path" : "phones.phoneType",
+								"Source Mapping" : "\"home\", \"mobile\", \"pager\" ,\"work\"",
+								"Mapping Attribute Notes" : "constant, 4",
+								"Mapping Attribute Sample Data For Discovery" : null,
+								"Mapping Attribute AKA For Discovery" : null
+							},
+							{
+								"Model Path" : "phones.phoneValue",
+								"Source Mapping" : "home_phone, mobile, pager, work_phone",
+								"Mapping Attribute Notes" : "EmployeeTable, 4",
+								"Mapping Attribute Sample Data For Discovery" : null,
+								"Mapping Attribute AKA For Discovery" : null
+							} ],
+					"Discovery found the following:" : {
+						"Similar to physical attribute in candidate document" : [],
+						"Similar to physical predicate in candidate document" : []
+					}
+				}
+			}
+		},
+		"Address" : {
+			"description" : {
+				"Class Address is stereotyped in the model as follows:" : {}
+			},
+			"attributes" : {
+				"addressType" : {
+					"Attribute addressType is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"city" : {
+					"Attribute city is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"country" : {
+					"Attribute country is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"geoCoordinates" : {
+					"Attribute geoCoordinates is stereotyped in the model as follows:" : {
+						"reference" : [ "http://com.marklogic.es.uml.hr/HR-0.0.1/GeoCoordinates" ],
+						"resolvedType" : [ "#/definitions/GeoCoordinates" ],
+						"typeIsReference" : [ "true" ]
+					}
+				},
+				"lines" : {
+					"Attribute lines is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"state" : {
+					"Attribute state is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"zip" : {
+					"Attribute zip is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				}
+			}
+		},
+		"GeoCoordinates" : {
+			"description" : {
+				"Class GeoCoordinates is stereotyped in the model as follows:" : {}
+			},
+			"attributes" : {
+				"latitude" : {
+					"Attribute latitude is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "float" ]
+					}
+				},
+				"longitude" : {
+					"Attribute longitude is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "float" ]
+					}
+				}
+			}
+		},
+		"Email" : {
+			"description" : {
+				"Class Email is stereotyped in the model as follows:" : {}
+			},
+			"attributes" : {
+				"emailAddress" : {
+					"Attribute emailAddress is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"emailType" : {
+					"Attribute emailType is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				}
+			}
+		},
+		"Phone" : {
+			"description" : {
+				"Class Phone is stereotyped in the model as follows:" : {}
+			},
+			"attributes" : {
+				"phoneNumber" : {
+					"Attribute phoneNumber is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				},
+				"phoneType" : {
+					"Attribute phoneType is stereotyped in the model as follows:" : {
+						"resolvedType" : [ "string" ]
+					}
+				}
+			}
+		}
+	},
+	"modules" : {
+		"functionLibraries" : [ "/xmi2es/dm.sjs" ]
+	},
+	"input" : {
+		"format" : "json"
+	},
+	"variables" : {
+		"firstName" : "extract('//TODO')",
+		"lastName" : "extract('//TODO')",
+		"employeeName" : "xcalc('DHFEmployeeSample', 'Employee', 'employeeName', 'options'  , 'firstName', $firstName, 'content'  , 'lastName', $lastName, 'content' )",
+		"empLabel" : "xcalc('DHFEmployeeSample', 'Employee', 'empLabel', 'options'  , 'employeeName', $employeeName, 'options' )",
+		"employeeId" : "extract('//TODO')",
+		"empIRI" : "xcalc('DHFEmployeeSample', 'Employee', 'empIRI', 'options'  , 'employeeId', $employeeId, 'content' )",
+		"uri" : "xcalc('DHFEmployeeSample', 'Employee', 'uri', 'options'  , 'employeeId', $employeeId, 'content' )"
+	},
+	"outputs" : {
+		"main" : {
+			"format" : "json",
+			"content" : [ {
+				"addresses" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
+					"addressType" : "[[ extract('//TODO') ]]",
+					"city" : "[[ extract('//TODO') ]]",
+					"country" : "[[ extract('//TODO') ]]",
+					"geoCoordinates" : {
+						"latitude" : "[[ extract('//TODO') ]]",
+						"longitude" : "[[ extract('//TODO') ]]"
+					},
+					"lines" : "[[ extract('//TODO') ]]",
+					"state" : "[[ extract('//TODO') ]]",
+					"zip" : "[[ extract('//TODO') ]]"
+				} ],
+				"firstName" : "[[ $firstName ]]",
+				"bonus" : "[[ extract('//TODO') ]]",
+				"dateOfBirth" : "[[ extract('//TODO') ]]",
+				"effectiveDate" : "[[ extract('//TODO') ]]",
+				"emails" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
+					"emailAddress" : "[[ extract('//TODO') ]]",
+					"emailType" : "[[ extract('//TODO') ]]"
+				} ],
+				"title" : "[[ extract('//TODO') ]]",
+				"status" : "[[ extract('//TODO') ]]",
+				"employeeId" : "[[ $employeeId ]]",
+				"baseSalary" : "[[ extract('//TODO') ]]",
+				"hireDate" : "[[ extract('//TODO') ]]",
+				"lastName" : "[[ $lastName ]]",
+				"phones" : [ "%%[[ extract('//LOOPCOUNTER') ]]", {
+					"phoneNumber" : "[[ extract('//TODO') ]]",
+					"phoneType" : "[[ extract('//TODO') ]]"
+				} ]
+			}, {
+				"employeeName" : "[[ $employeeName ]]",
+				"empLabel" : "[[ $empLabel ]]",
+				"empIRI" : "[[ $empIRI ]]",
+				"uri" : "[[ $uri ]]"
+			} ]
+		}
+	}
+}

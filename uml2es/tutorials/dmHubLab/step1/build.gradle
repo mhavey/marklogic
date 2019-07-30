@@ -1,0 +1,179 @@
+buildscript {
+  repositories {
+    maven {url 'http://developer.marklogic.com/maven2/'}
+  }
+}
+
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make the Data Hub Framework do its magic
+    id 'com.marklogic.ml-data-hub' version '4.1.0'
+}
+
+repositories {
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
+
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
+
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+}
+
+configurations {
+  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
+  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
+  // shown below.  Need to force to use certain version of xml-apis library.
+  mlcp {
+      resolutionStrategy {
+        force "xml-apis:xml-apis:1.4.01"
+      }
+    }
+}
+
+dependencies {
+    // this allows you to write custom java code that depends
+    // on the Data Hub Framework library
+    compile 'com.marklogic:marklogic-data-hub:4.1.0'
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
+
+    mlcp "com.marklogic:mlcp:9.0.6"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
+}
+
+/*
+ Private tasks
+ */
+
+task prepPWIModel(type: Copy) {
+    from "data/papyrus/PWIModel/PWIModel.uml"
+    into "data/model"
+    rename '(.*).uml', '$1.xml'
+}
+
+task runUML2ESDeploy(type: GradleBuild) {
+  buildFile = "uml2es4dhf.gradle"
+  tasks = ["uDeployModel"]
+}
+
+task makeEntity(type: Copy) {
+    from "data/entity-services/PWIModel.json"
+    into "plugins/entities/Person"
+    rename 'PWIModel.json', 'Person.entity.json'
+}
+
+// This is a workaround - DMUI can't open mapping unless at least two plugin entities
+task makeDummyEntity(type: Copy) {
+    from "data/hack/X.entity.json"
+    into "plugins/entities/X"
+    rename 'PWIModel.json', 'Person.entity.json'
+}
+
+/*
+ Public tasks
+ */
+
+task deployPWIModel() {
+  dependsOn "prepPWIModel"
+  dependsOn "runUML2ESDeploy"
+  dependsOn "makeEntity"
+  dependsOn "makeDummyEntity" // workaround
+  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepPWIModel'
+  tasks.findByName('makeEntity').mustRunAfter 'runUML2ESDeploy'
+  tasks.findByName('makeDummyEntity').mustRunAfter 'makeEntity' // workaround
+}
+
+task deployPWIMapping(type: com.marklogic.gradle.task.ServerEvalTask) {
+def dmuiMappingURI = "/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json"
+def dmfMappingURI = "/dm/mapper/PWIModel/Person/harmonizePWI.json"
+def mainEntity = "Person"
+def js = "'use strict';\n"
+js += 'declareUpdate();\n'
+js += 'const converter = require("/dmIde2dmf.sjs");\n'
+js += 'converter.convertDmIde2DMF("' +dmuiMappingURI + '","' + dmfMappingURI + '","' + mainEntity + '");\n'
+println js
+  javascript = js;
+}
+
+task ingestLookup
+["Staging", "Final"].toList().each { envType ->
+  task "ingestLookup${envType}"(type: com.marklogic.gradle.task.MlcpTask) {
+
+ 
+    def port = mlStagingPort.toInteger()
+    def db = mlStagingDbName
+   
+    if ("${envType}" == "Final") {
+     port = mlFinalPort.toInteger()
+     db = mlFinalDbName
+    }
+    else if ("${envType}" == "Staging") {
+    }
+    else {
+      throw new GradleException("Illegal env ${envType}")
+    }
+    def dataDir = "${projectDir}";
+    def unixDir = dataDir.replace('\\', '/');
+    def regexDir = unixDir+"/data/coolness";
+    def regex = '"' + regexDir + ",'',/,''" + '"'
+
+    classpath = configurations.mlcp
+    command = "IMPORT"
+    host = mlHost
+    port = port
+    database = db
+
+    document_type = "json"
+    input_file_path =  "data/coolness" 
+    input_file_type = "documents" 
+
+    output_collections "Employee,LoadEmployee,input" 
+    output_permissions "rest-reader,read,rest-writer,update" 
+    output_uri_replace = regex 
+    output_uri_prefix = "/"
+
+  }
+  ingestLookup.dependsOn "ingestLookup${envType}"
+} 
+
+task loadPersonSourceData(type: com.marklogic.gradle.task.MlcpTask) {
+  def dataDir = "${projectDir}";
+  def unixDir = dataDir.replace('\\', '/');
+  def regexDir = unixDir+"/data/persons";
+  def regex = '"' + regexDir + ",'',/,''" + '"'
+
+  classpath = configurations.mlcp
+  command = "IMPORT"
+  host = mlHost
+  port = mlStagingPort.toInteger()
+  database = mlStagingDbName
+
+  document_type = "json"
+  input_file_path =  "data/persons" 
+  input_file_type = "documents" 
+
+  output_collections "Person,input" 
+  output_permissions "rest-reader,read,rest-writer,update" 
+  output_uri_replace = regex 
+  output_uri_prefix = "/"
+
+  transform_module="/data-hub/4/transforms/mlcp-flow-transform.sjs" 
+  transform_namespace="http://marklogic.com/data-hub/mlcp-flow-transform" 
+  transform_param "entity-name=Person,flow-name=LoadPerson" 
+}
+

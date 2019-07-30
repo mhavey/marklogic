@@ -1,0 +1,18 @@
+{
+  "info" : {
+    "title" : "X",
+    "version" : "0.0.1",
+    "baseUri" : "http://example.com/",
+    "description" : "An X entity"
+  },
+  "definitions" : {
+    "X" : {
+      "description" : "The X entity root.",
+      "required" : [ ],
+      "rangeIndex" : [ ],
+      "wordLexicon" : [ ],
+      "pii" : [ ],
+      "properties" : { }
+    }
+  }
+}

@@ -191,9 +191,14 @@ task includeXMI2ESTransform(type: Copy) {
     into "src/main/ml-modules/root/xmi2es"
 }
 
-task includeUGradle(type: Copy) {
-    from "../../uml2esTransform/uml2es4dhf.gradle"
-    into "."
+task includeUGradle() {
+  // Don't use Copy task bcuz file locking into gradle project dir on Windows
+  doLast {
+    copy {
+      from "../../uml2esTransform/uml2es4dhf.gradle"
+      into "."
+    }
+  }
 }
 
 task includeModel(type: Copy) {
@@ -212,3 +217,4 @@ task tweakHarmonization(type: Copy) {
   from "data/tweaks"
   into "plugins/entities"
 }
+

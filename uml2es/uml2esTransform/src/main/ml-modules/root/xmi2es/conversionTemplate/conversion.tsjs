@@ -9,7 +9,7 @@ const dm = require('/ext/declarative-mapper.sjs');
 const DM_MAPPING_CONFIG_URI = "${EntityXContentDMMapper}";
 function getDMMapper(options) {
   if (!options.mapper) {
-    const ctx = dm.newCompilerContext(DM_MAPPING_CONFIG_URI);
+    const ctx = dm.newCompilerContext(cts.doc(DM_MAPPING_CONFIG_URI).toObject());
     const mapper = dm.prepare(ctx);
     options.mapper = mapper;
   }
