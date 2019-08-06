@@ -20,7 +20,7 @@ C) The source-data SME works within the Declarative Mapper IDE tool to map sourc
 
 D) The source-data SME works with the build person to incorporate the source data SME's declarative mapping into a data hub harmonization process. When this harmonization process is run, the raw source data is converted to the model's form using the declarative mapping.
 
-There's no coding in this process... not even in the step! All the work is done by data experts and tools! To see why, try out this tutorial! You will play each of the roles through all the above steps. 
+There's no coding in this process... not even in step D! All the work is done by data experts and tools! To see why, try out this tutorial! You will play each of the roles through all the above steps. 
 
 For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an open-source UML tool), the Declarative Mapper IDE (a MarkLogic field tool), and the Declarative Mapper engine (another MarkLogic field tool). [The two Declarative Mapper tools are available on MarkLogic's internal BitBucket repository. This tutorial is MarkLogic internal.]
 
