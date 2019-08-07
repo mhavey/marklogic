@@ -1,5 +1,3 @@
-'use strict';
-
 const dm = require('/ext/declarative-mapper.sjs');
 
 /*
@@ -10,7 +8,7 @@ in time and will soon by OBSOLETE.
 DON'T USE THIS!
 */
 
-declareUpdate();
+//declareUpdate();
 
 function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
   var doc = fn.head(xdmp.eval('cts.doc(dmuiMappingURI)', {dmuiMappingURI: dmuiMappingURI}, {'database': xdmp.modulesDatabase()})); 
@@ -88,6 +86,9 @@ function runDMMappingTest(dmTemplate, source) {
   return mapping[0];
 }
 
-exports.convertDmIde2DMF = convertDmIde2DMF;
-exports.convertDmIde2DMF4Test = convertDmIde2DMF4Test;
-exports.runDMMappingTest = runDMMappingTest;
+module.exports = {
+  convertDmIde2DMF : convertDmIde2DMF,
+  convertDmIde2DMF4Test: convertDmIde2DMF4Test,
+  runDMMappingTest: runDMMappingTest
+};
+

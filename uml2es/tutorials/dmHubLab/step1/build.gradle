@@ -88,6 +88,11 @@ task makeDummyEntity(type: Copy) {
  Public tasks
  */
 
+task loadDmIdeSampleData(type: Copy) {
+    from "data/persons"
+    into "plugins/entities/Person/harmonize/PWIMapping/samples"
+}
+
 task deployPWIModel() {
   dependsOn "prepPWIModel"
   dependsOn "runUML2ESDeploy"

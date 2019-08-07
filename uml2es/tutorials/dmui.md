@@ -288,7 +288,14 @@ Click the save button (bottom left corner) to save your mapping. It gets saved t
 
 ## Step 4b: Test the Mapping Within IDE
 
-TODO - talk about this...
+TODO - talk about this... 
+
+First, load the sample documents by running:
+
+gradle loadDmIdeSampleData mlReloadModules
+
+Next in the DM IDE...
+
 
 </p>
 </details>
