@@ -63,7 +63,7 @@ Under dmHub/data, create subfolders model and papyrus
 
 Copy into dmHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you can see the file dmHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
 
-When you are done, you should have the following folder structure:
+When you are done, you should have the following folder structure: ... TODO - update; add service folder, remove hack
 
 ![Step 1 - folder structure](images/dmui_setup1.png)
 
@@ -219,6 +219,8 @@ That command should run successfully; you should see "BUILD SUCCESSFUL" when its
 
 In Step 4 you play the role of Source Data SME. Using the Declarative Mapper IDE, you map source data to the form of the UML PWI model created in Step 3. 
 
+## Step 4a: Build the Mapping
+
 First, open the DM IDE tool; see [How to install Declarative Mapper](dm_install.md) for instructions. In the initial screen ("Recent Projects"), paste in the fully path of your gradle project. Then click the + button.
 
 ![IDE initial](images/dmui_setup20.png)
@@ -283,6 +285,10 @@ The hobby array requires special care. Click on the name attribute. Under expres
 For coolness, enter the expression: [[ lookup('/hobbyCoolness.json', extract('.')) ]] Coolness is the numeric value corresponding to the hobby name in hobbyCoolness.json. You don't need to enter a condition for coolness; it uses the same condition as name.
 
 Click the save button (bottom left corner) to save your mapping. It gets saved to plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json file in your gradle project. If you think you messed up, you can get the correct mapping file from [dmHubLab/step4/PWIMapping/PWIMapping.mapping.json](dmHubLab/step4/PWIMapping/PWIMapping.mapping.json); copy it into plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json 
+
+## Step 4b: Test the Mapping Within IDE
+
+TODO - talk about this...
 
 </p>
 </details>
