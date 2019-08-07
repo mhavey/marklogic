@@ -1,5 +1,7 @@
 'use strict';
 
+const dm = require('/ext/declarative-mapper.sjs');
+
 /*
 This module converts DM IDE mapping to Nic Gibcon json-sc DM template format.
 It's a workaround: Ivo/Stelian tool does not support DM IDE to DM json-sc format. 
@@ -13,7 +15,19 @@ declareUpdate();
 function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
   var doc = fn.head(xdmp.eval('cts.doc(dmuiMappingURI)', {dmuiMappingURI: dmuiMappingURI}, {'database': xdmp.modulesDatabase()})); 
   if (!doc || doc == null) throw "Not found in modules DB: *" + dmuiMappingURI + "*";
-  var dmTemplate = {
+  var dmTemplate = buildDMTemplate(doc, mainEntity);
+  xdmp.documentInsert(dmfMappingURI, dmTemplate, {
+    "collections": ["dm", "cookieCutter", "http://marklogic.com/entity-services/models", mainEntity],
+    "permissions": xdmp.documentGetPermissions(dmuiMappingURI)
+  });
+}
+
+function convertDmIde2DMF4Test(dmuiMapping, mainEntity) {
+  return buildDMTemplate(dmuiMapping, mainEntity);
+}
+
+function buildDMTemplate(dmuiTemplate, mainEntity) {
+  return {
      "input": {
         "format": "json"
      },
@@ -21,17 +35,12 @@ function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
         "main": {
            "format": "json",
            "content": [
-             buildEntity(doc, mainEntity), 
+             buildEntity(dmuiTemplate, mainEntity), 
              {}
            ]
         }
      }
   };
-
-  xdmp.documentInsert(dmfMappingURI, dmTemplate, {
-    "collections": ["dm", "cookieCutter", "http://marklogic.com/entity-services/models", mainEntity],
-    "permissions": xdmp.documentGetPermissions(dmuiMappingURI)
-  });
 }
 
 function buildEntity(doc, entityName) {
@@ -72,4 +81,13 @@ function buildEntity(doc, entityName) {
   else return [theOneCondition, content];
 }
 
+function runDMMappingTest(dmTemplate, source) {
+  var ctx = dm.newCompilerContext(dmTemplate);
+  var mapper = dm.prepare(ctx);
+  var mapping = mapper(source);
+  return mapping[0];
+}
+
 exports.convertDmIde2DMF = convertDmIde2DMF;
+exports.convertDmIde2DMF4Test = convertDmIde2DMF4Test;
+exports.runDMMappingTest = runDMMappingTest;
