@@ -13,7 +13,7 @@ DON'T USE THIS!
 function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
   var doc = fn.head(xdmp.eval('cts.doc(dmuiMappingURI)', {dmuiMappingURI: dmuiMappingURI}, {'database': xdmp.modulesDatabase()})); 
   if (!doc || doc == null) throw "Not found in modules DB: *" + dmuiMappingURI + "*";
-  var dmTemplate = buildDMTemplate(doc, mainEntity);
+  var dmTemplate = buildDMTemplate(doc, mainEntity, true);
   xdmp.documentInsert(dmfMappingURI, dmTemplate, {
     "collections": ["dm", "cookieCutter", "http://marklogic.com/entity-services/models", mainEntity],
     "permissions": xdmp.documentGetPermissions(dmuiMappingURI)
@@ -21,10 +21,10 @@ function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
 }
 
 function convertDmIde2DMF4Test(dmuiMapping, mainEntity) {
-  return buildDMTemplate(dmuiMapping, mainEntity);
+  return buildDMTemplate(dmuiMapping, mainEntity, false);
 }
 
-function buildDMTemplate(dmuiTemplate, mainEntity) {
+function buildDMTemplate(dmuiTemplate, mainEntity, includeClassNames) {
   return {
      "input": {
         "format": "json"
@@ -33,7 +33,7 @@ function buildDMTemplate(dmuiTemplate, mainEntity) {
         "main": {
            "format": "json",
            "content": [
-             buildEntity(dmuiTemplate, mainEntity), 
+             buildEntity(dmuiTemplate, mainEntity, includeClassNames), 
              {}
            ]
         }
@@ -41,11 +41,15 @@ function buildDMTemplate(dmuiTemplate, mainEntity) {
   };
 }
 
-function buildEntity(doc, entityName) {
+function buildEntity(doc, entityName, includeClassNames) {
   var props = doc.xpath("//definitions/" + entityName + "/properties/*/node-name()");
   var content = {};
+  var root = content;
   var theOneCondition = null;
-  content[entityName] = {};
+  if (includeClassNames == true) {
+    content[entityName] = {};
+    root = content[entityName];
+  }
   for (var prop of props) {
     var sprop = ("" + prop).trim();
     if (sprop == "") continue;
@@ -63,14 +67,14 @@ function buildEntity(doc, entityName) {
 
     var expression = fn.head(propDef.xpath("coalesce/expression"));
     if (expression && expression != null && (""+expression) != "") {
-      content[entityName][sprop] = ""+expression;
+      root[sprop] = ""+expression;
     }
     else {
       var ref = fn.head(propDef.xpath("*[string(node-name(.)) eq '$ref']"));
       if (ref && ref != null && ""+ref != "") {
         var toks = (""+ref).split("/");
         ref = toks[toks.length - 1];
-        content[entityName][sprop] = buildEntity(doc, ref);
+        root[sprop] = buildEntity(doc, ref, includeClassNames);
       }      
     }
   }

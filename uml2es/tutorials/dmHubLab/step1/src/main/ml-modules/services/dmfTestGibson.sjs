@@ -39,7 +39,9 @@ function post(context, params, input) {
 
   // get DM mapping and run mapper
   var dmTemplate = util.convertDmIde2DMF4Test(ninput, entityName);
-  return util.runDMMappingTest(dmTemplate, source);
+  var ret = {};
+  ret[sample] = util.runDMMappingTest(dmTemplate, source);
+  return ret;
 }
 
 exports.POST = post;
