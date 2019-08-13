@@ -288,14 +288,29 @@ Click the save button (bottom left corner) to save your mapping. It gets saved t
 
 ## Step 4b: Test the Mapping Within IDE
 
-TODO - talk about this... 
-
 First, load the sample documents by running:
 
-gradle loadDmIdeSampleData mlReloadModules
+gradle -iloadDmIdeSampleData mlReloadModules
 
-Next in the DM IDE...
+Run mlWatch to auto-detect and deploy changes to the sample documents:
 
+gradle -i mlWatch
+
+Restart the DM IDE and select PWIMapping. In the left panel, select person1.json. 
+
+![Sample in IDE](images/dmui_setup28.png)
+
+In the center panel, just above the mapping, click the Refresh button. Wait a few seconds. You will see the results of the mapping applied to the sample document as green-shaded text within the mapping.
+
+![Sample result in IDE](images/dmui_setup29.png)
+
+Edit the source document in the left panel of the IDE. Make the id "123abc". Also change the hobbies to contain only "yoga" and "steely-dan". When done, click the save button.
+
+![Modified sample in IDE](images/dmui_setup30.png)
+
+Wait a minute. Then click the Refresh button again. You will see slightly different results in the green-shaded text. 
+
+![Modified sample result in IDE](images/dmui_setup31.png)
 
 </p>
 </details>
@@ -307,7 +322,7 @@ Next in the DM IDE...
 
 As the build person you now ingest and harmonize the data using the model and the mapping. You don't write any code. It's all gradle from here on out. 
 
-First let's create a DHF input flow to ingest our Person source data into STAGING. Also, let's create a DHF harmonization flow to harmonize that data to FINAL from the source data. 
+First let's create a DHF input flow to ingest our Person source data into STAGING. Also, let's create a DHF harmonization flow to harmonize that data to FINAL from the source data. Run the following commands; if you are still running mlWatch (from the previous step), cancel it (Ctrl-C):
 
 gradle -i hubCreateInputFlow -PflowName=LoadPerson -PuseES=false
 

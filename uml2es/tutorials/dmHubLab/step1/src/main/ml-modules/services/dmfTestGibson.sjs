@@ -22,13 +22,18 @@ function paramInput(params, attrib) {
 
 function post(context, params, input) {
 
+  input = xdmp.unquote(input); // IDE passes as string
   xdmp.log("dmfTestGibson params " + JSON.stringify(params));
+  xdmp.log("dmfTestGibson input " + input);
 
   // collect input
   var entityName = paramInput(params, "entityName");
   var mappingName = paramInput(params, "mappingName");
   var sample = paramInput(params, "sample");
   var ninput = normalizeInput(input);
+
+  xdmp.log("dmfTestGibson ninput type " + xdmp.type(ninput));
+  xdmp.log("dmfTestGibson ninput " + JSON.stringify(ninput));
 
   context.outputTypes = ["application/json"];
 
@@ -41,7 +46,9 @@ function post(context, params, input) {
   var dmTemplate = util.convertDmIde2DMF4Test(ninput, entityName);
   var ret = {};
   ret[sample] = util.runDMMappingTest(dmTemplate, source);
-  return ret;
+
+  xdmp.log("dmfTestGibson ret " + JSON.stringify(ret));
+  return xdmp.quote(ret); // IDE wants it back as string
 }
 
 exports.POST = post;
