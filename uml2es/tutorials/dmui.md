@@ -290,7 +290,7 @@ Click the save button (bottom left corner) to save your mapping. It gets saved t
 
 First, load the sample documents by running:
 
-gradle -iloadDmIdeSampleData mlReloadModules
+gradle -i loadDmIdeSampleData mlReloadModules
 
 Run mlWatch to auto-detect and deploy changes to the sample documents:
 
