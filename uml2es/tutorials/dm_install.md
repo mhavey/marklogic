@@ -18,8 +18,8 @@
     "port": "14401",
     "protocol": "http",
     "paths": {
-            "dmfTest": "/LATEST/resources/dmfTestGibson",
-            "dmfSample": "/LATEST/resources/dmfSampleGibson"
+      "dmfTest": "/LATEST/resources/evalSampleDHF-ft",
+      "dmfSample": "/LATEST/resources/saveSampleDataSvc"
     },
     "useRestServices": true
    }

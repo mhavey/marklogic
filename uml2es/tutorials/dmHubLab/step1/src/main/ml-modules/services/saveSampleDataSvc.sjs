@@ -1,4 +1,3 @@
-const util = require("/dmIde2dmf.sjs");
 const dhfConfig = require("/com.marklogic.hub/config.sjs");
 
 function normalizeInput(payload, params) {
@@ -22,33 +21,22 @@ function paramInput(params, attrib) {
 
 function post(context, params, input) {
 
-  input = xdmp.unquote(input); // IDE passes as string
-  xdmp.log("dmfTestGibson params " + JSON.stringify(params));
-  xdmp.log("dmfTestGibson input " + input);
+  xdmp.log("saveSampleDataSvc params " + JSON.stringify(params));
+  xdmp.log("saveSampleDataSvc input type " + xdmp.type(input));
+
+  input = xdmp.unquote(JSON.parse(input).content);
+
+  xdmp.log("saveSampleDataSvc input " + JSON.stringify(input));
 
   // collect input
   var entityName = paramInput(params, "entityName");
   var mappingName = paramInput(params, "mappingName");
   var sample = paramInput(params, "sample");
-  var ninput = normalizeInput(input);
-
-  xdmp.log("dmfTestGibson ninput type " + xdmp.type(ninput));
-  xdmp.log("dmfTestGibson ninput " + JSON.stringify(ninput));
-
-  context.outputTypes = ["application/json"];
 
   // obtain source
   var sourceURI = `/entities/${entityName}/harmonize/${mappingName}/samples/${sample}`;
-  var source = fn.head(xdmp.eval('cts.doc(sourceURI)', {sourceURI: sourceURI}, {database: xdmp.database(dhfConfig.MODULESDATABASE)}));
-  if (!source || source == null) userError("Sample not found *" + sourceURI + "*");
-
-  // get DM mapping and run mapper
-  var dmTemplate = util.convertDmIde2DMF4Test(ninput, entityName);
-  var ret = {};
-  ret[sample] = util.runDMMappingTest(dmTemplate, source);
-
-  xdmp.log("dmfTestGibson ret " + JSON.stringify(ret));
-  return xdmp.quote(ret); // IDE wants it back as string
+  xdmp.eval('xdmp.documentInsert(sourceURI, source)', {sourceURI: sourceURI, source:input}, 
+    {database: xdmp.database(dhfConfig.MODULESDATABASE), isolation:"different-transaction", update:"true"});
 }
 
 exports.POST = post;

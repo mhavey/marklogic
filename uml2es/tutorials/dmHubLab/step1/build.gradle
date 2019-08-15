@@ -109,7 +109,7 @@ def dmfMappingURI = "/dm/mapper/PWIModel/Person/harmonizePWI.json"
 def mainEntity = "Person"
 def js = "'use strict';\n"
 js += 'declareUpdate();\n'
-js += 'const converter = require("/dmIde2dmf.sjs");\n'
+js += 'const converter = require("/mapperGUILib.sjs");\n'
 js += 'converter.convertDmIde2DMF("' +dmuiMappingURI + '","' + dmfMappingURI + '","' + mainEntity + '");\n'
 println js
   javascript = js;

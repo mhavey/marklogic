@@ -1,7 +1,7 @@
 const dm = require('/ext/declarative-mapper.sjs');
 
 /*
-This module converts DM IDE mapping to Nic Gibcon json-sc DM template format.
+This module converts DM IDE mapping to Nic Gibson json-sc DM template format.
 It's a workaround: Ivo/Stelian tool does not support DM IDE to DM json-sc format. 
 The mapping world at ML is moving fast. This module serves a purpose at a moment 
 in time and will soon by OBSOLETE.
