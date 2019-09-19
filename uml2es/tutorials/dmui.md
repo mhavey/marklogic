@@ -34,6 +34,8 @@ Model-based mapping is soon to be a built-in feature of MarkLogic. In this tutor
 
 The DM IDE tool is ever-changing. In this tutorial we use it as a visual editor for the Declarative Mapper field tool. Currently it is intended to fit multiple mapping engines: not just Declarative Mapper, but also Schematron. But DM IDE could grow into a UI editor for MarkLogic's built-in mapper. When that happens, this tutorial will show how the source data SME uses DM IDE to create a mapping for the MarkLogic mapper! 
 
+And to top it off - the DM IDE doesn't integrate with UML2ES in DHF 4.3. You have to use DHF 4.1.
+
 ## Step 1: Standup a MarkLogic Environment and Build Process (Build Person)
 
 <details><summary>Click to view/hide this section</summary>
@@ -330,7 +332,7 @@ gradle -b uml2es4dhf.gradle -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -
 
 You just generated a bunch of code. The good news is, you won't need a developer to touch it. The Input Flow ingests the data as is. The harmonization produces data that conforms to the UML model using the mapping from Step 4. You do need to "deploy" that mapping:
 
-gradle -i mlReloadModules deployPWIMapping
+gradle -i mlReloadModules deployPWIMapping ### DOES NOT WORK in DHF 4.3 because of how module load works.
 
 Next, ingest the source person data in the data/persons directory (as well as the hobbyCoolness lookup in data/lookup). We'll create a DHF input flow and run MLCP to ingest the person data through that flow. 
 
