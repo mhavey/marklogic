@@ -415,7 +415,7 @@ function writeFile(folder, name, content, asText, model, coll, stagingDB) {
 		contentNode = textNode.toNode();
 	}
 	var uri = folder + name;
-	var collections = [coll, "cookieCutter", "http://marklogic.com/entity-services/models"];
+	var collections = [coll, "cookieCutter"]; //, "http://marklogic.com/entity-services/models"];
 	if (model && model != "") collections.push(model);
 	if (stagingDB && stagingDB != "") {
 		xdmp.eval('declareUpdate(); xdmp.documentInsert(uri,contentNode, {"collections": collections})',

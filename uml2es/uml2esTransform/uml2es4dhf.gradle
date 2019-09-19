@@ -33,7 +33,8 @@ plugins {
 
     // This gradle plugin extends the ml-gradle plugin with
     // commands that make the Data Hub Framework do its magic
-    id 'com.marklogic.ml-data-hub' version '4.1.0'
+    // You can change to any 4.x build. Must be 4.1.0 or higher. DHF 5 is not supported.
+    id 'com.marklogic.ml-data-hub' version '4.1.0' 
 }
 
 repositories {
@@ -62,7 +63,8 @@ configurations {
 dependencies {
     // this allows you to write custom java code that depends
     // on the Data Hub Framework library
-    compile 'com.marklogic:marklogic-data-hub:4.1.0'
+    // You can change to any 4.x build. Must be 4.1.0 or higher. DHF 5 is not supported.
+    compile 'com.marklogic:marklogic-data-hub:4.1.0' 
     compile 'com.marklogic:marklogic-xcc:9.0.7'
 
     mlcp "com.marklogic:mlcp:9.0.6"

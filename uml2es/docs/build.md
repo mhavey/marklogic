@@ -45,7 +45,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 	* "all" - All classes are considered entities. Ignore entities specified.
 
 *Dependencies:* 
-- Your gradle project is DHF 4.1
+- Your gradle project is DHF 4.1. If you prefer to use a more recent DHF 4.x release, make sure to change the DHF version in any *.gradle or gradle*.properties files you obtain from this toolkit.
 - You have deployed your UML model
 - Standard DHF environment properties: mlHost, mlFinalPort
 
@@ -72,7 +72,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
 
 *Dependencies:*
-- Your gradle project is DHF 4.1
+- Your gradle project is DHF 4.1. If you prefer to use a more recent DHF 4.x release, make sure to change the DHF version in any *.gradle or gradle*.properties files you obtain from this toolkit.
 - You have deployed your UML model
 - You have created the entity in question using uCreateDHFEntities
 - Standard DHF environment properties: mlHost, mlFinalPort

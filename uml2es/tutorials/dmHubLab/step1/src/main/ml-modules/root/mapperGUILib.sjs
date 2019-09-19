@@ -15,7 +15,7 @@ function convertDmIde2DMF(dmuiMappingURI, dmfMappingURI, mainEntity) {
   if (!doc || doc == null) throw "Not found in modules DB: *" + dmuiMappingURI + "*";
   var dmTemplate = buildDMTemplate(doc, mainEntity, true);
   xdmp.documentInsert(dmfMappingURI, dmTemplate, {
-    "collections": ["dm", "cookieCutter", "http://marklogic.com/entity-services/models", mainEntity],
+    "collections": ["dm", "cookieCutter", /* "http://marklogic.com/entity-services/models", */ mainEntity],
     "permissions": xdmp.documentGetPermissions(dmuiMappingURI)
   });
 }
