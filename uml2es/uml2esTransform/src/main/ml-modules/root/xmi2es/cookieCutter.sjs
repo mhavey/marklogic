@@ -858,11 +858,13 @@ function validateRequired(p, desc) {
 	return p;
 }
 
-function createEntities(modelName, entitySelect, entityNames, stagingDB) {
+function createEntities(modelName, entitySelect, entityNames, stagingDB, options) {
 
 	// validate
 	if (entitySelect != null && ALLOWABLE_SELECTS.indexOf(entitySelect) < 0) throw "Illegal entity select *" + entitySelect + "*";
 	modelName = validateRequired(modelName, "modelName");
+
+	var is5 = options && options.dhf5;
 
 	// find the model
 	var doc = cts.doc("/xmi2es/es/" + modelName + ".json");
@@ -896,13 +898,14 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB) {
 			definitions: {}
 		};
 		loneDef.info.title = defName;
-		loneDef.info.baseUri = "http://nooneieverheardof.com/es/"; // it needs its own URI to avoid triple explosion.
+		if (is5 == false) loneDef.info.baseUri = "http://nooneieverheardof.com/es/"; // it needs its own URI to avoid triple explosion.
 		loneDef.definitions[defName] = odoc.definitions[defName];
 
 		writeFile("/entities/", defName + ".entity.json", loneDef, false, "", "loneDef", stagingDB); 
 
 		if (entities.indexOf(defName) >= 0) {
-			var folder = "/cookieCutter/" + modelName + "/plugins/entities/" + defName + "/";
+			var folder = is5 == true ? "/cookieCutter/" + modelName + "/entities/" + defName + "/" : 
+				"/cookieCutter/" + modelName + "/plugins/entities/" + defName + "/";
 			writeFile(folder, defName + ".entity.json", loneDef, false, modelName, "plugins"); 
 		}
 	}

@@ -301,6 +301,7 @@ task _cDeleteCutDump(type: Delete) {
     delete "data/cookieCutter-dump"
 }
 
+// TODO align DHF5
 task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
   def modelName = project.findProperty("modelName")
   if (modelName != null) modelName = '"' + modelName + '"'
@@ -317,6 +318,7 @@ println js
   javascript = js;
 }
 
+// TODO align DHF5
 task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
   def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/"
 
@@ -337,30 +339,6 @@ task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
 task _cPromoteEntities(type: Copy) {
     from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/plugins/entities"
     into "plugins/entities" 
-}
-
-task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
-  def modelName = project.findProperty("modelName")
-  if (modelName != null) modelName = '"' + modelName + '"'
-  def entityName = project.findProperty("entityName") 
-  if (entityName != null) entityName = '"' + entityName + '"'
-  def dataFormat = project.findProperty("dataFormat") 
-  if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
-  def pluginFormat = project.findProperty("pluginFormat") 
-  if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
-  def flowName = project.findProperty("flowName") 
-  if (flowName != null) flowName = '"' + flowName + '"'
-  def contentMode = project.findProperty("contentMode") 
-  if (contentMode != null) contentMode = '"' + contentMode + '"'
-  def mappingSpec = project.findProperty("mappingSpec") 
-  if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
-  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
-
-def js = "'use strict';\n"
-js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createHarmonizeFlow(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + flowName + ',' + contentMode + ',' + mappingSpec + ',' +  stg + ');\n'
-println js
-  javascript = js;
 }
 
 task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
@@ -384,31 +362,6 @@ js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
 js += 'cookie.createConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ');\n'
 println js
   javascript = js;
-}
-
-task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
-  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
-  directoryFilter += ",/dm/mapper/" + project.findProperty("modelName") + "/"
-
-  def myHost = project.findProperty("mlHost")
-  if (myHost == null) myHost = ""
-  def myPort = project.findProperty("mlFinalPort")
-  if (myPort == null) myPort = "0"
-
-  classpath = configurations.mlcp
-  command = "EXPORT"
-  output_file_path = "data/cookieCutter-dump"
-  directory_filter = directoryFilter
-  host = myHost
-  port = myPort.toInteger()
-}
-
-task _cPromoteCutHarmonizeFlow(type: Copy) {
-    def harmPath = "plugins/entities/" + project.findProperty("entityName") + "/harmonize"
-    def flowPath = harmPath + "/" + project.findProperty("flowName") 
-    enabled = project.findProperty("overwrite") == "true" || !file(flowPath).exists()
-    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + flowPath  
-    into flowPath 
 }
 
 task _cFetchCutConversionModule(type: com.marklogic.gradle.task.MlcpTask) {
@@ -500,65 +453,6 @@ task uLoadMappingSpec() {
   dependsOn '_mLoadMappingSpec'
   dependsOn '_mDiscover'
   tasks.findByName('_mDiscover').mustRunAfter '_mLoadMappingSpec'
-}
-
-
-
-/*
-uCreateDHFEntities - create DHF plugin entities; a souped-up hubCreateEntity
-Input: 
-- modelName - name of UML module file without .xml suffix
-- entities (optional) - CSV of class names representing entities to create
-- entitySelect (optional) - Possible values:
-     "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
-     "all" - All classes are considered entities. Ignore entities specified.
-Dependencies: 
-- Your gradle project is DHF 4.1
-- You have deployed your UML model
-- Standard DHF environment properties: mlHost, mlFinalPort
-Effects:
-- New plugins created under plugins/entities folder
-*/
-task uCreateDHFEntities() {
-  dependsOn '_cDeleteCutDump'
-  dependsOn '_cCutEntities'
-  dependsOn '_cFetchEntities'
-  dependsOn '_cPromoteEntities'
-  tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
-  tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
-  tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
-}
-
-/*
-uCreateDHFHarmonizeFlow - creates a harmonize flow for the specified entity. A souped-up hubCreateHarmonizeFlow
-Input: 
-- modelName - name of UML module file without .xml suffix
-- entityName - name of the entity. You must already have created this using uCreateDHFEntities
-- dataFormat: xml, json
-- pluginFormat: xqy, sjs
-- flowName: the harmonization flow name
-- contentMode: possible values
-     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
-          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
-     dm - Declarative Mapper mode. This feature is not ready yet.
-- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
-- overwrite: true/false. If true and harmonization already exists, overwrite it. If you don't want to clobber, set to false.
-Dependencies: 
-- Your gradle project is DHF 4.1
-- You have deployed your UML model
-- You have created the entity in question using uCreateDHFEntities
-- Standard DHF environment properties: mlHost, mlFinalPort
-Effects:
-- New harmonization flow plugins/entities/entityName/harmonize folder
-*/
-task uCreateDHFHarmonizeFlow() {
-  dependsOn '_cDeleteCutDump'
-  dependsOn '_cCutHarmonizeFlow'
-  dependsOn '_cFetchCutHarmonizeFlow'
-  dependsOn '_cPromoteCutHarmonizeFlow'
-  tasks.findByName('_cFetchCutHarmonizeFlow').mustRunAfter '_cCutHarmonizeFlow'
-  tasks.findByName('_cFetchCutHarmonizeFlow').mustRunAfter '_cDeleteCutDump'
-  tasks.findByName('_cPromoteCutHarmonizeFlow').mustRunAfter '_cFetchCutHarmonizeFlow'
 }
 
 /*
