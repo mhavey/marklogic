@@ -13,30 +13,40 @@
 */
 
 buildscript {
-
   repositories {
-    jcenter{url "http://jcenter.bintray.com/"}
-    mavenLocal()
-    maven { url "http://plugins.gradle.org/m2" }
-  }
-  dependencies {
-    classpath "com.marklogic:ml-gradle:3.4.0"
-    classpath "net.saliman:gradle-properties-plugin:1.4.6"
+    maven {url 'http://developer.marklogic.com/maven2/'}
   }
 }
 
-apply plugin: "net.saliman.properties"
-apply plugin: "com.marklogic.ml-gradle"
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make the Data Hub Framework do its magic
+    // You can change to any 4.x build. Must be 5.0 or higher.
+    id 'com.marklogic.ml-data-hub' version '5.0.4' 
+}
 
 repositories {
-  jcenter{url "http://jcenter.bintray.com/"}
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
 
-  // Needed for mlcp dependencies
-  maven { url "http://plugins.gradle.org/m2" }
-  maven { url "http://developer.marklogic.com/maven2/" }
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
 
-  // Needed for hadoop dependencies for mlcp
-  maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
 }
 
 configurations {
@@ -51,10 +61,17 @@ configurations {
 }
 
 dependencies {
-  mlcp "com.marklogic:mlcp:9.0.6"
-  mlcp "org.apache.commons:commons-csv:1.2"
-  mlcp files("lib")
+    // this allows you to write custom java code that depends
+    // on the Data Hub Framework library
+    // You can change to any 5.x build. 
+    compile 'com.marklogic:marklogic-data-hub:5.0.4' 
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
+
+    mlcp "com.marklogic:mlcp:9.0.6"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
 }
+
 /*
  * PRIVATE TASKS: Model deployment
  */
@@ -301,52 +318,47 @@ task _cDeleteCutDump(type: Delete) {
     delete "data/cookieCutter-dump"
 }
 
-task _cCutConversionModule(type: com.marklogic.gradle.task.ServerEvalTask) {
+task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
   def modelName = project.findProperty("modelName")
   if (modelName != null) modelName = '"' + modelName + '"'
-  def entityName = project.findProperty("entityName") 
-  if (entityName != null) entityName = '"' + entityName + '"'
-  def dataFormat = project.findProperty("dataFormat") 
-  if (dataFormat != null) dataFormat = '"' + dataFormat + '"'
-  def pluginFormat = project.findProperty("pluginFormat") 
-  if (pluginFormat != null) pluginFormat = '"' + pluginFormat + '"'
-  def moduleName = project.findProperty("moduleName") 
-  if (moduleName != null) moduleName = '"' + moduleName + '"'
-  def contentMode = project.findProperty("contentMode") 
-  if (contentMode != null) contentMode = '"' + contentMode + '"'
-  def mappingSpec = project.findProperty("mappingSpec") 
-  if (mappingSpec != null) mappingSpec = '"' + mappingSpec + '"'
+  def entities = project.findProperty("entities") 
+  if (entities != null) entities = '"' + entities + '"'
+  def entitySelect = project.findProperty("entitySelect") 
+  if (entitySelect != null) entitySelect = '"' + entitySelect + '"'
+  def stg = '"' + project.findProperty("mlStagingDbName") + '"';
 
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
-js += 'cookie.createConversionModule(' + modelName + ',' + entityName + ',' + dataFormat + ',' + pluginFormat + ',' + moduleName + ',' + contentMode + ',' + mappingSpec + ');\n'
+js += 'const options = {dhf5: 1};\n'
+js += 'cookie.createEntities(' + modelName + ',' + entitySelect + ',' + entities + ',' + stg + ', options);\n'
 println js
   javascript = js;
 }
 
-task _cFetchCutConversionModule(type: com.marklogic.gradle.task.MlcpTask) {
-  def myHost = project.findProperty("mlHost")
-  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
-  def myPort = project.findProperty("mlAppServicesPort")
-  if (myPort == null) myPort = project.findProperty("mlRestPort")
-  if (myPort == null) myPort = project.findProperty("mlFinalPort")
+task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
+  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/entities/"
 
-  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName") + "/" 
+  def myHost = project.findProperty("mlHost")
+  if (myHost == null) myHost = ""
+  def myPort = project.findProperty("mlFinalPort")
+  if (myPort == null) myPort = "0"
+
   classpath = configurations.mlcp
   command = "EXPORT"
+  output_file_path = "plugins"
   output_file_path = "data/cookieCutter-dump"
   directory_filter = directoryFilter
   host = myHost
   port = myPort.toInteger()
 }
 
-task _cPromoteCutConversionModule(type: Copy) {
-    def convPath = "src/main/ml-modules/root/esconversion/" + project.findProperty("modelName") + "/" + project.findProperty("entityName")
-    println '!!!!' + convPath
-    enabled = project.findProperty("overwrite") == "true" || !file(convPath).exists()
-    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/" + convPath  
-    into convPath 
+task _cPromoteEntities(type: Copy) {
+    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/entities"
+    into "entities" 
 }
+
+
+
 
 /*
  * PUBLIC TASKS
@@ -416,89 +428,28 @@ task uLoadMappingSpec() {
 }
 
 /*
-uCreateConversionModule - creates a harmonize flow for the specified entity. A souped up es.instanceConverterGenerate.
+uCreateDHFEntities - create DHF plugin entities; a souped-up hubCreateEntity
 Input: 
 - modelName - name of UML module file without .xml suffix
-- entityName - name of the entity. 
-- dataFormat: xml, json
-- pluginFormat: xqy, sjs
-- moduleName the module name
-- contentMode: possible values
-     es - Entity Services mode. The cookie cutter generates ES-conversion style code and 
-          incorporates hints from the data model and the mapping spec. This is like a souped up -useES option.
-     dm - Declarative Mapper mode. This feature is not ready yet.
-- mappingSpec: previously uploaded Excel mapping spec; refer to it by the Excel URI
-- overwrite: true/false. If true and the module already exists, overwrite it. If you don't want to clobber, set to false.
+- entities (optional) - CSV of class names representing entities to create
+- entitySelect (optional) - Possible values:
+     "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
+     "all" - All classes are considered entities. Ignore entities specified.
 Dependencies: 
+- Your gradle project is DHF 4.1
 - You have deployed your UML model
-- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
-- Standard DHF environment properties: mlHost, mlFinalPort. BUT WE RECOMMEND USING uCreateDHFHarmonizeFlow IF YOU ARE ON DHF.
-Effects:
-- New conversion module in src/main/ml-modules/root/modelName/entityName folder
-*/
-task uCreateConversionModule() {
-  dependsOn '_cDeleteCutDump'
-  dependsOn '_cCutConversionModule'
-  dependsOn '_cFetchCutConversionModule'
-  dependsOn '_cPromoteCutConversionModule'
-  tasks.findByName('_cFetchCutConversionModule').mustRunAfter '_cCutConversionModule'
-  tasks.findByName('_cFetchCutConversionModule').mustRunAfter '_cDeleteCutDump'
-  tasks.findByName('_cPromoteCutConversionModule').mustRunAfter '_cFetchCutConversionModule'
-}
-
-/*
-uLoadDMTemplate : Loads DM template into FINAL DB.  You would have obtained the local copy from 
-uCreateDHFHarmonizationFlow or uCreateConversionModule with contentMode=dm. Having made your tweaks to that template,
-you now ingest it back to MarkLogic. This task ensures the template has the right URI and collections.
-
-Example:
-  /dm/mapper/EmployeeHubModel/Employee/harmonizeGlobalDM.json
-  dm, cookieCutter, http://marklogic.com/entity-services/models, EmployeeHubModel
-
-Input: 
-- dmPath - mandatory
-Dependencies: 
-- dmPth contains file dm/mapper/<ModelName>/<EntityName>/<harmonizationName>.json
-- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
 - Standard DHF environment properties: mlHost, mlFinalPort
 Effects:
-- Target database has your template
+- New plugins created under plugins/entities folder
 */
-task uLoadDMTemplate(type: com.marklogic.gradle.task.MlcpTask) {
-
-
-  def srcDir = new File("${projectDir}").getAbsolutePath()
-  def unixDir = srcDir.replace('\\', '/') + "/"  + project.findProperty("dmPath")
-  def regex = '"' + unixDir + ",''" + '"'
-
-  def myHost = project.findProperty("mlHost")
-  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
-  def myPort = project.findProperty("mlAppServicesPort")
-  if (myPort == null) myPort = project.findProperty("mlRestPort")
-  if (myPort == null) myPort = project.findProperty("mlFinalPort")
-
-  // check the pathness and extract the modelName
-  def pathDir = unixDir  + "/dm/mapper"
-  def dmModelName = null
-  def pathFiles = file(pathDir).list()
-  if (pathFiles != null && pathFiles.size() == 1) {
-    dmModelName = pathFiles[0];
-  }
-  enabled = project.findProperty("dmPath") != null && dmModelName != null
-
-  def collections = "dm,cookieCutter,http://marklogic.com/entity-services/models," + dmModelName
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "json"
-  input_file_path = unixDir + "/dm/mapper/*/*/*.json"
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = ""
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = collections
-  host = myHost
-  port = myPort.toInteger()
+task uCreateDHFEntities() {
+  dependsOn '_cDeleteCutDump'
+  dependsOn '_cCutEntities'
+  dependsOn '_cFetchEntities'
+  dependsOn '_cPromoteEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
+  tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
+  tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
 }
 
 //Edit this to enable/disable code generation of mlGenerateModelArtifacts
