@@ -12,25 +12,26 @@ We use Papyrus to compose the UML model. The Eclipse project is in data/PatientH
 
 ## How to run:
 
-Our project uses gradle. Before running, view the settings in gradle.properties. Create a file called gradle-local.properties and in this file override any of the properties from gradle.properties.
+Our project uses gradle. Before running, view the settings in gradle.properties. If you need to modify them, create a file called gradle-local.properties and in this file override any of the properties from gradle.properties. When calling gradle, use the -PenvironmentName=local option to use your local properties.
 
 Here are the steps to setup.
 
 ### Setup DB
-Setup new hub. Will use basic DB config with no indexes. Will bring in XMI2ES transform to our modules.
+Setup a new hub that includes UML2ES: 
 
 Run the following:
 
-./gradlew -PenvironmentName=local -i hubInit setup mlDeploy
+./gradlew -i hubInit setup mlDeploy
 
 Confirm:
-- New DB and app server created with name xmi2es-examples-runningRace.
+- In Admin UI, check for new databases and app servers with names starting with xmi2es-examples-patient-hub
+- In Query Console, explore the xmi2es-examples-patient-hub-MODULES database. Confirm it has the docuemnt /xmi2es/xmi2esTransform.xqy.
 
 ### Transform UML to ES
 
-Now we convert UML to Entity Services:
+Now we convert the patient UML model to Entity Services:
 
-gradle -i -b uml2es4dhf5.gradle -PmodelName=PatientHubUML uDeployModel
+./gradlew -i -b uml2es4dhf5.gradle -PmodelName=PatientHubUML uDeployModel
 
 
 Confirm:
