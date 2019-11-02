@@ -43,11 +43,20 @@ Confirm:
 	* /xmi2es/findings/RunningRaceEMF.xml - findings during the transform from EMF to ES
 	* /xmi2es/findings/RunningRacePapyrus.xml - findings during the transform from Papyrus to ES
 
+	TODO - fix this
+
 Check each of the findings documents: /xmi2es/findings/RunningRace.xml, /xmi2es/findings/RunningRaceEMF.xml, /xmi2es/findings/RunningRacePapyrus.xml. Verify there are no issues reported in any of them.
 
 ## Create Hub Entities
 
-gradle -b uml2es4dhf.gradle -i uCreateDHFEntities -PmodelName=PatientHubUML -PentitySelect=all
+./gradlew -b uml2es4dhf5.gradle -i uCreateDHFEntities -PmodelName=PatientHubUML -PentitySelect=all
+
+TODO: confirm
+
+## Run Example As Is
+
+And now we run the original example and confirm that its flows function properly with our UML model. 
+
 
 
 

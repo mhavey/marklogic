@@ -130,5 +130,5 @@
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_J_EtUPy4Eem1Prem-c3mJg" base_Property="_05IDwPy2Eem1Prem-c3mJg"/>
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_eyMW8Py4Eem1Prem-c3mJg" base_Property="_WSveYPy4Eem1Prem-c3mJg"/>
   <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_5khxAPy4Eem1Prem-c3mJg" mlType="decimal" base_Property="_sAe9MPy4Eem1Prem-c3mJg"/>
-  <MarkLogicEntityServicesProfile.es:esModel xmi:id="__oYUYPy5Eem1Prem-c3mJg" version="0.0.1" baseUri="http://example.org/" base_Package="__pRpEPy1Eem1Prem-c3mJg"/>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="__oYUYPy5Eem1Prem-c3mJg" version="0.0.1" baseUri="http://example.org" base_Package="__pRpEPy1Eem1Prem-c3mJg"/>
 </xmi:XMI>

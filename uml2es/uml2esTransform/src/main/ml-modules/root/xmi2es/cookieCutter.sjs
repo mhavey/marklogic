@@ -875,14 +875,17 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB, options
 	var modelIRIHash = info.baseUri + "#" +  info.title + "-" + info.version; // cuz ES uses model IRI in a weird way
 
 	// which entities?
-	var allEntities = useAllEntities(modelIRIHash);
+	var allEntities = useAllEntities(modelIRI).concat(useAllEntities(modelIRIHash));
+
+xdmp.log("ALL ENTITIES *" + modelIRI + "*" + modelIRIHash + "*" + JSON.stringify(allEntities));
+
 	var entities;
 	if (entityNames && entityNames != null) entities = entityNames.split(",").map(function (e) {
 		e = e.trim();
 		if (allEntities.indexOf(e) < 0) throw "Unknown entity *" + e + "*";
 		return e;
 	});
-	else if (entitySelect == "infer") entities = inferPlugins(modelIRIHash);
+	else if (entitySelect == "infer") entities = ingerPlugins(modelIRI).concat(inferPlugins(mmodelIRIHash));
 	else if (entitySelect == "all") entities = allEntities;
 	else throw "Should not have gotten here *" + entitySelect + "*";
 	if (entities.length == 0) throw "No entities specified or inferred";
@@ -904,7 +907,7 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB, options
 		writeFile("/entities/", defName + ".entity.json", loneDef, false, "", "loneDef", stagingDB); 
 
 		if (entities.indexOf(defName) >= 0) {
-			var folder = is5 == true ? "/cookieCutter/" + modelName + "/entities/" + defName + "/" : 
+			var folder = is5 == true ? "/cookieCutter/" + modelName + "/entities/" : 
 				"/cookieCutter/" + modelName + "/plugins/entities/" + defName + "/";
 			writeFile(folder, defName + ".entity.json", loneDef, false, modelName, "plugins"); 
 		}

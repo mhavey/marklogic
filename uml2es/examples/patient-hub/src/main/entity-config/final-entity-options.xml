@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<search:options xmlns:search="http://marklogic.com/appservices/search">
+<search:options xml:lang="zxx" xmlns:search="http://marklogic.com/appservices/search">
   <search:constraint name="Collection">
     <search:collection/>
   </search:constraint>
@@ -19,22 +19,24 @@
     </search:value>
   </search:constraint>
   <search:constraint name="AdmissionID">
-    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/codepoint">
+    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/">
       <search:element ns="" name="AdmissionID" xmlns:es="http://marklogic.com/entity-services"/>
+      <search:facet-option>limit=25</search:facet-option>
     </search:range>
   </search:constraint>
   <search:constraint name="PatientID">
-    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/codepoint">
+    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/">
       <search:element ns="" name="PatientID" xmlns:es="http://marklogic.com/entity-services"/>
+      <search:facet-option>limit=25</search:facet-option>
     </search:range>
   </search:constraint>
   <search:values name="Admissions">
-    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/codepoint">
+    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/">
       <search:element ns="" name="AdmissionID" xmlns:es="http://marklogic.com/entity-services"/>
     </search:range>
   </search:values>
   <search:values name="Patients">
-    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/codepoint">
+    <search:range type="xs:string" facet="true" collation="http://marklogic.com/collation/">
       <search:element ns="" name="PatientID" xmlns:es="http://marklogic.com/entity-services"/>
     </search:range>
   </search:values>
