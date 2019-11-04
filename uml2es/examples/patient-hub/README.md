@@ -33,33 +33,75 @@ Now we convert the patient UML model to Entity Services:
 
 ./gradlew -i -b uml2es4dhf5.gradle -PmodelName=PatientHubUML uDeployModel
 
-
 Confirm:
-- Content DB includes several documents created when loading the XMI files, including:
-	* /marklogic.com/entity-services/models/RunningRace.json - ES model based on MagicDraw UML model
-	* /marklogic.com/entity-services/models/RunningRaceEMF.json - ES model based on EMF UML model
-	* /marklogic.com/entity-services/models/RunningRacePapyrus.json - ES model based on Papyrus UML model
-	* /xmi2es/findings/RunningRace.xml - findings during the transform from MagicDraw to ES
-	* /xmi2es/findings/RunningRaceEMF.xml - findings during the transform from EMF to ES
-	* /xmi2es/findings/RunningRacePapyrus.xml - findings during the transform from Papyrus to ES
+- You have the file data/entity-services/PatientHubUML.json in your gradle project.
+- You have the file data/entity-services-dump/xmi2es/findings/PatienHubUML.xml in your gradle project. Check the contents of this file. It should not indicate any UML-ES conversion issues.
 
-	TODO - fix this
+### Create Hub Entities
 
-Check each of the findings documents: /xmi2es/findings/RunningRace.xml, /xmi2es/findings/RunningRaceEMF.xml, /xmi2es/findings/RunningRacePapyrus.xml. Verify there are no issues reported in any of them.
-
-## Create Hub Entities
+Create DHF entities (like the original ones in the directory entities_fromDHFExample) by running this:
 
 ./gradlew -b uml2es4dhf5.gradle -i uCreateDHFEntities -PmodelName=PatientHubUML -PentitySelect=all
 
-TODO: confirm
+Confirm:
+- In entities directory of your gradle project are Admissions.entity.json, Diagnoses.entity.json, Labs.entity.json, Patients.entity.json
 
-Now deploy the entities by running:
+### Deploy Entities
 
-./gradlew -i mlDeploy
+Deploy what you just created:
 
-## Run Example As Is
+./gradlew -i hubDeployUserArtifacts mlReloadModules
 
-And now we run the original example and confirm that its flows function properly with our UML model. 
+### Run Example As Is
+
+Run the original example! You can run from QuickStart or from command-line using gradle. Here's the gradle way:
+
+./gradlew -i hubRunFlow -PflowName=Diagnoses
+
+./gradlew -i hubRunFlow -PflowName=Labs
+
+./gradlew -i hubRunFlow -PflowName=Admissions
+
+./gradlew -i hubRunFlow -PflowName=Patients
+
+Confirm:
+- In xmi2es-examples-patient-hub-FINAL database check documents in Patient collection. They should contain admissions, which in turn contain labs and diagnoses:
+
+```
+{
+    "instance": {
+        "Patient": {
+            "Admissions": [
+                {   "Admission": {
+                        "AdmissionID": "1",
+                        "AdmissionStartDate": "1967-06-02 08:43:45.987",
+                        "AdmissionEndDate": "1967-06-14 09:59:12.247",
+                        "Diagnoses": [{ "Diagnosis": {...} }],
+                        "Labs": [{ "Lab": {...} },
+                                 { "Lab": {...} }]
+                    },
+                    "info": {...}
+                },
+                {   "Admission": {...}},
+                {   "Admission": {...}},
+                {   "Admission": {...}}
+            ],
+            "PatientID": "E250799D-F6DE-4914-ADB4-B08A6E5029B9",
+            "Gender": "Female",
+            "DoB": "1945-08-04 19:03:00.757",
+            "Race": "White",
+            "Marital-status": "Single",
+            "Language": "Unknown",
+            "PercentageBelowPoverty": 12.86
+        },
+        "info": {
+            "title": "Patient",
+            "version": "0.0.1"
+        }
+    }
+}
+```
+
 
 
 
