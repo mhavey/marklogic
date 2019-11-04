@@ -21,7 +21,11 @@ Setup a new hub that includes UML2ES:
 
 Run the following:
 
-./gradlew -i hubInit setup mlDeploy
+./gradlew -i hubInit 
+
+./gradlew -i setup
+
+./gradlew -i mlDeploy 
 
 Confirm:
 - In Admin UI, check for new databases and app servers with names starting with xmi2es-examples-patient-hub

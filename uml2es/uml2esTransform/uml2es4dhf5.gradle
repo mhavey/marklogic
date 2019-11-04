@@ -168,28 +168,18 @@ task _mFetchDescriptors(type: com.marklogic.gradle.task.MlcpTask) {
   port = myPort.toInteger()
 }
 
-task _mCopyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es"
-    into "data/entity-services" 
-}
-
-task _mCopyESExt(type: Copy) {
-    from "data/entity-services-dump/xmi2es/extension"
-    into "data/entity-services-extension" 
-}
-
 task _mCopyGenCode(type: Copy) {
     from "data/entity-services-dump/xmi2es/gen"
     into "src/main/ml-modules/root/modelgen" 
 }
 
 task _mDeleteES(type: Delete) {
-    delete "data/entity-services-dump", "data/entity-services-extension"
+    delete "data/entity-services-dump"
 }
 
 task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
   def srcDir = new File("${projectDir}").getAbsolutePath() 
-  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services-extension"
+  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services-dump/xmi2es/extension"
   def regex = '"' + unixDir + ",'',/,''" + '"'
 
   def myHost = project.findProperty("mlHost")
@@ -230,21 +220,17 @@ This ensures ES model is deployed to FINAL, not STAGING
 */
 task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   def srcDir = new File("${projectDir}").getAbsolutePath()
-  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services"
+  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services-dump/xmi2es/es"
   def regex = '"' + unixDir + ",'',/,''" + '"'
-
-  def fullModelName = null;
-  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".json"
-  def fdir = file(unixDir)
-  def files = null
-  if (fdir != null) files = fdir.list()
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = ""
   def myPort = project.findProperty("mlFinalPort")
   if (myPort == null) myPort = "0"
 
-  enabled = fullModelName != null && files != null && files.contains(fullModelName) && project.findProperty("mlFinalPort") != null
+  def fullModelName = null;
+  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".json"
+  enabled = fullModelName != null && project.findProperty("mlFinalPort") != null
 
   classpath = configurations.mlcp
   command = "IMPORT"
@@ -257,57 +243,6 @@ task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
   output_collections = "http://marklogic.com/entity-services/models"
   host = myHost
   port = myPort.toInteger()
-}
-
-task _mLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
-  def srcDir = new File("${projectDir}").getAbsolutePath()
-  def unixDir = srcDir.replace('\\', '/') + "/data/mapping"
-  def regex = '"' + unixDir + ",'',/,''" + '"'
-
-  def myHost = project.findProperty("mlHost")
-  if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
-  def myPort = project.findProperty("mlAppServicesPort")
-  if (myPort == null) myPort = project.findProperty("mlRestPort")
-  if (myPort == null) myPort = project.findProperty("mlFinalPort")
-
-  def fullSpecName = null;
-  if (project.findProperty("specName") != null) fullSpecName = project.findProperty("specName") + ".xlsx"
-  def fdir = file(unixDir)
-  def files = null
-  if (fdir != null) files = fdir.list()
-  enabled = fullSpecName != null && files != null && files.contains(fullSpecName)
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "binary"
-  input_file_path = unixDir + "/" + fullSpecName
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/xmi2es/excel-mapper/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "xmi2es"
-  host = myHost
-  port = myPort.toInteger()
-
-  transform_module = "/xmi2es/excelMapper.xqy"
-  transform_namespace = "http://marklogic.com/xmi2es/xlsx/mapper"
-  transform_param = "dummy"
-}
-
-task _mDiscover(type: com.marklogic.gradle.task.ServerEvalTask) {
-  def discover = project.findProperty("discover")
-  def mappingURI = '"/xmi2es/excel-mapper/' + project.findProperty("specName") + '.xlsx"'
-  def discoveryDB = ""
-  if (project.findProperty("mlStagingDbName") != null) discoveryDB = '"' + project.findProperty("mlStagingDbName") + '"'
-  else discoveryDB = '"' + project.findProperty("mlAppName") + "-content"
-
-  enabled = discover != null && discover == "true"
-
-def js = "'use strict';\n"
-js += 'const discover = require("/xmi2es/discovery.sjs");\n'
-js += 'discover.discoverFromMapping(' + mappingURI + ',' +  discoveryDB + ');\n'
-println js
-  javascript = js;
 }
 
 /*
@@ -358,8 +293,6 @@ task _cPromoteEntities(type: Copy) {
 }
 
 
-
-
 /*
  * PUBLIC TASKS
  */
@@ -387,44 +320,18 @@ task uDeployModel() {
   dependsOn '_mLoadXMI'
   dependsOn '_mLoadExcel'
   dependsOn '_mFetchDescriptors'
-  dependsOn '_mCopyES'
-  dependsOn '_mCopyESExt'
   dependsOn '_mCopyGenCode'
   dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
-  //dependsOn 'mlGenerateModelArtifacts' TODO - why is this failing
   dependsOn '_mDeployESModelToFinal'
   tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
   tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadExcel'
-  tasks.findByName('_mCopyESExt').mustRunAfter '_mFetchDescriptors'
-  tasks.findByName('_mCopyES').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
-  //tasks.findByName('mlGenerateModelArtifacts').mustRunAfter '_mCopyES' TODO - why is this failing
-  tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mCopyES'
-  tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mCopyESExt'
+  tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mFetchDescriptors'
+  tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
-}
-
-/*
-uLoadMappingSpec : loads your Excel mapping spec for use in cookie cutter codegen
-Input: 
-- specName = mandatory (Excel filename without suffix)
-- discover = true/false; default false
-- discoveryDB = default: content DB (non-DHF), staging DB (DHF0)
-Dependencies: 
-- Your gradle project has the folder data/mapping
-- Your mapping spec is in that folder
-- Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
-- Standard DHF environment properties: mlHost, mlFinalPort
-Effects:
-- Target database has the mapping spec (original Excel plus transformed json)
-*/
-task uLoadMappingSpec() {
-  dependsOn '_mLoadMappingSpec'
-  dependsOn '_mDiscover'
-  tasks.findByName('_mDiscover').mustRunAfter '_mLoadMappingSpec'
 }
 
 /*
@@ -450,18 +357,4 @@ task uCreateDHFEntities() {
   tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
   tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
   tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
-}
-
-//Edit this to enable/disable code generation of mlGenerateModelArtifacts
-ext {   
-  def mdb = project.findProperty("mlFinalDbName")
-  if (mdb == null) mdb = project.findProperty("mlAppName" + "-content")
-  mlAppConfig {
-    modelsDatabase=mdb
-    generateInstanceConverter=false
-    generateSchema=false
-    generateDatabaseProperties=false
-    generateExtractionTemplate=false
-    generateSearchOptions=false
-  }
 }
