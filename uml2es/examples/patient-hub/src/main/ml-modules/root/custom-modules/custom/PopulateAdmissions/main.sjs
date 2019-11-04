@@ -43,6 +43,7 @@ function main(content, options) {
                         ])
                        );
 
+xdmp.log("PopulateAdmissions PATIENTID=" + patientID + "*, #adm=" + fn.count(admissionsDocs) + " in " + xdmp.databaseName(xdmp.database()));
   const Admissions  = [];
 	for (const admissionDoc of admissionsDocs) {
 	  let admission = admissionDoc.xpath('/envelope/instance').toObject()[0];

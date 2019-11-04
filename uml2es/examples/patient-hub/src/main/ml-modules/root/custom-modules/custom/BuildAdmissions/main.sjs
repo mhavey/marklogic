@@ -40,6 +40,8 @@ function main(content, options) {
   //now, we search for the labs that match this patient ID and admission ID, then add those
   let diagnosesDocs = cts.search(cts.andQuery([cts.jsonPropertyRangeQuery('PatientID', '=', patientID), cts.jsonPropertyRangeQuery('AdmissionID', '=',admissionID),cts.collectionQuery(['DiagnosesCore'])]))
 
+xdmp.log("BuildAdmissions: PATIENTID=" + patientID + "*, #diag=" + fn.count(diagnosesDocs) + " in " + xdmp.databaseName(xdmp.database()));
+
   const Diagnoses  = [];
                 for (const diagnosisDoc of diagnosesDocs) {
                   let diagnosis = {};

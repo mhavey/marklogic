@@ -53,6 +53,10 @@ Check each of the findings documents: /xmi2es/findings/RunningRace.xml, /xmi2es/
 
 TODO: confirm
 
+Now deploy the entities by running:
+
+./gradlew -i mlDeploy
+
 ## Run Example As Is
 
 And now we run the original example and confirm that its flows function properly with our UML model. 
