@@ -45,10 +45,10 @@ Confirm:
 
 Create DHF entities (like the original ones in the directory entities_fromDHFExample) by running this:
 
-./gradlew -b uml2es4dhf5.gradle -i uCreateDHFEntities -PmodelName=PatientHubUML -PentitySelect=all
+./gradlew -b uml2es4dhf5.gradle -i uCreateDHFEntities -PmodelName=PatientHubUML -PentitySelect=stereotype
 
 Confirm:
-- In entities directory of your gradle project are Admissions.entity.json, Diagnoses.entity.json, Labs.entity.json, Patients.entity.json
+- In entities directory of your gradle project are Admissions.entity.json and Patients.entity.json. These are the only entities designated xDHFEntity in the UML model. The other classes -- Labs, Diagnoses -- are not full-fledged DHF entities.
 
 ### Deploy Entities
 

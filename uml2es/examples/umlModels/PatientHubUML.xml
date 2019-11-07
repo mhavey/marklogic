@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_pIDeHgR-EemupvhyGp5tTA">
+<xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_3GtyugEDEeqT6dzYaNPbgw http:///MarkLogicEntityServicesProfile/xes.ecore /MLProfileProject/MLProfile.profile.uml#_3Gty9gEDEeqT6dzYaNPbgw">
   <uml:Model xmi:id="__pRpEPy1Eem1Prem-c3mJg" name="PatientModel">
     <packageImport xmi:type="uml:PackageImport" xmi:id="__qAo4Py1Eem1Prem-c3mJg">
       <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
@@ -122,7 +122,7 @@
     </packagedElement>
     <profileApplication xmi:type="uml:ProfileApplication" xmi:id="__pg5oPy1Eem1Prem-c3mJg">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="__pg5ofy1Eem1Prem-c3mJg" source="http://www.eclipse.org/uml2/2.0.0/UML">
-        <references xmi:type="ecore:EPackage" href="/MLProfileProject/MLProfile.profile.uml#_pIDeGwR-EemupvhyGp5tTA"/>
+        <references xmi:type="ecore:EPackage" href="/MLProfileProject/MLProfile.profile.uml#_3GtytwEDEeqT6dzYaNPbgw"/>
       </eAnnotations>
       <appliedProfile xmi:type="uml:Profile" href="/MLProfileProject/MLProfile.profile.uml#_18_5_2_8c5028b_1506442711620_81982_4814"/>
     </profileApplication>
@@ -131,4 +131,6 @@
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_eyMW8Py4Eem1Prem-c3mJg" base_Property="_WSveYPy4Eem1Prem-c3mJg"/>
   <MarkLogicEntityServicesProfile.es:esProperty xmi:id="_5khxAPy4Eem1Prem-c3mJg" mlType="decimal" base_Property="_sAe9MPy4Eem1Prem-c3mJg"/>
   <MarkLogicEntityServicesProfile.es:esModel xmi:id="__oYUYPy5Eem1Prem-c3mJg" version="0.0.1" baseUri="http://example.org" base_Package="__pRpEPy1Eem1Prem-c3mJg"/>
+  <MarkLogicEntityServicesProfile.xes:xDHFEntity xmi:id="_LLVO4AEHEeq1Prem-c3mJg" base_Class="_QMTEkPy4Eem1Prem-c3mJg"/>
+  <MarkLogicEntityServicesProfile.xes:xDHFEntity xmi:id="_MTslIAEHEeq1Prem-c3mJg" base_Class="_y2Yv8Py2Eem1Prem-c3mJg"/>
 </xmi:XMI>

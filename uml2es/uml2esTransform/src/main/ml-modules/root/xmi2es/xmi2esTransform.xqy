@@ -195,6 +195,7 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
       let $xmlNamespace := ($xmi/*/*:xmlNamespace[@base_Class eq $classID], $rootNamespace)[1]
       let $hints := $xmi/*/*:xImplHints[@base_Class eq $classID]
       let $exclude := exists($xmi/*/*:exclude[@base_Class eq $classID])
+      let $dhfEntity := exists($xmi/*/*:xDHFEntity[@base_Class eq $classID])
       let $inheritance := xmi2es:determineInheritance($xmi, $xes, $problems, $modelIRI, $class, $classes, ())
       let $_ := 
         if (count($class/generalization) gt 1) then 
@@ -219,6 +220,7 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
               xes:addFact($xes, $classIRI, sem:iri("http://marklogic.com/entity-services#title"), (), $className)
             ) 
           else (),
+          xes:addFact($xes, $classIRI, $xes:PRED-DHF,(), $dhfEntity),
           for $coll in $inheritance/xDocument/collections/item return xes:addFact($xes, $classIRI, $xes:PRED-COLLECTIONS, (), string($coll)),
           for $perm in $inheritance/xDocument/permsCR/item return 
             xes:addQualifiedFact($xes, $classIRI, $xes:PRED-PERM, (), map:new((
@@ -256,6 +258,7 @@ declare function xmi2es:buildClass($xmi as node(), $modelIRI as sem:iri,
           <isAssociationClass>{$associationClass}</isAssociationClass>
           <exclude>{$exclude}</exclude>
           <description>{$classDescription}</description>
+          <dhfEntity>{$dhfEntity}</dhfEntity>
           <xmlNamespace> {
             if (exists($xmlNamespace)) then (
               attribute {"prefix"} {normalize-space($xmlNamespace/@prefix)}, 

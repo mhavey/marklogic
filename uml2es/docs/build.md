@@ -5,6 +5,8 @@ The toolkit includes common gradle tasks to deploy your UML model and generate h
 
 The toolkit provides a gradle build file containing all model deployment and code generation tasks: [../uml2esTransform/uml2es.gradle](../uml2esTransform/uml2es.gradle). Actually, it also includes a similar build file for use for DHF: [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).  Here is a summary of the tasks from that build file:
 
+... TODO - update this for DHF 5.x ...
+
 ## Build Tasks
 
 ### uDeployModel
@@ -43,6 +45,7 @@ The toolkit provides a gradle build file containing all model deployment and cod
 - entitySelect (optional) - Possible values:
 	* "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified. (This works well for tree-based models where the candidate classes are parents but not children, such as [../examples/hr](../examples/hr). It does not always work. For example, in the graph-like model [../examples/movies](../examples/movies), the Movie class cannot be inferred to be *entity worthy*.
 	* "all" - All classes are considered entities. Ignore entities specified.
+	* "stereotyped" - Include those marked xDHFEntity
 
 *Dependencies:* 
 - Your gradle project is DHF 4.1. If you prefer to use a more recent DHF 4.x release, make sure to change the DHF version in any *.gradle or gradle*.properties files you obtain from this toolkit.

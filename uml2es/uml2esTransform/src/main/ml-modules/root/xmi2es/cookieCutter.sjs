@@ -7,7 +7,7 @@ const discovery = require("/xmi2es/discovery.sjs");
 
 const ALLOWABLE_PLUGINS = ["xqy", "sjs"];
 const ALLOWABLE_FORMATS = ["xml", "json"];
-const ALLOWABLE_SELECTS = ["all", "infer"];
+const ALLOWABLE_SELECTS = ["all", "infer", "stereotype"];
 const ALLOWABLE_CONTENTS = ["es", "dm"];
 
 function getAttributes(modelIRI, entityName) {
@@ -148,7 +148,19 @@ function useAllEntities(modelIRI) {
 	var res = sem.sparql(`
 select distinct ?pluginName where {
     <${modelIRI}> <http://marklogic.com/entity-services#definitions>  ?plugin .
-    $plugin <http://marklogic.com/entity-services#title>  ?pluginName
+    ?plugin <http://marklogic.com/entity-services#title>  ?pluginName
+ }`);
+	var plugins = [];
+	for (var p of res) plugins.push(p.pluginName);
+	return plugins;
+}
+
+function stereotypedEntities(modelIRI) {
+	var res = sem.sparql(`
+select distinct ?pluginName where {
+    <${modelIRI}> <http://marklogic.com/entity-services#definitions>  ?plugin .
+    ?plugin <http://marklogic.com/xmi2es/xes#dhfEntity> true .
+    ?plugin <http://marklogic.com/entity-services#title>  ?pluginName .
  }`);
 	var plugins = [];
 	for (var p of res) plugins.push(p.pluginName);
@@ -874,43 +886,36 @@ function createEntities(modelName, entitySelect, entityNames, stagingDB, options
 	var modelIRI = info.baseUri + "/" +  info.title + "-" + info.version;
 	var modelIRIHash = info.baseUri + "#" +  info.title + "-" + info.version; // cuz ES uses model IRI in a weird way
 
-	// which entities?
-	var allEntities = useAllEntities(modelIRI).concat(useAllEntities(modelIRIHash));
-
-xdmp.log("ALL ENTITIES *" + modelIRI + "*" + modelIRIHash + "*" + JSON.stringify(allEntities));
-
 	var entities;
 	if (entityNames && entityNames != null) entities = entityNames.split(",").map(function (e) {
 		e = e.trim();
 		if (allEntities.indexOf(e) < 0) throw "Unknown entity *" + e + "*";
 		return e;
 	});
-	else if (entitySelect == "infer") entities = ingerPlugins(modelIRI).concat(inferPlugins(mmodelIRIHash));
-	else if (entitySelect == "all") entities = allEntities;
+	else if (entitySelect == "stereotype") entities = stereotypedEntities(modelIRI).concat(stereotypedEntities(modelIRIHash));
+	else if (entitySelect == "infer") entities = inferPlugins(modelIRI).concat(inferPlugins(modelIRIHash));
+	else if (entitySelect == "all") entities = useAllEntities(modelIRI).concat(useAllEntities(modelIRIHash));
 	else throw "Should not have gotten here *" + entitySelect + "*";
 	if (entities.length == 0) throw "No entities specified or inferred";
+
+xdmp.log("ENTITIES *" + modelIRI + "*" + modelIRIHash + "*" + JSON.stringify(entities) + " " + is5);
 
 	// for DHF's benefit, do the big split
 	// this means each entity in the model gets to be its own ES model
 	// and the title of that model is the name of the entity
 	// This is only for DHF's benefit; our cookie cutter only needs to see the REAL model.
-	for (var i = 0; i < allEntities.length; i++) {
-		var defName = allEntities[i];
+	for (var i = 0; i < entities.length; i++) {
+		var defName = entities[i];
 		var loneDef =  {
 			info: JSON.parse(JSON.stringify(odoc.info)),
-			definitions: {}
+			definitions: odoc.definitions
 		};
 		loneDef.info.title = defName;
 		if (is5 == false) loneDef.info.baseUri = "http://nooneieverheardof.com/es/"; // it needs its own URI to avoid triple explosion.
-		loneDef.definitions[defName] = odoc.definitions[defName];
 
-		writeFile("/entities/", defName + ".entity.json", loneDef, false, "", "loneDef", stagingDB); 
-
-		if (entities.indexOf(defName) >= 0) {
-			var folder = is5 == true ? "/cookieCutter/" + modelName + "/entities/" : 
-				"/cookieCutter/" + modelName + "/plugins/entities/" + defName + "/";
-			writeFile(folder, defName + ".entity.json", loneDef, false, modelName, "plugins"); 
-		}
+		var folder = is5 == true ? "/cookieCutter/" + modelName + "/entities/" : 
+			"/cookieCutter/" + modelName + "/plugins/entities/" + defName + "/";
+		writeFile(folder, defName + ".entity.json", loneDef, false, modelName, "plugins"); 
 	}
 }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:style="http://www.eclipse.org/papyrus/infra/viewpoints/policy/style" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="__pTeQPy1Eem1Prem-c3mJg" type="PapyrusUMLClassDiagram" name="Class Diagram" measurementUnit="Pixel">
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:style="http://www.eclipse.org/papyrus/infra/viewpoints/policy/style" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="__pTeQPy1Eem1Prem-c3mJg" type="PapyrusUMLClassDiagram" name="Class Diagram" measurementUnit="Pixel">
   <children xmi:type="notation:Shape" xmi:id="_EiKqoPy2Eem1Prem-c3mJg" type="Class_Shape">
     <children xmi:type="notation:DecorationNode" xmi:id="_EiSmcPy2Eem1Prem-c3mJg" type="Class_NameLabel"/>
     <children xmi:type="notation:DecorationNode" xmi:id="_EiTNgPy2Eem1Prem-c3mJg" type="Class_FloatingNameLabel">
@@ -168,6 +168,22 @@
     <element xmi:type="uml:Class" href="PatientHubUML.uml#_QMTEkPy4Eem1Prem-c3mJg"/>
     <layoutConstraint xmi:type="notation:Bounds" xmi:id="_QMU5wfy4Eem1Prem-c3mJg" x="7" y="41"/>
   </children>
+  <children xmi:type="notation:Shape" xmi:id="_LLm7sAEHEeq1Prem-c3mJg" type="StereotypeComment">
+    <styles xmi:type="notation:TitleStyle" xmi:id="_LLm7sQEHEeq1Prem-c3mJg"/>
+    <styles xmi:type="notation:EObjectValueStyle" xmi:id="_LL6dsAEHEeq1Prem-c3mJg" name="BASE_ELEMENT">
+      <eObjectValue xmi:type="uml:Class" href="PatientHubUML.uml#_QMTEkPy4Eem1Prem-c3mJg"/>
+    </styles>
+    <element xsi:nil="true"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_LLm7sgEHEeq1Prem-c3mJg" x="207" y="41"/>
+  </children>
+  <children xmi:type="notation:Shape" xmi:id="_MUTCFAEHEeq1Prem-c3mJg" type="StereotypeComment">
+    <styles xmi:type="notation:TitleStyle" xmi:id="_MUTCFQEHEeq1Prem-c3mJg"/>
+    <styles xmi:type="notation:EObjectValueStyle" xmi:id="_MUTCFwEHEeq1Prem-c3mJg" name="BASE_ELEMENT">
+      <eObjectValue xmi:type="uml:Class" href="PatientHubUML.uml#_y2Yv8Py2Eem1Prem-c3mJg"/>
+    </styles>
+    <element xsi:nil="true"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_MUTCFgEHEeq1Prem-c3mJg" x="546" y="84"/>
+  </children>
   <styles xmi:type="notation:StringValueStyle" xmi:id="__pUFUPy1Eem1Prem-c3mJg" name="diagram_compatibility_version" stringValue="1.2.0"/>
   <styles xmi:type="notation:DiagramStyle" xmi:id="__pUFUfy1Eem1Prem-c3mJg"/>
   <styles xmi:type="style:PapyrusViewStyle" xmi:id="__pUFUvy1Eem1Prem-c3mJg">
@@ -266,5 +282,25 @@
     <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_w7b0Qvy4Eem1Prem-c3mJg" points="[241, 155, -643984, -643984]$[306, 153, -643984, -643984]"/>
     <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_w7s6APy4Eem1Prem-c3mJg" id="(1.0,0.40625)"/>
     <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_w7thEPy4Eem1Prem-c3mJg" id="(0.0,0.515625)"/>
+  </edges>
+  <edges xmi:type="notation:Connector" xmi:id="_LL7EwAEHEeq1Prem-c3mJg" type="StereotypeCommentLink" source="_QMU5wPy4Eem1Prem-c3mJg" target="_LLm7sAEHEeq1Prem-c3mJg">
+    <styles xmi:type="notation:FontStyle" xmi:id="_LL7EwQEHEeq1Prem-c3mJg"/>
+    <styles xmi:type="notation:EObjectValueStyle" xmi:id="_LL7ExQEHEeq1Prem-c3mJg" name="BASE_ELEMENT">
+      <eObjectValue xmi:type="uml:Class" href="PatientHubUML.uml#_QMTEkPy4Eem1Prem-c3mJg"/>
+    </styles>
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_LL7EwgEHEeq1Prem-c3mJg" points="[0, 0, 0, 0]$[0, 0, 0, 0]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_LL7EwwEHEeq1Prem-c3mJg"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_LL7ExAEHEeq1Prem-c3mJg"/>
+  </edges>
+  <edges xmi:type="notation:Connector" xmi:id="_MUTCGAEHEeq1Prem-c3mJg" type="StereotypeCommentLink" source="_y2alIPy2Eem1Prem-c3mJg" target="_MUTCFAEHEeq1Prem-c3mJg">
+    <styles xmi:type="notation:FontStyle" xmi:id="_MUTCGQEHEeq1Prem-c3mJg"/>
+    <styles xmi:type="notation:EObjectValueStyle" xmi:id="_MUTCHQEHEeq1Prem-c3mJg" name="BASE_ELEMENT">
+      <eObjectValue xmi:type="uml:Class" href="PatientHubUML.uml#_y2Yv8Py2Eem1Prem-c3mJg"/>
+    </styles>
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_MUTCGgEHEeq1Prem-c3mJg" points="[0, 0, 0, 0]$[0, 0, 0, 0]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_MUTCGwEHEeq1Prem-c3mJg"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_MUTCHAEHEeq1Prem-c3mJg"/>
   </edges>
 </notation:Diagram>

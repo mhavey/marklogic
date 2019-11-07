@@ -27,6 +27,7 @@ declare variable $PRED-BASED-ON-ATTRIBUTE := sem:iri($IRI-PREFIX || "basedOnAttr
 
 declare variable $PRED-REMINDER := sem:iri($IRI-PREFIX || "reminder"); 
  
+declare variable $PRED-DHF := sem:iri($IRI-PREFIX || "dhfEntity");
 declare variable $PRED-COLLECTIONS := sem:iri($IRI-PREFIX || "collections");
 declare variable $PRED-PERM := sem:iri($IRI-PREFIX || "perm");
 declare variable $PRED-CAPABILITY := sem:iri($IRI-PREFIX || "capability");
