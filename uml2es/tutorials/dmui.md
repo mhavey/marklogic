@@ -163,7 +163,11 @@ In the same Properties window select UML and change the name from Root Element t
 
 ![Root element](images/dmui_setup17.png)
 
-Physically in MarkLogic, instances of the Person class are documents. Let's designate the id attribute as the URI of the document. Configuring this is straightforward; follow the same step as when setting id as PK. You end up with the following:
+Finally, let's indicate that the Person class is meant to be a primary entity in DHF. That is, in DHF, we will be building Person documents. A Person contains zero or more Hobby instances. Hobby is not a primary entity. There are no hobby documents; a hobby lives as a sub-document of Person. We therefore stereotype the Person class as xDHFEntity. Select the Person class.  Under Properties select Profile. Under Applied Stereotype add xDHFEntity.
+
+![Final model](images/dmui_setup17a.png)
+
+Here is the final model:
 
 ![Final model](images/dmui_setup18.png)
 

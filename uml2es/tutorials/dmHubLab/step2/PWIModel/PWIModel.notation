@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:style="http://www.eclipse.org/papyrus/infra/viewpoints/policy/style" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_k5eK4KfMEemVSZiNWOJCaA" type="PapyrusUMLClassDiagram" name="Class Diagram" measurementUnit="Pixel">
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:style="http://www.eclipse.org/papyrus/infra/viewpoints/policy/style" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_k5eK4KfMEemVSZiNWOJCaA" type="PapyrusUMLClassDiagram" name="Class Diagram" measurementUnit="Pixel">
   <children xmi:type="notation:Shape" xmi:id="_TtkDEKfNEemVSZiNWOJCaA" type="Class_Shape">
     <children xmi:type="notation:DecorationNode" xmi:id="_TtvCMKfNEemVSZiNWOJCaA" type="Class_NameLabel"/>
     <children xmi:type="notation:DecorationNode" xmi:id="_TtvCMafNEemVSZiNWOJCaA" type="Class_FloatingNameLabel">
@@ -75,6 +75,14 @@
     <element xmi:type="uml:Class" href="PWIModel.uml#_0VlzQKfPEemVSZiNWOJCaA"/>
     <layoutConstraint xmi:type="notation:Bounds" xmi:id="_0Vo2kafPEemVSZiNWOJCaA" x="346" y="93"/>
   </children>
+  <children xmi:type="notation:Shape" xmi:id="__Pc1IBYiEeqsk4k_aWfQdA" type="StereotypeComment">
+    <styles xmi:type="notation:TitleStyle" xmi:id="__Pc1IRYiEeqsk4k_aWfQdA"/>
+    <styles xmi:type="notation:EObjectValueStyle" xmi:id="__PeDQBYiEeqsk4k_aWfQdA" name="BASE_ELEMENT">
+      <eObjectValue xmi:type="uml:Class" href="PWIModel.uml#_TtWnsKfNEemVSZiNWOJCaA"/>
+    </styles>
+    <element xsi:nil="true"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="__Pc1IhYiEeqsk4k_aWfQdA" x="267" y="90"/>
+  </children>
   <styles xmi:type="notation:StringValueStyle" xmi:id="_k5eK4afMEemVSZiNWOJCaA" name="diagram_compatibility_version" stringValue="1.2.0"/>
   <styles xmi:type="notation:DiagramStyle" xmi:id="_k5eK4qfMEemVSZiNWOJCaA"/>
   <styles xmi:type="style:PapyrusViewStyle" xmi:id="_k5eK46fMEemVSZiNWOJCaA">
@@ -111,5 +119,15 @@
     <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_i3bBUqfREemVSZiNWOJCaA" points="[194, 160, -643984, -643984]$[284, 161, -643984, -643984]"/>
     <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_i4VnUKfREemVSZiNWOJCaA" id="(1.0,0.546875)"/>
     <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_i4WOYKfREemVSZiNWOJCaA" id="(0.0,0.6428571428571429)"/>
+  </edges>
+  <edges xmi:type="notation:Connector" xmi:id="__PeDQRYiEeqsk4k_aWfQdA" type="StereotypeCommentLink" source="_TtkDEKfNEemVSZiNWOJCaA" target="__Pc1IBYiEeqsk4k_aWfQdA">
+    <styles xmi:type="notation:FontStyle" xmi:id="__PeDQhYiEeqsk4k_aWfQdA"/>
+    <styles xmi:type="notation:EObjectValueStyle" xmi:id="__PeqUhYiEeqsk4k_aWfQdA" name="BASE_ELEMENT">
+      <eObjectValue xmi:type="uml:Class" href="PWIModel.uml#_TtWnsKfNEemVSZiNWOJCaA"/>
+    </styles>
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="__PeDQxYiEeqsk4k_aWfQdA" points="[0, 0, 0, 0]$[0, 0, 0, 0]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="__PeqUBYiEeqsk4k_aWfQdA"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="__PeqURYiEeqsk4k_aWfQdA"/>
   </edges>
 </notation:Diagram>
