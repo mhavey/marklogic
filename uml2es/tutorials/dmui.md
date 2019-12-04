@@ -55,6 +55,29 @@ When you are done, you should have the following folder structure:
 
 ![Step 1 - folder structure](images/dmui_setup1.png)
 
+After setting up the hub, you copied UML2ES source code into the project. To conclude the setup, deploy that code! It is easiest to run this via Gradle. by running the following from the command line. Make sure to run this from your dmHub project folder. Before running it, edit gradle.properties to supply values for mlUsername and mlPassword. 
+
+./gradlew -i mlReloadModules
+
+5.1 Beta kludge ... If it's giving you dependency grief, edit your build.gradle file. First comment out the whole thing! Then add the following: 
+
+```
+buildscript {
+repositories {
+jcenter()
+maven {url 'http://distro.marklogic.com/nexus/repository/maven-releases/'}
+}
+dependencies {
+classpath "com.marklogic:ml-data-hub:5.1.0-rc1"
+}
+}
+plugins {
+id 'net.saliman.properties' version '1.4.6'
+}
+apply plugin: "com.marklogic.ml-data-hub"
+```
+
+
 </p>
 </details>
 
@@ -171,7 +194,7 @@ Here is the final model:
 
 ![Final model](images/dmui_setup18.png)
 
-We are done modelling. Click File | Save All.
+We are done modeling. Click File | Save All.
 
 If you think you might have messed up along the way, a pre-cooked model is available under [dmHubLab/step2/PWIModel](dmHubLab/step2/PWIModel). If you want it in your workspace, the simplest way is to copy each of its files over yours. You can also delete the PWIModel project from your workspace (by right-clicking the project and selecting Delete, but keeping the contents!) and import the pre-cooked project (File | Import | Existing Projects Into Workspace). 
 
@@ -183,11 +206,9 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-Next, as the data architect, with help from the build person, you will convert the UML model you created in Step 2 to a MarkLogic Entity Services model. Run the following from the command line in the gradle project folder that the build person created in Step 1.
+Now it's time to convert the UML model to Entity Services form. This is best done by running a Gradle command from the command line. Make sure you are in the dmHub project folder. Run the following:
 
-gradle -i deployPWIModel
-
-That command should run successfully; you should see "BUILD SUCCESSFUL" when its completes. The UML model has been convereted to ES and is setup as a data hub plugin. You can see the ES model in a few places. If you open Query Console and explore the xmi2es-tutorials-dmHub-FINAL database, its URI is /marklogic.com/entity-services/models/PWIModel.json. In your gradle project the same ES model is in plugins/entities/Person/Person.entity.json.
+./gradlew -i uDeployModelToDHF -PxmiFile=data/model/PWIModel/PWIModel.uml -PentitySelect=stereotype
 
 </p>
 </details>
@@ -197,7 +218,7 @@ That command should run successfully; you should see "BUILD SUCCESSFUL" when its
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-In Step 4 you play the role of Source Data SME. Using the Declarative Mapper IDE, you map source data to the form of the UML PWI model created in Step 3. 
+In Step 4 you play the role of Source Data SME. You will use the Quick Start tool to build a mapping of raw source person data to the Person structure of the UML model. 
 
 ## Step 4a: Build the Mapping
 
