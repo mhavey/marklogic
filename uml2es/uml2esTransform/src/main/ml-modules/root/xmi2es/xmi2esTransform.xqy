@@ -64,7 +64,7 @@ declare function xmi2es:transform(
 ) as map:map* {
   let $xmiURI := map:get($content, "uri")
   let $xmi := map:get($content, "value")
-  let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".xml")
+  let $docName := substring-before(substring-after($xmiURI,"/xmi2es/xmi/"), ".") (: .xml, .uml :)
   let $param := map:get($context, "transform_param")
   let $transformResult := xmi2es:xmi2es($xmi, $param)
   let $esModel := map:get($transformResult, "descriptor")

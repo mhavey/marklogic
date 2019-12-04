@@ -241,6 +241,7 @@ declare function xes:resolveBaseURI($xes, $baseURI as xs:string?) as xs:string {
 		if (xes:emptyString($baseURI)) then 
 			let $_ := pt:addProblem($problems, (), (), $pt:MODEL-BASE-URI-NOT-FOUND, ())
 			return $DEFAULT-NAMESPACE
+		else if (fn:ends-with($baseURI, "/")) then fn:substring($baseURI, 1, fn:string-length($baseURI) - 1)
 		else $baseURI
 };
 
