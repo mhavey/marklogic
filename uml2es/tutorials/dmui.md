@@ -4,7 +4,7 @@
 This tutorial shows how you, *without having to write any code*, can move raw, messy data into MarkLogic and convert it to a much better form that conforms to a UML model. Our approach can best be described as *model-driven declarative mapping*. There's no coding; developers aren't needed. Rather, the brunt of the work is done by the two roles you would expect: 
 
 - A data architect, who creates the data model in a third-party UML tool (in our case, Papyrus).
-- A source-data subject-matter expert (SME), who uses the Declarative Mapper IDE tool to define the source-to-target mapping. This SME is an expert in the messy source data and works closely with the data architect to understand the UML-defined target data format.
+- A source-data subject-matter expert (SME), who uses the Data Hub's mapper tool to define the source-to-target mapping. This SME is an expert in the messy source data and works closely with the data architect to understand the UML-defined target data format.
 
 The data architect and source-data SME are helped by a build person, who creates a gradle-based MarkLogic data hub environment that incorporates the UML and mapping tools. 
 
@@ -16,70 +16,44 @@ A) The data architect in Papyrus creates the UML data model.
 
 B) The data architect, using the build environment created by the build person, uses UML2ES to convert the UML model to MarkLogic's Entity Services (ES) form. 
 
-C) The source-data SME works within the Declarative Mapper IDE tool to map source data to the model form (UML, ES) of the data. 
+C) The source-data SME works within the Data Hub QuickStart tool to map source data to the model form (UML, ES) of the data. 
 
-D) The source-data SME works with the build person to incorporate the source data SME's declarative mapping into a data hub harmonization process. When this harmonization process is run, the raw source data is converted to the model's form using the declarative mapping.
+D) The data flow to stage raw source person data, map it to the model's form, and persist that model-based data to the hub's FINAL database, is executed. In the tutorial we'll run it manually within Quick Start. It is simple enough step for any of the roles to execute. In a production environment, its execution is likely scripted by the build person.
 
 There's no coding in this process... not even in step D! All the work is done by data experts and tools! To see why, try out this tutorial! You will play each of the roles through all the above steps. 
 
-For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an open-source UML tool), the Declarative Mapper IDE (a MarkLogic field tool), and the Declarative Mapper engine (another MarkLogic field tool). [The two Declarative Mapper tools are available on MarkLogic's internal BitBucket repository. This tutorial is MarkLogic internal.]
+For this tutorial you need MarkLogic (version 9 or later), UML2ES, Papyrus (an open-source UML tool), and the Data Hub 5.1 QuickStart tool.
 
 - You will need a local clone of UML2ES
 - See [How to install Papyrus](papyrus_install.md) for instructions on installing Papyrus
-- See [How to install Declarative Mapper](dm_install.md) for instructions on installing the Declarative Mapper UI and engine
 
-## Why is this Tutorial Under Construction
-
-Model-based mapping is soon to be a built-in feature of MarkLogic. In this tutorial we use a separate field tool, the Declarative Mapper.  This tutorial will soon be revised to use the built-in MarkLogic mapper. 
-
-The DM IDE tool is ever-changing. In this tutorial we use it as a visual editor for the Declarative Mapper field tool. Currently it is intended to fit multiple mapping engines: not just Declarative Mapper, but also Schematron. But DM IDE could grow into a UI editor for MarkLogic's built-in mapper. When that happens, this tutorial will show how the source data SME uses DM IDE to create a mapping for the MarkLogic mapper! 
-
-And to top it off - the DM IDE doesn't integrate with UML2ES in DHF 4.3. You have to use DHF 4.1.
-
-## Step 1: Standup a MarkLogic Environment and Build Process (Build Person)
+## Step 1: Standup a MarkLogic Data Hub (Build Person)
 
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-We get started by having you, in the role of build person, setup a data hub, with UML2ES and the Declarative Mapper, on MarkLogic.
+We get started by having you, in the role of build person, setup a data hub, with UML2ES, on MarkLogic.
 
 Pre-requisites:
 - MarkLogic 9 (or greater) installation up and running
 - Local clone of UML2ES
-- Local clone of Declarative Mapper engine. See [How to install Declarative Mapper](dm_install.md)
-- Declarative Mapper IDE up and running. First obtain a local clone. Then setup and run. See [How to install Declarative Mapper](dm_install.md)
+- Data Hub Framework 5.1 QuickStart
 
-To begin, create a folder called dmHub anywhere on your build machine. This folder will be a data hub gradle project that incorporates the UML2ES and the DM toolkits. 
+To begin, open Quick Start 5.1 in your browser and create a new project. Put it into a folder called dmHub. Once your new hub is up and running, you're ready to continue.
 
-Copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see build.gradle and data/coolness/hobbyCoolness.json directly under dmHub. Otherwise, remove what you copied and try again at the correct level. 
-
-What you just copied is the gradle build file, the gradle properties file, the log4j properties file, the source person data, and some miscellaneous artifacts. Tweak the gradle.properties once you've copied it over. For example, modify mlHost if you're ML server is not running on localhost; modify mlUsername and mlPassword if your admin username/password is not admin/admin.
+Next copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see data/coolness/hobbyCoolness.json and log/log4j/properties directly under dmHub. 
 
 Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. 
 
-Copy into dmHub/src/main/ml-modules/ext the Declarative Mapper engine code. Copy from your local DM engine clone the directory declarative-mapper/src/main/ml-modules/root/ext to dmHub/src/main/ml-modules/root/ext. You did it right if you can see dmHub/src/main/ml-modules/root/ext/declarative-mapper.sjs and dmHub/src/main/ml-modules/root/ext/declarative-mapper/runtime.sjs. If you don't see the files in exactly that this location, remove what you copied and try again at the correct level. 
-
-Copy into the main folder dmHub the UML2ES build file [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).
+Copy into the main folder dmHub the UML2ES build file [../uml2esTransform/uml2es4dhf51.gradle](../uml2esTransform/uml2es4dhf51.gradle).
 
 Under dmHub/data, create subfolders model and papyrus
 
 Copy into dmHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you can see the file dmHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
 
-When you are done, you should have the following folder structure: ... TODO - update; add service folder, remove hack
+When you are done, you should have the following folder structure: 
 
 ![Step 1 - folder structure](images/dmui_setup1.png)
-
-Now let's initialize the hub. In a command prompt navigate to your employeeHub folder and run the following:
-
-gradle -i hubInit
-
-This creates a few additional subfolders: plugins, src/main/hub-internal-config, src/main/ml-config, src/main/ml-schemas, build, gradle, and .gradle. 
-
-Finally, let's create an instance of the data hub. In the command prompt, run the following
-
-gradle -i mlDeploy
-
-When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-dmHub-STAGING, xmi2es-tutorials-dmHub-FINAL, and xmi2es-tutorials-dmHub-MODULES. Check in admin console you have these.
 
 </p>
 </details>
