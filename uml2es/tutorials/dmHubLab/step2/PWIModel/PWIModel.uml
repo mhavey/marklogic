@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:MarkLogicEntityServicesProfile.es="http:///MarkLogicEntityServicesProfile/es.ecore" xmlns:MarkLogicEntityServicesProfile.xes="http:///MarkLogicEntityServicesProfile/xes.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="http:///MarkLogicEntityServicesProfile/es.ecore /MLProfileProject/MLProfile.profile.uml#_3GtyugEDEeqT6dzYaNPbgw http:///MarkLogicEntityServicesProfile/xes.ecore /MLProfileProject/MLProfile.profile.uml#_3Gty9gEDEeqT6dzYaNPbgw">
-  <uml:Model xmi:id="_k3LE0KfMEemVSZiNWOJCaA" name="Person">
+  <uml:Model xmi:id="_k3LE0KfMEemVSZiNWOJCaA" name="PWIModel">
     <packageImport xmi:type="uml:PackageImport" xmi:id="_k87HgKfMEemVSZiNWOJCaA">
       <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
     </packageImport>
@@ -43,6 +43,6 @@
   <MarkLogicEntityServicesProfile.es:PK xmi:id="_vkQD0KfSEemVSZiNWOJCaA" base_Property="_fqb9YKfQEemVSZiNWOJCaA"/>
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_M4MfAKfTEemVSZiNWOJCaA" base_Property="_ChdmoKfREemVSZiNWOJCaA"/>
   <MarkLogicEntityServicesProfile.es:elementRangeIndex xmi:id="_OHTWcKfTEemVSZiNWOJCaA" base_Property="_DTKJUKfREemVSZiNWOJCaA"/>
-  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_kBq8AKfTEemVSZiNWOJCaA" baseUri="http://xyz.org/marklogicModels" base_Package="_k3LE0KfMEemVSZiNWOJCaA"/>
+  <MarkLogicEntityServicesProfile.es:esModel xmi:id="_kBq8AKfTEemVSZiNWOJCaA" version="0.0.1" baseUri="http://xyz.org/marklogicModels/" base_Package="_k3LE0KfMEemVSZiNWOJCaA"/>
   <MarkLogicEntityServicesProfile.xes:xDHFEntity xmi:id="__PKhQBYiEeqsk4k_aWfQdA" base_Class="_TtWnsKfNEemVSZiNWOJCaA"/>
 </xmi:XMI>

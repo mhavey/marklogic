@@ -55,7 +55,7 @@ When you are done, you should have the following folder structure:
 
 ![Step 1 - folder structure](images/dmui_setup1.png)
 
-After setting up the hub, you copied UML2ES source code into the project. To conclude the setup, deploy that code! It is easiest to run this via Gradle. by running the following from the command line. Make sure to run this from your dmHub project folder. Before running it, edit gradle.properties to supply values for mlUsername and mlPassword. 
+After setting up the hub, you copied UML2ES source code into the project. To conclude the setup, deploy that code! First, edit edit gradle.properties to supply values for mlUsername and mlPassword. Then, from the command line, run the following gradle command; make sure to run this from your dmHub project folder. 
 
 ./gradlew -i mlReloadModules
 
@@ -114,9 +114,9 @@ Click Next. In the next window enter the project name as PWIModel. Select the mo
 
 ![New project in Papyrus](images/dmui_setup4.png)
 
-Click Next.  In the next page, under Diagram Kind, select Class Diagram. Click the box "A UML model with basic primitive types." Under "Choose a profile to apply", select Browse Workspace and select MLProjectProfile|MLProfile.profile.uml. 
+Click Next.  In the next page, for Root Model Element Name, enter PWIModel (replacing RootElement). Under Diagram Kind, select Class Diagram. Click the box "A UML model with basic primitive types." Under "Choose a profile to apply", select Browse Workspace and select MLProjectProfile|MLProfile.profile.uml. 
 
-![New project in Papyrus](images/emp_setup5.png)
+![New project in Papyrus](images/dmui_setup5.png)
 
 Click Finish. In Papyrus, you now see two projects in your workspace:
 
@@ -208,7 +208,7 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 
 Now it's time to convert the UML model to Entity Services form. This is best done by running a Gradle command from the command line. Make sure you are in the dmHub project folder. Run the following:
 
-./gradlew -i uDeployModelToDHF -PxmiFile=data/model/PWIModel/PWIModel.uml -PentitySelect=stereotype
+./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=data/model/PWIModel/PWIModel.uml -PentitySelect=stereotype
 
 </p>
 </details>
