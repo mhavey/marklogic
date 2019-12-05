@@ -39,9 +39,13 @@ Pre-requisites:
 - Local clone of UML2ES
 - Data Hub Framework 5.1 QuickStart
 
+## Step 1a: Create an environment in Quick Start
+
 To begin, open Quick Start 5.1 in your browser and create a new project. Put it into a folder called dmHub. Once your new hub is up and running, you're ready to continue.
 
-Next copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see data/coolness/hobbyCoolness.json and log/log4j/properties directly under dmHub. 
+## Step 1b: Copy into project UML2ES source code, reference data, and sample source data
+
+Next copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see data/persons/person*.json, log/log4j/properties, and src/main/ml-data/referenceData/hobbyCoolness.json directly under dmHub. 
 
 Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. 
 
@@ -55,27 +59,41 @@ When you are done, you should have the following folder structure:
 
 ![Step 1 - folder structure](images/dmui_setup1.png)
 
-After setting up the hub, you copied UML2ES source code into the project. To conclude the setup, deploy that code! First, edit edit gradle.properties to supply values for mlUsername and mlPassword. Then, from the command line, run the following gradle command; make sure to run this from your dmHub project folder. 
+## Step 1c: Deploy UML2ES source code and reference data
 
-./gradlew -i mlReloadModules
+After setting up the hub above, you copied UML2ES source code into the project. You also copied the hobbyCoolness.json dictionary into referenceData. To conclude the setup, push that code and data to the server! 
 
-5.1 Beta kludge ... If it's giving you dependency grief, edit your build.gradle file. First comment out the whole thing! Then add the following: 
+First, edit gradle.properties to supply values for mlUsername and mlPassword. 
+
+Next, edit build.gradle:
 
 ```
 buildscript {
-repositories {
-jcenter()
-maven {url 'http://distro.marklogic.com/nexus/repository/maven-releases/'}
+  repositories {
+    jcenter()
+    maven {url 'http://distro.marklogic.com/nexus/repository/maven-releases/'}
+  }
+  dependencies {
+    classpath "com.marklogic:ml-data-hub:5.1.0-rc1"
+  }
 }
-dependencies {
-classpath "com.marklogic:ml-data-hub:5.1.0-rc1"
-}
-}
+
 plugins {
-id 'net.saliman.properties' version '1.4.6'
+  id 'net.saliman.properties' version '1.4.6'
 }
+
 apply plugin: "com.marklogic.ml-data-hub"
+
+ext {
+    // Configuration for loading the reference data documents under src/main/ml-data
+    mlAppConfig.dataConfig.databaseName = mlStagingDbName
+    mlAppConfig.dataConfig.permissions = "flow-operator-role,read,flow-developer-role,update"
+}
 ```
+
+Finally, from the command line, run the following gradle command to promote UML2ES and reference data; make sure to run this from your dmHub project folder. 
+
+./gradlew -i mlReloadModules mlDeployApp #TODO, can I narrow this down?
 
 
 </p>
@@ -208,7 +226,7 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 
 Now it's time to convert the UML model to Entity Services form. This is best done by running a Gradle command from the command line. Make sure you are in the dmHub project folder. Run the following:
 
-./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=data/model/PWIModel/PWIModel.uml -PentitySelect=stereotype
+./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=data/model/PWIModel/PWIModel.uml -PentitySelect=all #should be stereotype, but DHF wants every entity used in mapping (even secondary entities like hobby) to live in its ES definition
 
 Lots of things happen when you run this. If there were no issues, you will find a new file, called Person.entity.json, in the entities folder of you dmHub project.
 
@@ -232,17 +250,11 @@ In your new flow create an ingestion step called IngestPerson. It will ingest pe
 
 ![IngestPerson](images/dmui_setup101.png)
 
-Also create an ingestion step called IngestCoolness that ingests the coolness document from data/coolness.
-
-![IngestCoolness](images/dmui_setup102.png)
-
-Run the flow to ingest this data to your Staging database. Click the Run button. 
-
-![Run Ingest](images/dmui_setup103.png)
+Run the flow to ingest this data to your Staging database. When it completes, browse your Staging database. Confirm there are two person documents in the IngestPerson collection.
 
 ## Step 4b: Design Mapping
 
-Add a third step, of type Mapping, to your flow. Call it MapPerson. It draws its source data from collection IngestPerson. Its target entity is Person.
+Add a second step, of type Mapping, to your flow. Call it MapPerson. It draws its source data from collection IngestPerson. Its target entity is Person.
 
 ![Create MapPerson](images/dmui_setup104.png)
 
@@ -250,6 +262,24 @@ Then build the mapping as shown below.
 
 ![MapPerson](images/dmui_setup105.png)
 
+Notice the following:
+
+- Some obvious mappings: first_name -> firstName, last_name -> lastName, id -> id
+- In the source data, hobbies is an array of strings (e.g., swimming, banking). In the target, hobbies is an array of Hobby objects, which contains attributes name and coolness. For each source hobby there is one target hobby. Hence in target we map the hobbies attribute to the source hobbies array.
+- In the target hobby, name is just the corresponding hobby string in the the source. Hence, we map name to "." This means that the hobby name is the value of the corresponding hobby in the source.
+- In the target hobby, coolness is a numeric value determined by hobby name. Different hobbies have difference values of coolness. We specify this in a dictionary called hobbyCoolness.json. Recall you dealt with this dictionary in step 1. Here are its contents:
+
+```
+{
+  "swimming": 1,
+  "banking": 3,
+  "steely-dan": 1000000, 
+  "paragliding": 100000,
+  "scotch": 100000,
+  "yoga": 0
+}
+``` 
+- To obtain the value from the dictionary, we use this expression: documentLookup(., '/referenceData/hobbyCoolness.json' )
 
 </p>
 </details>
@@ -259,12 +289,7 @@ Then build the mapping as shown below.
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-TODO ... 
-Hobby needs to be a primary entity too ; required by mapper 
-Can't get coolness to work...
-
-
-It's easy in Quick Start to run the mapping step to populate model-based Person documents into the FINAL database. Just click Run. In the Run Flow popup, select just MapPerson to run; you can skip IngestPerson and IngestCoolness, which you already ran above.
+It's easy in Quick Start to run the mapping step to populate model-based Person documents into the FINAL database. Just click Run. In the Run Flow popup, select just MapPerson to run; you can skip IngestPerson, which you already ran above.
 
 ![Run MapPerson](images/dmui_setup106.png)
 
@@ -273,13 +298,26 @@ Now let's look at the data. Select the Browse Data menu. From the top-center dro
 ```
 {
   "envelope": {
-    "headers": {},
+    "headers": {
+      "sources": [
+        {
+          "name": "IngestMap"
+        }
+      ],
+      "createdOn": "2019-12-05T14:37:01.142267-05:00",
+      "createdBy": "admin"
+    },
     "triples": [],
     "instance": {
+      "info": {
+        "title": "Person",
+        "version": "0.0.1",
+        "baseUri": "http://xyz.org/marklogicModels",
+        "description": ""
+      },
       "Person": {
-        "id": "/pwi/123.json",
-        "firstName": "mike",
-        "lastName": "havey",
+        "firstName": "mikey",
+        "lastName": "jordan",
         "hobbies": [
           {
             "Hobby": {
@@ -295,14 +333,20 @@ Now let's look at the data. Select the Browse Data menu. From the top-center dro
           },
           {
             "Hobby": {
-              "name": "paragliding",
-              "coolness": 100000
+              "name": "yoga",
+              "coolness": 0
+            }
+          },
+          {
+            "Hobby": {
+              "name": "steely-dan",
+              "coolness": 1000000
             }
           }
-        ]
+        ],
+        "id": "456"
       }
-    },
-    "attachments": null
+    }
   }
 }
 ```
