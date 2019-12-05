@@ -210,6 +210,8 @@ Now it's time to convert the UML model to Entity Services form. This is best don
 
 ./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=data/model/PWIModel/PWIModel.uml -PentitySelect=stereotype
 
+Lots of things happen when you run this. If there were no issues, you will find a new file, called Person.entity.json, in the entities folder of you dmHub project.
+
 </p>
 </details>
 
@@ -220,134 +222,48 @@ Now it's time to convert the UML model to Entity Services form. This is best don
 
 In Step 4 you play the role of Source Data SME. You will use the Quick Start tool to build a mapping of raw source person data to the Person structure of the UML model. 
 
-## Step 4a: Build the Mapping
+## Step 4a: Ingest Source Data
 
-First, open the DM IDE tool; see [How to install Declarative Mapper](dm_install.md) for instructions. In the initial screen ("Recent Projects"), paste in the fully path of your gradle project. Then click the + button.
+First you need source data. Your mapping will transform this source data to the model form of the data. In Quick Start, navigate to Flows. Under Flows, click New Flow. Call it IngestMap. Click Create. 
 
-![IDE initial](images/dmui_setup20.png)
+![New Flow](images/dmui_setup100.png)
 
-In the next screen, in the bottom left corner, click the Folder button. 
+In your new flow create an ingestion step called IngestPerson. It will ingest person JSON documents from the data/person folder of your dmHub project. The configuration of this step should resemble the following:
 
-![IDE folder prompt](images/dmui_setup21.png)
+![IngestPerson](images/dmui_setup101.png)
 
-This takes you back to Recent Projects. Click on the eye button.
+Also create an ingestion step called IngestCoolness that ingests the coolness document from data/coolness.
 
-![IDE eye prompt](images/dmui_setup22.png)
+![IngestCoolness](images/dmui_setup102.png)
 
-The next screen shows you the entities in the project. Click on Person. 
+Run the flow to ingest this data to your Staging database. Click the Run button. 
 
-![Person prompt](images/dmui_setup23.png)
+![Run Ingest](images/dmui_setup103.png)
 
-Under mappings, create a new mapping called PWIMapping. In the "Mapping name" text box type PWIMapping. Under actions, click +. 
+## Step 4b: Design Mapping
 
-![PWI mapping](images/dmui_setup24.png)
+Add a third step, of type Mapping, to your flow. Call it MapPerson. It draws its source data from collection IngestPerson. Its target entity is Person.
 
-On the bottom select the PWIMAPPING tab. This brings up the PWI Mapping editor:
+![Create MapPerson](images/dmui_setup104.png)
 
-![PWI mapping editor](images/dmui_setup25.png)
+Then build the mapping as shown below.
 
-Time to map! First, understand the source data. Look at person1.json in the data/persons directory of your gradle project (also in [dmHubLab/step1/data/persons](dmHubLab/step1/data/persons)):
+![MapPerson](images/dmui_setup105.png)
 
-{
-  id: "123",
-  first_name: "mike",
-  last_name: "havey",
-  hobbies: [
-    "swimming", 
-    "banking",
-    "paragliding"
-  ]
-}
-
-Conceptually, the mapping to the model works as follows:
-- id, first_name, last_name in the source are mapped to the id, firstName, and lastName attributes of the Person entity. Well, id is not mapped exactly as is. Rather, the Person.id attribute is the concatenation of "/pwi/", the id source value and ".json".  Person.id ends up looking like a URI.
-- In the source object, hobbies is an array of strings (hobby names). In the model form, Person.hobbies is an array of Hobby objects, each consisting of a name and coolness. The source document has only the names. Coolness is determined by a lookup on the hobbyCoolness.json document in the data/coolness directory of your gradle project (also in [dmHubLab/step1/data/coolness](dmHubLab/step1/data/coolness)).
-
-{
-	"swimming": 1,
-	"banking": 3,
-	"steely-dan": 1000000, 
-	"paragliding": 100000,
-	"scotch": 100000,
-	"yoga": 0
-}
-
-
-Now that you understand how the mapping should work, use the DM IDE tool to create the mapping for real. Use the grammar of the Data Hub Framework field tool. Under Person, select id. In the editor on the right, under Expression, type [[ concat('/pwi/', extract('//id'), '.json') ]]
-
-![PWI id mapping](images/dmui_setup26.png)
-
-In a similar way, map first_name to [[ extract('//first_name') ]] and last_name to [[ extract('//last_name') ]]
-
-The hobby array requires special care. Click on the name attribute. Under expression enter [[extract('.') ]] Under condition enter %%[[extract('//hobbies', true)]] The condition is an array iterator; each hobby will iterate over the list of hobby names (//hobbies) in the source. The name expression is just the value of the name. 
-
-![PWI hobby mapping](images/dmui_setup27.png)
-
-For coolness, enter the expression: [[ lookup('/hobbyCoolness.json', extract('.')) ]] Coolness is the numeric value corresponding to the hobby name in hobbyCoolness.json. You don't need to enter a condition for coolness; it uses the same condition as name.
-
-Click the save button (bottom left corner) to save your mapping. It gets saved to plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json file in your gradle project. If you think you messed up, you can get the correct mapping file from [dmHubLab/step4/PWIMapping/PWIMapping.mapping.json](dmHubLab/step4/PWIMapping/PWIMapping.mapping.json); copy it into plugins/entities/Person/harmonize/PWIMapping/PWIMapping.mapping.json 
-
-## Step 4b: Test the Mapping Within IDE
-
-First, load the sample documents by running:
-
-gradle -i loadDmIdeSampleData mlReloadModules
-
-Run mlWatch to auto-detect and deploy changes to the sample documents:
-
-gradle -i mlWatch
-
-Restart the DM IDE and select PWIMapping. In the left panel, select person1.json. 
-
-![Sample in IDE](images/dmui_setup28.png)
-
-In the center panel, just above the mapping, click the Refresh button. Wait a few seconds. You will see the results of the mapping applied to the sample document as green-shaded text within the mapping.
-
-![Sample result in IDE](images/dmui_setup29.png)
-
-Edit the source document in the left panel of the IDE. Make the id "123abc". Also change the hobbies to contain only "yoga" and "steely-dan". When done, click the save button.
-
-![Modified sample in IDE](images/dmui_setup30.png)
-
-Wait a minute. Then click the Refresh button again. You will see slightly different results in the green-shaded text. 
-
-![Modified sample result in IDE](images/dmui_setup31.png)
 
 </p>
 </details>
 
-## Step 5: Ingest and Harmonize Data (Build Person)
+## Step 5: Harmonize Person Data
 
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-As the build person you now ingest and harmonize the data using the model and the mapping. You don't write any code. It's all gradle from here on out. 
+It's easy in Quick Start to run the mapping step to populate model-based Person documents into the FINAL database. Just click Run. In the Run Flow popup, select just MapPerson to run; you can skip IngestPerson and IngestCoolness, which you already ran above.
 
-First let's create a DHF input flow to ingest our Person source data into STAGING. Also, let's create a DHF harmonization flow to harmonize that data to FINAL from the source data. Run the following commands; if you are still running mlWatch (from the previous step), cancel it (Ctrl-C):
+![Run MapPerson](images/dmui_setup106.png)
 
-gradle -i hubCreateInputFlow -PflowName=LoadPerson -PuseES=false
-
-gradle -b uml2es4dhf.gradle -i uCreateDHFHarmonizeFlow -PflowName=harmonizePWI -PcontentMode=dm 
-
-You just generated a bunch of code. The good news is, you won't need a developer to touch it. The Input Flow ingests the data as is. The harmonization produces data that conforms to the UML model using the mapping from Step 4. You do need to "deploy" that mapping:
-
-gradle -i mlReloadModules deployPWIMapping ### DOES NOT WORK in DHF 4.3 because of how module load works.
-
-Next, ingest the source person data in the data/persons directory (as well as the hobbyCoolness lookup in data/lookup). We'll create a DHF input flow and run MLCP to ingest the person data through that flow. 
-
-gradle -i loadPersonSourceData ingestLookup
-
-If you look in the staging database (xmi2es-tutorials-dmHub-STAGING), you will see the ingested files /person1.json, /person2.json, and /hobbyCoolness.json.  
-
-![After source ingestion](images/dmui_setup50.png)
-
-Last, but not least, run the harmonization:
-
-gradle -i hubRunFlow -PflowName=harmonizePWI
-
-If you now explore the FINAL database (xmi2es-tutorials-dmHub-FINAL), you will see two new documents in the Person collection. Their URIs are /pwi/123.json and /pwi/456.json. How did they end up with these URIs? - In the model we designated the id attribute as the "xURI". In the mapping, we defined id as the concatenation of "/pwi", the value of the id attibute from the source document, and ".json". 
-
-Click on /pwi/123.json to see its contents. 
+Now let's look at the data. Select the Browse Data menu. From the top-center dropdown select the FINAL database.  From the collection filters on the left select MapPerson. Click on one of the two documents shown. Notice its structure adheres to the model.
 
 ```
 {
