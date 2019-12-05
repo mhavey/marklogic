@@ -259,6 +259,11 @@ Then build the mapping as shown below.
 <details><summary>Click to view/hide this section</summary>
 <p>
 
+TODO ... 
+Hobby needs to be a primary entity too ; required by mapper 
+Can't get coolness to work...
+
+
 It's easy in Quick Start to run the mapping step to populate model-based Person documents into the FINAL database. Just click Run. In the Run Flow popup, select just MapPerson to run; you can skip IngestPerson and IngestCoolness, which you already ran above.
 
 ![Run MapPerson](images/dmui_setup106.png)
