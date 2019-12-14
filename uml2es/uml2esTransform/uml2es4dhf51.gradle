@@ -12,18 +12,6 @@
   Feel free to edit the versions of plugins and classes to suit your needs
 */
 
-
-buildscript {
-  repositories {
-    maven {url 'http://developer.marklogic.com/maven2/'}
-    jcenter() // for beta only TODO remove
-    maven {url 'http://distro.marklogic.com/nexus/repository/maven-releases/'} // for beta only TODO remove
-  }
-  dependencies { // for beta only TODO remove
-    classpath "com.marklogic:ml-data-hub:5.1.0-rc1"
-  }
-}
-
 plugins {
     id 'java'
     id 'eclipse'
@@ -38,24 +26,25 @@ plugins {
     id 'net.saliman.properties' version '1.4.6'
 
     // This gradle plugin extends the ml-gradle plugin with
-    // commands that make the Data Hub Framework do its magic 
-    // id 'com.marklogic.ml-data-hub' version '5.1.0-rc1' // remove in beta only, TODO reinstate
+    // commands that make the Data Hub Framework do its magic
+    // You can change to any 4.x build. Must be 5.0 or higher.
+    id 'com.marklogic.ml-data-hub' version '5.1.0' 
 }
 
 repositories {
     jcenter()
     maven {url 'http://developer.marklogic.com/maven2/'}
-    maven {url 'http://distro.marklogic.com/nexus/repository/maven-releases/'} // for beta only TODO remove
-}
 
-dependencies {
-    // this allows you to write custom java code that depends
-    // on the Data Hub Framework library
-    // compile 'com.marklogic:marklogic-data-hub:5.1.0-rc1' // remove in beta only, TODO reinstate
-    compile 'com.marklogic:marklogic-xcc:9.0.7'
+    // Needed for mlcp dependencies
+    maven { url "http://plugins.gradle.org/m2" }
+    maven { url "http://developer.marklogic.com/maven2/" }
+
+    // Needed for hadoop dependencies for mlcp
+    maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
 }
 
 configurations {
+
   // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
   // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
   // shown below.  Need to force to use certain version of xml-apis library.
@@ -69,16 +58,14 @@ configurations {
 dependencies {
     // this allows you to write custom java code that depends
     // on the Data Hub Framework library
-    //compile 'com.marklogic:marklogic-data-hub:5.1.0-rc1' // remove in beta only, TODO reinstate
-    // compile 'com.marklogic:marklogic-xcc:9.0.7' 
+    // You can change to any 5.x build. 
+    compile 'com.marklogic:marklogic-data-hub:5.0.4' 
     compile 'com.marklogic:marklogic-xcc:9.0.10'
 
     mlcp "com.marklogic:mlcp:9.0.10"
     mlcp "org.apache.commons:commons-csv:1.2"
     mlcp files("lib")
 }
-
-apply plugin: "com.marklogic.ml-data-hub"
 
 
 /*

@@ -45,7 +45,7 @@ To begin, open Quick Start 5.1 in your browser and create a new project. Put it 
 
 ## Step 1b: Copy into project UML2ES source code, reference data, and sample source data
 
-Next copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see data/persons/person*.json, log/log4j/properties, and src/main/ml-data/referenceData/hobbyCoolness.json directly under dmHub. 
+Next copy into the dmHub folder the entire contents (preserving directory structure) of [dmHubLab/step1](dmHubLab/step1). You did the copy correctly if you see data/persons/person*.json,  data/referenceData/hobbyCoolness.json, and log/log4j/properties directly under dmHub. 
 
 Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. 
 
@@ -61,39 +61,81 @@ When you are done, you should have the following folder structure:
 
 ## Step 1c: Deploy UML2ES source code and reference data
 
-After setting up the hub above, you copied UML2ES source code into the project. You also copied the hobbyCoolness.json dictionary into referenceData. To conclude the setup, push that code and data to the server! 
+After setting up the hub above, you copied UML2ES source code into the project. To conclude the setup, push that code to the server! Also, as part of the same step, ingest the file data/referenceData/hobbyCoolness.json to the staging database; more on the purpose of this in section 4 below.
 
 First, edit gradle.properties to supply values for mlUsername and mlPassword. 
 
-Next, edit build.gradle:
+Next, edit build.gradle by adding a gradle task to ingest hobbyCoolness. You will also need to specify a dependency for MLCP. Here is what your build.gradle should look like:
 
 ```
 buildscript {
   repositories {
-    jcenter()
-    maven {url 'http://distro.marklogic.com/nexus/repository/maven-releases/'}
-  }
-  dependencies {
-    classpath "com.marklogic:ml-data-hub:5.1.0-rc1"
+    maven {url 'http://developer.marklogic.com/maven2/'}
   }
 }
 
 plugins {
-  id 'net.saliman.properties' version '1.4.6'
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+
+    // This plugin allows you to create different environments
+    // for your gradle deploy. Each environment is represented
+    // by a gradle-${env}.properties file
+    // See https://github.com/stevesaliman/gradle-properties-plugin
+    // specify the env on the command line with:
+    // gradle -PenvironmentName=x ...
+    id 'net.saliman.properties' version '1.4.6'
+
+    // This gradle plugin extends the ml-gradle plugin with
+    // commands that make Data Hub do its magic
+    id 'com.marklogic.ml-data-hub' version '5.1.0'
 }
 
-apply plugin: "com.marklogic.ml-data-hub"
+repositories {
+    jcenter()
+    maven {url 'http://developer.marklogic.com/maven2/'}
+}
 
-ext {
-    // Configuration for loading the reference data documents under src/main/ml-data
-    mlAppConfig.dataConfig.databaseName = mlStagingDbName
-    mlAppConfig.dataConfig.permissions = "flow-operator-role,read,flow-developer-role,update"
+configurations {
+
+  // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
+  // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
+  // shown below.  Need to force to use certain version of xml-apis library.
+  mlcp {
+      resolutionStrategy {
+        force "xml-apis:xml-apis:1.4.01"
+      }
+    }
+}
+
+dependencies {
+    // this allows you to write custom java code that depends
+    // on the Data Hub library
+    compile 'com.marklogic:marklogic-data-hub:5.1.0'
+    compile 'com.marklogic:marklogic-xcc:9.0.7'
+
+    mlcp "com.marklogic:mlcp:9.0.10"
+    mlcp "org.apache.commons:commons-csv:1.2"
+    mlcp files("lib")
+}
+
+task loadRef(type: com.marklogic.gradle.task.MlcpTask) {
+    classpath = configurations.mlcp
+    username = project.findProperty("mlUsername")
+    password = project.findProperty("mlPassword")
+    command = "IMPORT"
+    database = project.findProperty("mlStagingDbName")
+    input_file_path = "data/referenceData/hobbyCoolness.json"
+    output_collections = "referenceData"
+    output_permissions = "rest-reader,read,rest-writer,update"
+    output_uri_replace = ".*data,''"
 }
 ```
 
 Finally, from the command line, run the following gradle command to promote UML2ES and reference data; make sure to run this from your dmHub project folder. 
 
-./gradlew -i mlReloadModules mlDeployApp #TODO, can I narrow this down?
+./gradlew -i mlReloadModules loadRef
 
 
 </p>
@@ -224,9 +266,9 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 <details><summary>Click to view/hide this section</summary>
 <p>
 
-Now it's time to convert the UML model to Entity Services form. This is best done by running a Gradle command from the command line. Make sure you are in the dmHub project folder. Run the following:
+Now it's time to convert the UML model to Entity Services form. This is best done by running a Gradle command from the command line. Make sure you are in the dmHub project folder. Run the following. (You need to give the path to your PWIModel.uml file; replace MYPATH with the actual path on your machine in which PWIModel/PWIMode.uml is kept.
 
-./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=data/model/PWIModel/PWIModel.uml -PentitySelect=all #should be stereotype, but DHF wants every entity used in mapping (even secondary entities like hobby) to live in its ES definition
+./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=MYPATH/PWIModel/PWIModel.uml -PentitySelect=all #should be stereotype, but DHF wants every entity used in mapping (even secondary entities like hobby) to live in its ES definition
 
 Lots of things happen when you run this. If there were no issues, you will find a new file, called Person.entity.json, in the entities folder of you dmHub project.
 
