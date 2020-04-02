@@ -33,9 +33,13 @@ Confirm:
 
 ### Transform UML to ES
 
-Now we convert the patient UML model to Entity Services:
+Now we convert the patient UML model to Entity Services. 
 
-./gradlew -i -b uml2es4dhf5.gradle -PmodelName=PatientHubUML uDeployModel
+First, open in a text editor the file uml2es2DHF5.gradle in your project directory. Check the version of the plugin com.marklogic:marklogic-data-hub being used. It should be 5.1.0. If it is not, edit it and save your changes.
+
+Then run the following the transform the UML model to ES. 
+
+./gradlew -i -b uml2es4dhf5.gradle -PmodelFile=../umlModels/PatientHubUML.xml uDeployModel
 
 Confirm:
 - You have the file data/entity-services/PatientHubUML.json in your gradle project.
@@ -45,10 +49,10 @@ Confirm:
 
 Create DHF entities (like the original ones in the directory entities_fromDHFExample) by running this:
 
-./gradlew -b uml2es4dhf5.gradle -i uCreateDHFEntities -PmodelName=PatientHubUML -PentitySelect=stereotype
+./gradlew -b uml2es4dhf5.gradle -i uCreateDHFEntities  -PmodelFile=../umlModels/PatientHubUML.xml -PentitySelect=stereotype
 
 Confirm:
-- In entities directory of your gradle project are Admissions.entity.json and Patients.entity.json. These are the only entities designated xDHFEntity in the UML model. The other classes -- Labs, Diagnoses -- are not full-fledged DHF entities.
+- In entities directory of your gradle project are Admissions.entity.json, Patients.entity.json, These are the only entities designated xDHFEntity in the UML model. The other classes -- Labs, Diagnoses -- are not full-fledged DHF entities.
 
 ### Deploy Entities
 

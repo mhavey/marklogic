@@ -1,5 +1,15 @@
 # Human Resources Example
 
+## Version Note
+
+This is the example presented in the blog post <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>. It is designed for Marklogic Data Hub Framework 4.1. 
+
+If you're on version 5.1 or higher of Data Hub, please refer to the following examples:
+
+[../hrHub5](../hrHub5)  - This example upgraded for DHF 5.1. It shows the use of a TDE template to generate the semantic triples!
+[../hrHub5_mdModelLibs](../hrHub5)  - This example upgraded for DHF 5.1 with a MagicDraw main model that uses a separate library model. Demonstrates parent/child models in MagicDraw.
+[../hrHub5_papModelLibs](../hrHub5)  - This example upgraded for DHF 5.1 with a Papyrus main model that uses a separate library model. Demonstrates parent/child models in Papyrus.
+
 ## Intro
 
 This example shows the following:

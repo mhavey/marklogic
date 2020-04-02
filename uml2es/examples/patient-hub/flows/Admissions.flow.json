@@ -36,10 +36,7 @@
         "inputFileType" : "csv",
         "outputURIReplacement" : ".*datasets,'/datasets'",
         "separator" : "\\t"
-      },
-      "mappingStep" : false,
-      "customStep" : false,
-      "mappingName" : null
+      }
     },
     "2" : {
       "name" : "BuildAdmissions",
@@ -57,11 +54,7 @@
       "batchSize" : 5,
       "threadCount" : 12,
       "stepDefinitionName" : "BuildAdmissions",
-      "stepDefinitionType" : "CUSTOM",
-      "modulePath" : "/custom-modules/custom/BuildAdmissions/main.sjs",
-      "mappingStep" : false,
-      "customStep" : true,
-      "mappingName" : null
+      "stepDefinitionType" : "CUSTOM"
     }
   }
 }

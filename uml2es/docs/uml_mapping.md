@@ -47,6 +47,9 @@ Cons:
 
 ### 2. Several Models Linked by UML Tool
 
+TODO .. update this...
+
+
 Build several models linked by the UML tool. Suppose model M contains class C. In model N, I want class D to contain an attribute that refers to class C. UML tools support this by allowing package import:
 
 - In model M, I ensure class C belongs to a package. 

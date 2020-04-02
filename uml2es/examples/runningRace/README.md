@@ -31,7 +31,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i setup mlDeploy
+./gradlew  -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-runningRace.
@@ -42,13 +42,13 @@ Now we deploy our three running race UML models. They end up as Entity Services 
 
 First, the MagicDraw model:
 
-gradle -i -b uml2es.gradle -PmodelName=RunningRace uDeployModel
+./gradlew -i -b uml2es.gradle -PmodelFile=../umlModels/RunningRace.xml uDeployModel
 
 Next the EMF and Papyrus models:
 
-gradle -i -b uml2es.gradle  -PmodelName=RunningRaceEMF uDeployModel
+./gradlew -i -b uml2es.gradle  -PmodelFile=data/RunningRaceEMF/model/RunningRaceEMF.uml uDeployModel
 
-gradle -i -b uml2es.gradle  -PmodelName=RunningRacePapyrus uDeployModel
+./gradlew -i -b uml2es.gradle  -PmodelFile=data/RunningRacePapyrus/RunningRacePapyrus.uml uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the XMI files, including:

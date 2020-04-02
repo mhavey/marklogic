@@ -9,14 +9,9 @@
   Tasks that begin with "_" are private. Don't call them; they are called internally.
   Tasks that begin with "u" are public. Call them!
 
-  Feel free to edit the versions of plugins and classes to suit your needs
+  You have a TODO. You should plugin versions in this build script to match your environment
+  See the TODO edit comments
 */
-
-buildscript {
-  repositories {
-    maven {url 'http://developer.marklogic.com/maven2/'}
-  }
-}
 
 plugins {
     id 'java'
@@ -34,7 +29,7 @@ plugins {
     // This gradle plugin extends the ml-gradle plugin with
     // commands that make the Data Hub Framework do its magic
     // You can change to any 4.x build. Must be 5.0 or higher.
-    id 'com.marklogic.ml-data-hub' version '5.0.4' 
+    id 'com.marklogic.ml-data-hub' version '5.1.0' /// TODO - EDIT 
 }
 
 repositories {
@@ -50,6 +45,7 @@ repositories {
 }
 
 configurations {
+
   // This configuration captures the dependencies for running mlcp (Content Pump). This is only needed if you want
   // to run mlcp via Gradle tasks. If you do, using com.marklogic.gradle.task.MlcpTask is a useful starting point, as
   // shown below.  Need to force to use certain version of xml-apis library.
@@ -64,10 +60,10 @@ dependencies {
     // this allows you to write custom java code that depends
     // on the Data Hub Framework library
     // You can change to any 5.x build. 
-    compile 'com.marklogic:marklogic-data-hub:5.0.4' 
-    compile 'com.marklogic:marklogic-xcc:9.0.10'
+    compile 'com.marklogic:marklogic-data-hub:5.1.0' // TODO - edit 
+    compile 'com.marklogic:marklogic-xcc:9.0.10' // TODO - edit
 
-    mlcp "com.marklogic:mlcp:9.0.10"
+    mlcp "com.marklogic:mlcp:9.0.10" // TODO - edit
     mlcp "org.apache.commons:commons-csv:1.2"
     mlcp files("lib")
 }
@@ -77,9 +73,6 @@ dependencies {
  */
 
 task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
-  def srcDir = new File("${projectDir}").getAbsolutePath()
-  def unixDir = srcDir.replace('\\', '/') + "/data/model"
-  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
@@ -87,15 +80,15 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
-  def tparam = "dummy"  
+  def tparam = 'dummy' 
   if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam = '{"lax": "true"}'
 
-  def fullModelName = null;
-  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".xml"
-  def fdir = file(unixDir)
-  def files = null
-  if (fdir != null) files = fdir.list()
-  enabled = fullModelName != null && files != null && files.contains(fullModelName)
+  def xfile = null;
+  if (project.findProperty("modelFile") != null &&  !project.findProperty("modelFile").endsWith(".xlsx")) xfile = project.file(project.findProperty("modelFile"))
+  enabled = xfile != null && xfile.exists()
+  def unixDir = xfile == null ? null : xfile.getCanonicalFile().getParent().replace('\\', '/')
+  def fullModelName = xfile == null ? null : xfile.getName()
+  def regex = xfile == null ? null : '"' + unixDir + ",'',/,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
@@ -115,9 +108,6 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
-  def srcDir = new File("${projectDir}").getAbsolutePath() 
-  def unixDir = srcDir.replace('\\', '/') + "/data/model-excel"
-  def regex = '"' + unixDir + ",'',/,''" + '"'
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = project.findProperty("mlAppServicesHost")
@@ -125,15 +115,15 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
-  def tparam = "dummy"  
+  def tparam = 'dummy' 
   if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam = '{"lax": "true"}'
 
-  def fullModelName = null;
-  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".xlsx"
-  def fdir = file(unixDir)
-  def files = null
-  if (fdir != null) files = fdir.list()
-  enabled = fullModelName != null && files != null && files.contains(fullModelName)
+  def xfile = null;
+  if (project.findProperty("modelFile") != null &&  project.findProperty("modelFile").endsWith(".xlsx")) xfile = project.file(project.findProperty("modelFile"))
+  enabled = xfile != null && xfile.exists()
+  def unixDir = xfile == null ? null : xfile.getCanonicalFile().getParent().replace('\\', '/')
+  def fullModelName = xfile == null ? null : xfile.getName()
+  def regex = xfile == null ? null : '"' + unixDir + ",'',/,''" + '"'
 
   classpath = configurations.mlcp
   command = "IMPORT"
@@ -188,24 +178,31 @@ task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlRestPort")
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
-  def fullModelName = null;
-  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".ttl"
-  enabled = fullModelName != null
+  def graphName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    graphName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = graphName != null
 
   classpath = configurations.mlcp
   command = "IMPORT"
   host = myHost
   port = myPort.toInteger()
 
-  input_file_path = unixDir + "/" + fullModelName
+  input_file_path = unixDir + "/" + graphName + ".ttl"
   input_file_type = "rdf" 
   output_uri_prefix = "/triplestore"
-  output_graph = project.findProperty("modelName")
+  output_graph = graphName
 }
 
 task _mRemoveOldExtendedModel(type: com.marklogic.gradle.task.ServerEvalTask) {
 
-  def graphName = project.findProperty("modelName")
+  def graphName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    graphName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
   enabled = graphName != null
 
 def js = "'use strict';\n"
@@ -215,34 +212,21 @@ js += 'sem.graphDelete(sem.iri("' + graphName + '"));\n'
   javascript = js;
 }
 
-/*
-This ensures ES model is deployed to FINAL, not STAGING
-*/
-task _mDeployESModelToFinal(type: com.marklogic.gradle.task.MlcpTask) {
-  def srcDir = new File("${projectDir}").getAbsolutePath()
-  def unixDir = srcDir.replace('\\', '/') + "/data/entity-services-dump/xmi2es/es"
-  def regex = '"' + unixDir + ",'',/,''" + '"'
+task _mDeployFullModel(type: com.marklogic.gradle.task.ServerEvalTask) {
 
-  def myHost = project.findProperty("mlHost")
-  if (myHost == null) myHost = ""
-  def myPort = project.findProperty("mlFinalPort")
-  if (myPort == null) myPort = "0"
+  def actualModelName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    actualModelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualModelName != null
 
-  def fullModelName = null;
-  if (project.findProperty("modelName") != null) fullModelName = project.findProperty("modelName") + ".json"
-  enabled = fullModelName != null && project.findProperty("mlFinalPort") != null
-
-  classpath = configurations.mlcp
-  command = "IMPORT"
-  document_type = "json"
-  input_file_path = unixDir + "/" + fullModelName
-  input_file_type = "documents"
-  output_uri_replace = regex
-  output_uri_prefix = "/marklogic.com/entity-services/models/"
-  output_permissions = "rest-reader,read,rest-writer,update"
-  output_collections = "http://marklogic.com/entity-services/models"
-  host = myHost
-  port = myPort.toInteger()
+def js = "'use strict';\n"
+js += 'declareUpdate();\n'
+js += 'xdmp.documentInsert("/xmi2es/es/deployed/' + actualModelName + '.json",\n' 
+js += '  cts.doc("/xmi2es/es/' + actualModelName + '.json"),\n'
+js += '  {collections: ["http://marklogic.com/entity-services/models"]})'
+  javascript = js;
 }
 
 /*
@@ -254,8 +238,16 @@ task _cDeleteCutDump(type: Delete) {
 }
 
 task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
-  def modelName = project.findProperty("modelName")
-  if (modelName != null) modelName = '"' + modelName + '"'
+
+  def actualModelName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    actualModelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualModelName != null
+
+
+  if (actualModelName != null) actualModelName = '"' + actualModelName + '"'
   def entities = project.findProperty("entities") 
   if (entities != null) entities = '"' + entities + '"'
   def entitySelect = project.findProperty("entitySelect") 
@@ -265,13 +257,21 @@ task _cCutEntities(type: com.marklogic.gradle.task.ServerEvalTask) {
 def js = "'use strict';\n"
 js += 'const cookie = require("/xmi2es/cookieCutter.sjs");\n'
 js += 'const options = {dhf5: 1};\n'
-js += 'cookie.createEntities(' + modelName + ',' + entitySelect + ',' + entities + ',' + stg + ', options);\n'
+js += 'cookie.createEntities(' + actualModelName + ',' + entitySelect + ',' + entities + ',' + stg + ', options);\n'
 println js
   javascript = js;
 }
 
 task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
-  def directoryFilter = "/cookieCutter/"  + project.findProperty("modelName") + "/entities/"
+
+  def actualModelName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    actualModelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualModelName != null
+
+  def directoryFilter = "/cookieCutter/"  + actualModelName + "/entities/"
 
   def myHost = project.findProperty("mlHost")
   if (myHost == null) myHost = ""
@@ -288,7 +288,15 @@ task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
 }
 
 task _cPromoteEntities(type: Copy) {
-    from "data/cookieCutter-dump/cookieCutter/" + project.findProperty("modelName") + "/entities"
+
+  def actualModelName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    actualModelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualModelName != null
+
+    from "data/cookieCutter-dump/cookieCutter/" + actualModelName + "/entities"
     into "entities" 
 }
 
@@ -300,20 +308,17 @@ task _cPromoteEntities(type: Copy) {
 /*
 uDeployModel : deploys your UML (or even Excel) model as an ES model
 Input: 
-- modelName (XMI or Excel filename without suffix)
+- modelFile (Full or relative path of your XMI or Excel file.)
 - lax: true/false. Default: false (Use lax mode when transforming from UML to ES.)
 Dependencies: 
-- Your gradle project has the folder data/model
-- Your model is in that folder
-- Your model is XMI
-- Your model ends in .xml
+- Your UML/XMI or Excel model file exists at the location specified by modelFile
 - Standard ml-gradle environment properties: mlAppServicesHost, mlAppServicesPort. OR ...
 - Standard DHF environment properties: mlHost, mlFinalPort
 Effects:
-- Target database has the UML model, the ES model, the ES extensions, findings, generated code
-- Target database has the ES model and its extended triples deployed
+- FINAL database has the UML model, the ES model, the ES extensions, findings, generated code
+- FINAL database has the ES model and its extended triples deployed
 - Your gradle project has entity-services, entity-services-dump, entity-services-extension folders
-- You will see generated code in src/main/ml-config, src/main/ml-modules, src/main/ml-schemas
+- You will see generated code in src/main/ml-modules/root/modelgen
 */
 task uDeployModel() {
   dependsOn '_mDeleteES'
@@ -323,38 +328,50 @@ task uDeployModel() {
   dependsOn '_mCopyGenCode'
   dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
-  dependsOn '_mDeployESModelToFinal'
   tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
   tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadExcel'
   tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
-  tasks.findByName('_mDeployESModelToFinal').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
 }
 
 /*
-uCreateDHFEntities - create DHF plugin entities; a souped-up hubCreateEntity
+uCreateDHFEntities - create DHF-compatible entities from the ES model created in uDeployModel
 Input: 
-- modelName - name of UML module file without .xml suffix
+- modelFile (See uDeployModel)
 - entities (optional) - CSV of class names representing entities to create
 - entitySelect (optional) - Possible values:
      "infer" - Have the cookie cutter infer which classes are entities. Ignore entities specified.
      "all" - All classes are considered entities. Ignore entities specified.
+     "stereotype" - Classes stereotyped as xDHFEntity are considered entities.
 Dependencies: 
-- Your gradle project is DHF 4.1
+- Your gradle project is DHF 5.x where x >= 1
 - You have deployed your UML model
 - Standard DHF environment properties: mlHost, mlFinalPort
 Effects:
-- New plugins created under plugins/entities folder
+- DHF-compatible entities entities folder
 */
 task uCreateDHFEntities() {
+  dependsOn '_mDeployFullModel' // I need it for cookie cutter
   dependsOn '_cDeleteCutDump'
   dependsOn '_cCutEntities'
   dependsOn '_cFetchEntities'
   dependsOn '_cPromoteEntities'
+  tasks.findByName('_cCutEntities').mustRunAfter '_mDeployFullModel'
   tasks.findByName('_cFetchEntities').mustRunAfter '_cCutEntities'
   tasks.findByName('_cFetchEntities').mustRunAfter '_cDeleteCutDump'
   tasks.findByName('_cPromoteEntities').mustRunAfter '_cFetchEntities'
 }
+
+// Combines uDeployModel and uCreateDHFEntities
+task uDeployModelToDHF() {
+  dependsOn 'uDeployModel'
+  dependsOn 'uCreateDHFEntities'
+  tasks.findByName('uCreateDHFEntities').mustRunAfter 'uDeployModel'
+}
+
+// TODO - task for semantic TDE generation..
+
+

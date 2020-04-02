@@ -49,7 +49,7 @@ Next copy into the dmHub folder the entire contents (preserving directory struct
 
 Copy into dmHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file dmHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that this location, remove what you copied and try again at the correct level. 
 
-Copy into the main folder dmHub the UML2ES build file [../uml2esTransform/uml2es4dhf51.gradle](../uml2esTransform/uml2es4dhf51.gradle).
+Copy into the main folder dmHub the UML2ES build file [../uml2esTransform/uml2es4dhf5.gradle](../uml2esTransform/uml2es4dhf5.gradle).
 
 Under dmHub/data, create subfolders model and papyrus
 
@@ -268,7 +268,7 @@ If you think you might have messed up along the way, a pre-cooked model is avail
 
 Now it's time to convert the UML model to Entity Services form. This is best done by running a Gradle command from the command line. Make sure you are in the dmHub project folder. Run the following. (You need to give the path to your PWIModel.uml file; replace MYPATH with the actual path on your machine in which PWIModel/PWIMode.uml is kept.
 
-./gradlew -i -b uml2es4dhf51.gradle uDeployModelToDHF -PmodelFile=MYPATH/PWIModel/PWIModel.uml -PentitySelect=all #should be stereotype, but DHF wants every entity used in mapping (even secondary entities like hobby) to live in its ES definition
+./gradlew -i -b uml2es4dhf5.gradle uDeployModelToDHF -PmodelFile=MYPATH/PWIModel/PWIModel.uml -PentitySelect=all #should be stereotype, but DHF wants every entity used in mapping (even secondary entities like hobby) to live in its ES definition
 
 Lots of things happen when you run this. If there were no issues, you will find a new file, called Person.entity.json, in the entities folder of you dmHub project.
 

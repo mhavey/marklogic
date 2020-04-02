@@ -1,5 +1,9 @@
 # Using the UML-to-Entity Services Toolkit In Your Build
 
+... TODO - describe how there are three gradle build files - vanilla, DHF4, DHF5. describe the tasks for each
+.. describe the need to customize versions in each; make a copy into your own gradle project and customize..
+
+
 The toolkit supports a gradle build process. Gradle is the most widely used build tool for MarkLogic implementations. 
 The toolkit includes common gradle tasks to deploy your UML model and generate harmonization/conversion code from it. You use these tasks, as well as common [ml-gradle](https://github.com/marklogic-community/ml-gradle/wiki) and [data hub](https://marklogic.github.io/marklogic-data-hub/refs/gradle-tasks/) tasks, to deploy your application.
 

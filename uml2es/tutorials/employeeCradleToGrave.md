@@ -46,7 +46,7 @@ Under employeeHub/src/main/ml-modules, create the subfolder root.
 
 Copy into employeeHub/src/main/ml-modules/root the UML2ES transform code [../uml2esTransform/src/main/ml-modules/root/xmi2es](../uml2esTransform/src/main/ml-modules/root/xmi2es). You did it right if you can see the file employeeHub/src/main/ml-modules/root/xml2es/xml2esTransform.xqy. If you don't see the file in exactly that the location, remove what you copied and try again at the correct level. 
 
-Copy into the main folder employeeHub the UML2ES build file [../uml2esTransform/uml2es4dhf.gradle](../uml2esTransform/uml2es4dhf.gradle).
+Copy into the main folder employeeHub the UML2ES build file [../uml2esTransform/uml2es4dhf4.gradle](../uml2esTransform/uml2es4dhf4.gradle).
 
 Copy into employeeHub/data/papyrus the UML2ES profile [../umlProfile/eclipse/MLProfileProject](../umlProfile/eclipse/MLProfileProject). You did it right if you can see the file employeeHub/data/papyrus/MLProfileProject/MLProfile.profile.uml. If you don't see the file in exactly that location, remove what you copied and try again at the correct level. 
 
@@ -60,7 +60,7 @@ When you are done, you should have the following folder structure:
 
 Now let's initialize the hub. In a command prompt navigate to your employeeHub folder and run the following:
 
-gradle -i hubInit
+./gradlew -i hubInit
 
 This creates a few additional subfolders: plugins, src/main/hub-internal-config, src/main/ml-config, src/main/ml-schemas, build, gradle, and .gradle. 
 
@@ -68,7 +68,7 @@ If you wish, add the contents of the employeeHub folder to your source code repo
 
 Finally, let's create an instance of the data hub. In the command prompt, run the following
 
-gradle -i mlDeploy
+./gradlew -i mlDeploy
 
 When this has completed, you should see in your MarkLogic environment several new databases, including xmi2es-tutorials-empHub-STAGING, xmi2es-tutorials-empHub-FINAL, and xmi2es-tutorials-empHub-MODULES. Check in admin console you have these.
 
@@ -335,21 +335,9 @@ First, the build person modifies the build.gradle and gradle.properties files cr
 - To build.gradle, add the following code at the end:
 
 ```
-task prepHRModel(type: Copy) {
-    from "data/papyrus/EmployeeHubModel/EmployeeHubModel.uml"
-    into "data/model"
-    rename '(.*).uml', '$1.xml'
-}
-
-task runUML2ESDeploy(type: GradleBuild) {
+task deployHRModel(type: GradleBuild) {
   buildFile = "uml2es4dhf.gradle"
   tasks = ["uDeployModel"]
-}
-
-task deployHRModel() {
-  dependsOn "prepHRModel"
-  dependsOn "runUML2ESDeploy"
-  tasks.findByName('runUML2ESDeploy').mustRunAfter 'prepHRModel'
 }
 ```
 

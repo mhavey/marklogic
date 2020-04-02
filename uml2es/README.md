@@ -8,11 +8,11 @@ UML2ES is a toolkit to support modeling MarkLogic data in UML and mapping that U
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services>
 - <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>
 
-Also watch the following video:
+Also watch the following video (it's a little out of date):
 
 - <https://www.youtube.com/watch?v=VkpH3LgMz3M&feature=youtu.be>
 
-It works like this:
+UML2ES works like this:
 
 ![toolkit](toolkit.png)
 
@@ -24,7 +24,7 @@ The toolkit consists of the following parts:
 - [umlProfile](umlProfile): A UML profile containing stereotypes for MarkLogic Entity Services. Use this profile to include Entity Services configuration to your UML model.
 - [excel](excel): You can build your model in Excel as an alternative to UML! Maybe we should rename this toolkit *Excel2ES*! The toolkit provides an [Excel template](excel/uml2es-excel-template.xlsx) for this purpose. See [examples/hrexcel](examples/hrexcel) for a detailed example of how to use it. Also included is a [mapping spreadsheet](excel.uml2es-excel-mapping-template.xlsx). See [tutorials/employeeCradleToGrave.md](tutorials/employeeCradleToGrave.md) and [examples/hr](examples/hr) for detailed examples of how to use it. 
 - [tutorials](tutorial): Step-by-step tutorials on how to use UML2ES ranging from simple -- [tutorials/papyrus_model_edit.md](tutorials/papyrus_model_edit.md) -- to epic: [tutorials/employeeCradleToGrave.md](tutorials/employeeCradleToGrave.md).
-- [examples](examples): Numerous examples showing the use of UML (and Excel) data models for MarkLogic. Highlights: modeling for Entity Services and Template-Driven Extraction; modeling complex document relationships using UML relationships; the UML toolkit and Data Hub; the Data Hub "cookie cutter"; mixed models (documents + semantics); logical vs. physical; generating MarkLogic code from the UML model; using ml-gradle to run the transformation of UML to Entity Services as part of your build. 
+- [examples](examples): Numerous examples showing the use of UML (and Excel) data models for MarkLogic and its Data Hub framework. 
 
 ## How We Expect You Will Use This Toolkit
 As a user, you want to design a data model using UML and then ingest data into MarkLogic that conforms to this model. Put differently, you plan to put significant data into MarkLogic and want to ensure that the structure of this data follows a well considered model. 
@@ -39,7 +39,7 @@ If that's you, we think this toolkit is for you. You will need the following ing
 ## Where To Begin
 Start with the [tutorials](tutorials). If want to build a really simple model and see it through to MarkLogic, try [tutorials/papyrus_model_edit.md](tutorials/papyrus_model_edit.md) or [tutorials/magicdraw_model_edit.md](tutorials/magicdraw_model_edit.md). If you want to have more fun and explore how a team would deliver a more interesting model, try [tutorials/employeeCradleToGrave.md](tutorials/employeeCradleToGrave.md).
 
-Then dive into the [examples](examples). The [movies example](examples/movies) is a good place to start. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the [hr example](examples/hr). 
+Then dive into the [examples](examples). The [movies example](examples/movies) is a good place to start if you want to explore how MarkLogic represents UML classes and relationships. If you are planning to use MarkLogic's data hub framework, or if you are interested in semantics, begin with the [hrHub5 example](examples/hrHub5). 
 
 ## Going Deeper
 Once you get deeper into the toolkit, refer to the [docs](docs/README.md) to learn about: the profile and its stereotypes; how the transform maps UML to Entity Services; how the toolkit supports semantics; how to include the transform in your build process.

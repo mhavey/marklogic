@@ -1,28 +1,29 @@
+
 buildscript {
 
-	repositories {
-		jcenter{url "http://jcenter.bintray.com/"}
-		mavenLocal()
-		maven { url "http://plugins.gradle.org/m2" }
-	}
-	dependencies {
-		classpath "com.marklogic:ml-gradle:3.4.0"
-		classpath "net.saliman:gradle-properties-plugin:1.4.6"
-	}
+  repositories {
+    jcenter{url "https://jcenter.bintray.com/"}
+    mavenLocal()
+    maven { url "https://plugins.gradle.org/m2" }
+  }
+  dependencies {
+    classpath "com.marklogic:ml-gradle:4.0.1"
+    classpath "net.saliman:gradle-properties-plugin:1.4.6"
+  }
 }
 
 apply plugin: "net.saliman.properties"
 apply plugin: "com.marklogic.ml-gradle"
 
 repositories {
-	jcenter{url "http://jcenter.bintray.com/"}
+  jcenter{url "https://jcenter.bintray.com/"}
 
-	// Needed for mlcp dependencies
-	maven { url "http://plugins.gradle.org/m2" }
-	maven { url "http://developer.marklogic.com/maven2/" }
+  // Needed for mlcp dependencies
+  maven { url "https://plugins.gradle.org/m2" }
+  maven { url "https://developer.marklogic.com/maven2/" }
 
-	// Needed for hadoop dependencies for mlcp
-	maven { url "http://repository.cloudera.com/artifactory/cloudera-repos/" }
+  // Needed for hadoop dependencies for mlcp
+  maven { url "https://repository.cloudera.com/artifactory/cloudera-repos/" }
 }
 
 configurations {
@@ -37,7 +38,7 @@ configurations {
 }
 
 dependencies {
-  mlcp "com.marklogic:mlcp:9.0.6"
+  mlcp "com.marklogic:mlcp:9.0.10"
   mlcp "org.apache.commons:commons-csv:1.2"
   mlcp files("lib")
 }
@@ -45,12 +46,6 @@ dependencies {
 task includeXMI2ESTransform(type: Copy) {
     from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "src/main/ml-modules/root/xmi2es"
-}
-
-task includeModel(type: Copy) {
-    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
-    from xmiDir + "/IMDBMovie.xml"
-    into "data/model"
 }
 
 task includeUGradle() {
@@ -65,7 +60,6 @@ task includeUGradle() {
 
 task setup() {
   dependsOn('includeXMI2ESTransform')
-  dependsOn('includeModel')
   dependsOn('includeUGradle')
 }
 
@@ -116,7 +110,7 @@ src/main/ml-config/databases/content-database.json is equal to either INITIAL or
 
 
 task useInitialDBConfig(type: Copy) {
-    from "src/main/ml-config/databases/initial/content-database-INITIAL.json"
+    from "data/setupdata/content-database-INITIAL.json"
     into "src/main/ml-config/databases"
     rename { String fileName ->
         fileName.replace('-INITIAL', '')
@@ -124,10 +118,10 @@ task useInitialDBConfig(type: Copy) {
 }
 
 task useGeneratedDBConfig(type: Copy) {
-    from "src/main/ml-config/databases/content-database-GENERATED.json"
+    from "src/main/ml-config/databases/content-database.json.GENERATED"
     into "src/main/ml-config/databases"
     rename { String fileName ->
-        fileName.replace('-GENERATED', '')
+        fileName.replace('.GENERATED', '')
     }
 }
 
@@ -135,8 +129,8 @@ task deleteGenerated(type: Delete) {
   delete "src/main/ml-schemas/tde/MovieModel-0.0.1.tdex"
   delete "src/main/ml-schemas/tde/MovieModel-0.0.1-GENERATED.tdex"
   delete "src/main/ml-schemas/MovieModel-0.0.1-GENERATED.tdex"
-  delete "src/main/ml-config/databases/content-database-GENERATED.json"
-  delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1-GENERATED.xqy"
+  delete "src/main/ml-config/databases/content-database.json.GENERATED"
+  delete "src/main/ml-modules/ext/entity-services/MovieModel-0.0.1.xqy.GENERATED"
   delete "src/main/ml-modules/options/MovieModel.xml"
 }
 

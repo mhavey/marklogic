@@ -37,7 +37,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i setup mlDeploy
+./gradlew -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-hrexcel.
@@ -46,11 +46,11 @@ Confirm:
 
 Run the following to load the Excel HR model:
 
-gradle -b uml2es.gradle -PenvironmentName=local -PmodelName=HRExcel -i uDeployModel
+./gradlew -b uml2es.gradle -i -PmodelFile=data/model-excel/HRExcel.xlsx uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the Excel, including:
-	* /marklogic.com/entity-services/models/HRExcel.json - the ES model from the Excel
+	* /xm12es/es/HRExcel.json - the ES model from the Excel
 	* /xmi2es/extension/HRExcel.ttl - the extended ES model from the Excel
 	* /xmi2es/findings/HRExcel.xml - findings during the transform of the Excel
 	* /xmi2es/excel/HRExcel.xlsx - Original Excel file
@@ -62,11 +62,11 @@ Check the /xmi2es/findings/HRExcel.xml file. This indicates whether there were a
 
 For comparison, we will load the HR UML model from examples/hr. Run the following:
 
-gradle -b uml2es.gradle -PenvironmentName=local -PmodelName=DHFEmployeeSample -i uDeployModel
+./gradlew -b uml2es.gradle  -PmodelFile=../umlModels/DHFEmployeeSample.xml -i uDeployModel
 
 Confirm:
 - Content DB now has, in addition to the documents created in the previous step, the following documents
-	* /marklogic.com/entity-services/models/DHFEmployeeSample.json	 - the ES model from the UML
+	* /xmi2es/es/DHFEmployeeSample.json	 - the ES model from the UML
 	* /xmi2es/extension/DHFEmployeeSample.ttl - the extended ES model from the UML
 	* /xmi2es/findings/DHFEmployeeSample.xml - findings during the transform of the UML.
 	* /xmi2es/xmi/DHFEmployeeSample.xml - the original UML model in XMI form.

@@ -145,6 +145,9 @@ select distinct ?pluginName where {
 }
 
 function useAllEntities(modelIRI) {
+
+xdmp.log("useAllEntitites *" + modelIRI + "*");
+
 	var res = sem.sparql(`
 select distinct ?pluginName where {
     <${modelIRI}> <http://marklogic.com/entity-services#definitions>  ?plugin .
@@ -871,6 +874,9 @@ function validateRequired(p, desc) {
 }
 
 function createEntities(modelName, entitySelect, entityNames, stagingDB, options) {
+
+
+xdmp.log("createEntities *" + modelName + "*");	
 
 	// validate
 	if (entitySelect != null && ALLOWABLE_SELECTS.indexOf(entitySelect) < 0) throw "Illegal entity select *" + entitySelect + "*";

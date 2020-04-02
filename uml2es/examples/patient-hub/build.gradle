@@ -19,7 +19,7 @@ plugins {
 
     // This gradle plugin extends the ml-gradle plugin with
     // commands that make the Data Hub Framework do its magic
-    id 'com.marklogic.ml-data-hub' version '5.0.4'
+    id 'com.marklogic.ml-data-hub' version '5.1.0'
 }
 
 repositories {
@@ -30,7 +30,7 @@ repositories {
 dependencies {
     // this allows you to write custom java code that depends
     // on the Data Hub Framework library
-    compile 'com.marklogic:marklogic-data-hub:5.0.4'
+    compile 'com.marklogic:marklogic-data-hub:5.1.0'
     compile 'com.marklogic:marklogic-xcc:9.0.7'
 }
 
@@ -38,12 +38,6 @@ dependencies {
 task includeXMI2ESTransform(type: Copy) {
     from "../../uml2esTransform/src/main/ml-modules/root/xmi2es"
     into "src/main/ml-modules/root/xmi2es"
-}
-
-task includeModel(type: Copy) {
-    def xmiDir = new File("${projectDir}").getParentFile().getAbsolutePath() + "/umlModels"
-    from xmiDir + "/PatientHubUML.xml"
-    into "data/model"
 }
 
 task includeUGradle() {
@@ -58,6 +52,5 @@ task includeUGradle() {
 
 task setup() {
   dependsOn('includeXMI2ESTransform')
-  dependsOn('includeModel')
   dependsOn('includeUGradle')
 }

@@ -1,6 +1,9 @@
 Summary of examples:
 
 - examples/movies: A sample UML model for movies. Includes ml-gradle build file to load this model into MarkLogic. Shows the full UML-to-ES workflow including ingestion of ES envelopes, deploying ES-generated database indexes, and running SQL against TDE views. The movie model demonstrates several types of document relationships. 
+- examples/hr5: A sample UML model for human resources. It models Departments and Employees. The sample shows how to load HR data into a MarkLogic data hub 5.1. It also demonstrates semantic relationships though the use of an organizational ontology. Additionally, it showcases the *Data Hub Framework Cookie Cutter* to generate hub entities and harmonization flows. 
+
+
 - examples/hr: A sample UML model for human resources. It models Departments and Employees. The sample shows how to load HR data into a MarkLogic data hub. It also demonstrates semantic relationships though the use of an organizational ontology. Additionally, it showcases the *Data Hub Framework Cookie Cutter* to generate hub entities and harmonization flows. 
 - examples/runningRace: A sample demonstrating interop. We model a running race in three UML editors: MagicDraw, Eclipse Modeling Framework (EMF), and Papyrus. We show that all UML models transfor to the same ES model descriptor. Our model is based on one of the examples from MarkLogic's Entity Services github: <https://github.com/marklogic/entity-services/tree/master/entity-services-examples/example-races/>. 
 - examples/blockFactory: A sample UML model that shows a technique for denormalization.
@@ -12,6 +15,8 @@ Summary of examples:
 - examples/umlModels: The full set of models
 
 The following table summarizes the features demonstrated in the examples:
+
+TODO ... DHF 4 vs. 5....
 
 |Feature|Example|
 |---|---|

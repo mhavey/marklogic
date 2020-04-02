@@ -23,7 +23,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i setup mlDeploy
+./gradlew -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-movieTalk.
@@ -33,7 +33,7 @@ Confirm:
 We want the logical model in MarkLogic as an Entity Services model. That might sound strange. It's a logical model; why deploy it? We will use it later for a novel purpose: to help build our physical-logical mapping. The logical model we designed in Papyrus lacks enough detail to be used physically anyway. Most of its attributes do not even have a data type. When we deploy the model to MarkLogic as an Entity Services, we will specify the "lax" option to our UML/ES transformation tool. The "lax" option instructs the transformation tool to tolerate the logical model's lack of detail and make a best effort to produce an Entity Services model.  
 To deploy the logical model, run the following:
 
-gradle -b uml2es.gradle -PenvironmentName=local -i -PmodelName=MovieTalk -Plax=true uDeployModel
+./gradlew -b uml2es.gradle -i -PmodelFile=../umlModels/MovieTalk.xml -Plax=true uDeployModel
 
 Confirm:
 - Content DB includes several documents created when loading the XMI, including:

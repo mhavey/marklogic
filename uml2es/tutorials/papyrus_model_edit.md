@@ -114,9 +114,8 @@ The UML-to-Entity Services toolkit will transform your Papyrus UML model into th
 You now follow the same approach as the numerous [examples](../examples) of this toolkit. You use a gradle project to ingest your model to MarkLogic and convert it to Entity Services. For this tutorial, use the gradle project in [uml2es/tutorials/gradle](gradle) directory of your local clone. You first need to setup a database and deploy the transform. 
 
 - The first step is to review and modify gradle.properties; set suitable values for hostname, ports, username/password, and application name. 
-- Next copy your Papyrus model to the gradle/data/model directory. Papyrus saves the model in the file PapyrusPerson.uml in the MyPapyrusProject of your Eclipse workspace. Copy that file to the gradle/data/model directory. Rename the file PapyrusPerson.xml. 
-- Setup your database and deploy the transform by running: gradle -i setup mlDeploy
-- Load your model by running gradle -b uml2es.gradle -i -PmodelName=PapyrusPerson uDeployModel
+- Setup your database and deploy the transform by running: ./gradlew -i setup mlDeploy
+- Load your model by running ./gradlew -b uml2es.gradle -i -PmodelFile=full-path-to-your-umlproject/PapyrusPerson.uml uDeployModel
 - In QueryConsole explore the database xmi2es-tutorial-content. Your Entity Services descriptor is /xmi2es/es/PapyrusPerson.json (or /marklogic.com/entity-services/models/PapyrusPerson.json). Notice how it aligns with the Papyrus model:
  
 ![Project in Papyrus - ES model](images/pap_model_es.png)

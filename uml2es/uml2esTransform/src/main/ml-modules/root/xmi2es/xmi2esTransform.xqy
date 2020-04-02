@@ -514,7 +514,7 @@ Capture ES validation of descriptor. Return empty sequence if valid.
 :)
 declare function xmi2es:isEsValid($descriptor as json:object) {
   try {
-    let $validatedDescriptor := es:model-validate($descriptor) 
+    let $validatedDescriptor := es:model-validate(xdmp:unquote(xdmp:quote($descriptor))) 
     return ()
   }
   catch($exception) {

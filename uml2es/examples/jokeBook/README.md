@@ -22,7 +22,7 @@ Setup new DB. Will use basic DB config with no indexes. Will bring in XMI2ES tra
 
 Run the following:
 
-gradle -PenvironmentName=local -i setup mlDeploy
+./gradlew -i setup mlDeploy
 
 Confirm:
 - New DB and app server created with name xmi2es-examples-jokebook.
@@ -33,7 +33,7 @@ Confirm:
 ### Transform UML to ES
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -b uml2es.gradle -PenvironmentName=local -i -PmodelName=JokeBook uDeployModel 
+./gradlew -b uml2es.gradle  -i -PmodelFile=../umlModels/JokeBook.xml uDeployModel 
 
 Confirm:
 - Content DB has the following documents
@@ -57,7 +57,7 @@ Among the results, you should see the following:
 ### Deploy the Generated Code
 The generated code needs to be deployed. Run the following:
 
-gradle -PenvironmentName=local -i mlReloadModules 
+./gradlew -i mlReloadModules 
 
 ## Explore
 In Query Console, import XMI2ESJokeBook.xml workspace. You won't want to miss this part; it's where the fun happens: you create documents whose embedded triples conform to the model! 

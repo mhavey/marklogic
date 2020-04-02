@@ -26,9 +26,9 @@
         "targetDatabase" : "xmi2es-examples-patient-hub-STAGING"
       },
       "customHook" : { },
-      "retryLimit" : null,
-      "batchSize" : null,
-      "threadCount" : null,
+      "retryLimit" : 0,
+      "batchSize" : 0,
+      "threadCount" : 0,
       "stepDefinitionName" : "default-ingestion",
       "stepDefinitionType" : "INGESTION",
       "fileLocations" : {
@@ -36,10 +36,7 @@
         "inputFileType" : "csv",
         "outputURIReplacement" : ".*datasets,'/datasets'",
         "separator" : "\\t"
-      },
-      "mappingStep" : false,
-      "customStep" : false,
-      "mappingName" : null
+      }
     },
     "2" : {
       "name" : "PopulateAdmissions",
@@ -59,11 +56,7 @@
       "batchSize" : 5,
       "threadCount" : 5,
       "stepDefinitionName" : "PopulateAdmissions",
-      "stepDefinitionType" : "CUSTOM",
-      "modulePath" : "/custom-modules/custom/PopulateAdmissions/main.sjs",
-      "mappingStep" : false,
-      "customStep" : true,
-      "mappingName" : null
+      "stepDefinitionType" : "CUSTOM"
     }
   }
 }
