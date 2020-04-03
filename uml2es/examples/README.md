@@ -1,3 +1,7 @@
+The examples show various uses of UML2ES. The table summarizes the examples:
+
+
+
 Summary of examples:
 
 - examples/movies: A sample UML model for movies. Includes ml-gradle build file to load this model into MarkLogic. Shows the full UML-to-ES workflow including ingestion of ES envelopes, deploying ES-generated database indexes, and running SQL against TDE views. The movie model demonstrates several types of document relationships. 

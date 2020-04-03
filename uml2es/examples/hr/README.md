@@ -4,7 +4,7 @@
 
 This is the example presented in the blog post <http://developer.marklogic.com/blog/uml-modeling-marklogic-entity-services-semantics>. It is designed for Marklogic Data Hub Framework 4.1. 
 
-If you're on version 5.1 or higher of Data Hub, please refer to the following examples:
+If you're on version 5.1 or higher of Data Hub, please refer to the following examples. (TODO - these are not ready. Coming soon.)
 
 [../hrHub5](../hrHub5)  - This example upgraded for DHF 5.1. It shows the use of a TDE template to generate the semantic triples!
 [../hrHub5_mdModelLibs](../hrHub5)  - This example upgraded for DHF 5.1 with a MagicDraw main model that uses a separate library model. Demonstrates parent/child models in MagicDraw.
@@ -96,7 +96,7 @@ Our project uses gradle. Before running, view the settings in gradle.properties.
 
 We will start simple, setting up the basic hub. Run the following:
 
-gradle -PenvironmentName=local -i setup mlDeploy
+gradle  -i setup mlDeploy
 
 Confirm:
 - No errors in gradle output
@@ -119,7 +119,7 @@ Confirm:
 
 Next, move our UML model into ML as an ES model. Run the following:
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i -PmodelName=DHFEmployeeSample uDeployModel 
+gradle -b uml2es4dhf4.gradle  -i -PmodelFile=../umlModels/DHFEmployeeSample.xml uDeployModel 
 
 Confirm:
 - Final DB (xmi2es-examples-hr-FINAL) includes the following documents
@@ -142,7 +142,7 @@ Among the results, you should see the following:
 ### Create DHF Entities From the HR Model
 Now we create our DHF entity plugins. We leverage's the toolkit's ability to cut/generate code. First, ask the toolkit to create the basic plugins (without any flows). It will infer which classes in the model should be plugins. 
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFEntities -PmodelName=DHFEmployeeSample -PentitySelect=infer 
+gradle -b uml2es4dhf4.gradle  -i uCreateDHFEntities -PmodelFile=../umlModels/DHFEmployeeSample.xml -PentitySelect=infer 
 
 Confirm:
 - In gradle project there are new folders 
@@ -153,11 +153,11 @@ Confirm:
 
 For your newly created Employee and Department entities you need input flows for ingestion of source data. Run the following standard DHF gradle commands to create these flows.
 
-gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee -PdataFormat=xml -PpluginFormat=xqy -PuseES=false
+gradle  -i hubCreateInputFlow -PentityName=Employee -PflowName=LoadEmployee -PdataFormat=xml -PpluginFormat=xqy -PuseES=false
 
-gradle -PenvironmentName=local -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=xml -PpluginFormat=xqy -PuseES=false
+gradle -i hubCreateInputFlow -PentityName=Department -PflowName=LoadDepartment -PdataFormat=xml -PpluginFormat=xqy -PuseES=false
 
-gradle -PenvironmentName=local -i mlReloadModules
+gradle -i mlReloadModules
 
 Confirm:
 - In your local gradle project you have newly generated code under plugins/entities/Employee/input and plugins/entities/Department/input
@@ -169,7 +169,7 @@ Ingest staging data and some triples for FINAL
 
 Run the following:
 
-gradle -PenvironmentName=local -i loadSummaryOrgTriples runInputMLCP
+gradle  -i loadSummaryOrgTriples runInputMLCP
 
 Confirm:
 - In STAGING (xmi2es-examples-hr-STAGING) we now have 2008 or more documents. Of these:
@@ -183,9 +183,9 @@ Confirm:
 
 We have two Excel mapping spec documents in data/mapping folder. One has mapping instructions for Global, the other has mapping instructions for ACME. We'll make use of these when generating the harmonization code. For now, load them into MarkLogic. Run the following:
 
-gradle -b uml2es4dhf.gradle -Pdiscover=true -PspecName=acme-mapping uLoadMappingSpec
+gradle -b uml2es4dhf4.gradle -Pdiscover=true -PspecFile=data/mapping/acme-mapping.xlsx uLoadMappingSpec
 
-gradle -b uml2es4dhf.gradle -Pdiscover=true -PspecName=global-mapping uLoadMappingSpec
+gradle -b uml2es4dhf4.gradle -Pdiscover=true -PspecName=data/mapping/global-mapping.xlsx uLoadMappingSpec
 
 Confirm:
 - Final DB (xmi2es-examples-hr-FINAL) includes the following documents
@@ -202,11 +202,11 @@ Confirm:
 ### Create Harmonization Flows
 We now ask the toolkit for generate harmonization flows. We need three harmonization flows: one to build a Department from Global source data, one to build an Employee from Global source data, and one to build an Employee from ACME source data. We will use the toolkit's DHF cookie cutter to generate harmonizations for each. Run the following:
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json 
+gradle -b uml2es4dhf4.gradle -i uCreateDHFHarmonizeFlow  -PmodelFile=../umlModels/DHFEmployeeSample.xml  -PflowName=harmonizeES -PentityName=Department -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json 
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json 
+gradle -b uml2es4dhf4.gradle -i uCreateDHFHarmonizeFlow  -PmodelFile=../umlModels/DHFEmployeeSample.xml  -PflowName=harmonizeESGlobal -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json -PmappingSpec=/xmi2es/excel-mapper/global-mapping.json 
 
-gradle -b uml2es4dhf.gradle -PenvironmentName=local -i uCreateDHFHarmonizeFlow -PmodelName=DHFEmployeeSample -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json 
+gradle -b uml2es4dhf4.gradle  -i uCreateDHFHarmonizeFlow  -PmodelFile=../umlModels/DHFEmployeeSample.xml  -PflowName=harmonizeESAcme -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PcontentMode=es -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json -PmappingSpec=/xmi2es/excel-mapper/acme-mapping.json 
 
 Confirm: 
 - In your local gradle project you have newly generated code under plugins/entities/Employee/harmonize/harmonizeESAcme, plugins/entities/Employee/harmonize/harmonizeESGlobal and plugins/entities/Department/harmonize/harmonizeES.
@@ -219,7 +219,7 @@ Confirm:
 
 We now tweak the content modules of the generation harmonization. We cooked those beforehand; they're in data/tweaks. Let's overwrite the generated code and deploy the changes. (These steps are automated through gradle, but we recommend you open the generated and tweaked code in your favorite diff tool and eyeball the differences.)
 
-gradle -PenvironmentName=local -i tweakHarmonization mlReloadModules
+gradle -i tweakHarmonization mlReloadModules
 
 Confirm:
 - The code in plugins/entities/Department/harmonization and plugins/entities/Employee/harmonization has the tweaks.
@@ -229,11 +229,11 @@ Run harmonization to move employee and department data to FINAL.
 
 Run the following:
 
-gradle -PenvironmentName=local -i hubRunFlow -PentityName=Department -PflowName=harmonizeES
+gradle -i hubRunFlow -PentityName=Department -PflowName=harmonizeES
 
-gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=harmonizeESAcme
+gradle -i hubRunFlow -PentityName=Employee -PflowName=harmonizeESAcme
 
-gradle -PenvironmentName=local -i hubRunFlow -PentityName=Employee -PflowName=harmonizeESGlobal
+gradle -i hubRunFlow -PentityName=Employee -PflowName=harmonizeESGlobal
 
 Confirm:
 FINAL now contains:  
@@ -243,7 +243,7 @@ FINAL now contains:
 ### Extra Credit: Compare Cookie-Cutter Harmonizations with DHF ES Harmonizations
 Data Hub Framework, like our toolkit, can generate harmonization code that produces content based on an Entity Services model. Let's use DHF's hubCreaeHarmonizeFlow task to create an Employee harmonization. 
 
-gradle -PenvironmentName=local -i hubCreateHarmonizeFlow -PflowName=sampleHarmonizeDHF -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PuseES=true
+gradle  -i hubCreateHarmonizeFlow -PflowName=sampleHarmonizeDHF -PentityName=Employee -PpluginFormat=xqy -PdataFormat=xml -PuseES=true
 
 Confirm:
 - Check in local project for new folder plugins/entities/Employee/harmonize/sampleHarmonizeDHF

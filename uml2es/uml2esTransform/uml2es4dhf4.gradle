@@ -85,12 +85,12 @@ task _mLoadXMI(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   def tparam = 'dummy' 
-  if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam +== '{"lax": "true"}'
+  if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam = '{"lax": "true"}'
 
   def xfile = null;
-  if (project.findProperty("modelFile") != null &&  !project.findProperty("modelFile").endsWith(".xlsx")) xfile = new File(project.findProperty("modelFile"))
+  if (project.findProperty("modelFile") != null &&  !project.findProperty("modelFile").endsWith(".xlsx")) xfile = project.file(project.findProperty("modelFile"))
   enabled = xfile != null && xfile.exists()
-  def unixDir = xfile == null ? null : xfile.getParent().replace('\\', '/')
+  def unixDir = xfile == null ? null : xfile.getCanonicalFile().getParent().replace('\\', '/')
   def fullModelName = xfile == null ? null : xfile.getName()
   def regex = xfile == null ? null : '"' + unixDir + ",'',/,''" + '"'
 
@@ -120,12 +120,12 @@ task _mLoadExcel(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   def tparam = 'dummy' 
-  if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam +== '{"lax": "true"}'
+  if (project.findProperty("lax") != null && project.findProperty("lax") == "true") tparam = '{"lax": "true"}'
 
   def xfile = null;
-  if (project.findProperty("modelFile") != null && project.findProperty("modelFile").endsWith(".xlsx")) xfile = new File(project.findProperty("modelFile"))
-  enabled = xfile != null && xfile.exists() 
-  def unixDir = xfile == null ? null : xfile.getParent().replace('\\', '/')
+  if (project.findProperty("modelFile") != null &&  project.findProperty("modelFile").endsWith(".xlsx")) xfile = project.file(project.findProperty("modelFile"))
+  enabled = xfile != null && xfile.exists()
+  def unixDir = xfile == null ? null : xfile.getCanonicalFile().getParent().replace('\\', '/')
   def fullModelName = xfile == null ? null : xfile.getName()
   def regex = xfile == null ? null : '"' + unixDir + ",'',/,''" + '"'
 
@@ -171,11 +171,6 @@ task _mDeleteES(type: Delete) {
     delete "data/entity-services-dump"
 }
 
-task _mCopyES(type: Copy) {
-    from "data/entity-services-dump/xmi2es/es"
-    into "data/entity-services" 
-}
-
 task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
   def srcDir = new File("${projectDir}").getAbsolutePath() 
   def unixDir = srcDir.replace('\\', '/') + "/data/entity-services-dump/xmi2es/extension"
@@ -188,7 +183,6 @@ task _mLoadExtendedModel(type: com.marklogic.gradle.task.MlcpTask) {
   if (myPort == null) myPort = project.findProperty("mlFinalPort")
 
   def graphName = null;
-  if (project.findProperty("modelName") != null) graphName =  project.findProperty("modelName")
   if (project.findProperty("modelFile") != null) {
     def fileNameProper = new File(project.findProperty("modelFile")).getName()
     graphName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
@@ -222,6 +216,23 @@ js += 'sem.graphDelete(sem.iri("' + graphName + '"));\n'
   javascript = js;
 }
 
+task _mDeployFullModel(type: com.marklogic.gradle.task.ServerEvalTask) {
+
+  def actualModelName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    actualModelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualModelName != null
+
+def js = "'use strict';\n"
+js += 'declareUpdate();\n'
+js += 'xdmp.documentInsert("/xmi2es/es/deployed/' + actualModelName + '.json",\n' 
+js += '  cts.doc("/xmi2es/es/' + actualModelName + '.json"),\n'
+js += '  {collections: ["http://marklogic.com/entity-services/models"]})'
+  javascript = js;
+}
+
 
 task _mLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
 
@@ -234,7 +245,7 @@ task _mLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
   def xfile = null;
   if (project.findProperty("specFile") != null &&  project.findProperty("specFile").endsWith(".xlsx")) xfile = new File(project.findProperty("specFile"))
   enabled = xfile != null && xfile.exists()
-  def unixDir = xfile == null ? null : xfile.getParent().replace('\\', '/')
+  def unixDir = xfile == null ? null : xfile.getCanonicalFile().getParent().replace('\\', '/')
   def fullSpecName = xfile == null ? null : xfile.getName()
   def regex = xfile == null ? null : '"' + unixDir + ",'',/,''" + '"'
 
@@ -257,7 +268,15 @@ task _mLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
 
 task _mDiscover(type: com.marklogic.gradle.task.ServerEvalTask) {
   def discover = project.findProperty("discover")
-  def mappingURI = '"/xmi2es/excel-mapper/' + project.findProperty("specName") + '.xlsx"'
+
+  def actualSpecName = null;
+  if (project.findProperty("specFile") != null) {
+    def fileNameProper = new File(project.findProperty("specFile")).getName()
+    actualSpecName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualSpecName != null
+
+  def mappingURI = '"/xmi2es/excel-mapper/' + actualSpecName + '.xlsx"'
   def discoveryDB = ""
   if (project.findProperty("mlStagingDbName") != null) discoveryDB = '"' + project.findProperty("mlStagingDbName") + '"'
   else discoveryDB = '"' + project.findProperty("mlAppName") + "-content"
@@ -308,7 +327,6 @@ task _cFetchEntities(type: com.marklogic.gradle.task.MlcpTask) {
     modelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
   }
   enabled = modelName != null
-  if (modelName != null) modelName = '"' + modelName + '"'
 
   def directoryFilter = "/cookieCutter/"  + modelName + "/plugins/entities/"
 
@@ -333,7 +351,6 @@ task _cPromoteEntities(type: Copy) {
     modelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
   }
   enabled = modelName != null
-  if (modelName != null) modelName = '"' + modelName + '"'
 
     from "data/cookieCutter-dump/cookieCutter/" + modelName + "/plugins/entities"
     into "plugins/entities" 
@@ -346,7 +363,7 @@ task _cCutHarmonizeFlow(type: com.marklogic.gradle.task.ServerEvalTask) {
     modelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
   }
   enabled = modelName != null
-  if (modelName != null) modelName = '"' + modelName + '"'
+  modelName = '"' + modelName + '"'
 
   def entityName = project.findProperty("entityName") 
   if (entityName != null) entityName = '"' + entityName + '"'
@@ -377,7 +394,6 @@ task _cFetchCutHarmonizeFlow(type: com.marklogic.gradle.task.MlcpTask) {
     modelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
   }
   enabled = modelName != null
-  if (modelName != null) modelName = '"' + modelName + '"'
 
   def directoryFilter = "/cookieCutter/"  + modelName + "/plugins/entities/" + project.findProperty("entityName") + "/harmonize/" + project.findProperty("flowName") + "/"
   directoryFilter += ",/dm/mapper/" + modelName + "/"
@@ -402,7 +418,6 @@ task _cPromoteCutHarmonizeFlow(type: Copy) {
     modelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
   }
   enabled = modelName != null
-  if (modelName != null) modelName = '"' + modelName + '"'
 
     def harmPath = "plugins/entities/" + project.findProperty("entityName") + "/harmonize"
     def flowPath = harmPath + "/" + project.findProperty("flowName") 
@@ -437,17 +452,17 @@ task uDeployModel() {
   dependsOn '_mLoadExcel'
   dependsOn '_mFetchDescriptors'
   dependsOn '_mCopyGenCode'
-  dependsOn '_mCopyES' // need this to place ES in a folder where we can run mlGen
   dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
+  dependsOn '_mDeployFullModel' // I need it for cookie cutter
   tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
   tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadExcel'
   tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
-  tasks.findByName('_mCopyES').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
+  tasks.findByName('_mDeployFullModel').mustRunAfter '_mFetchDescriptors'
 }
 
 /*
