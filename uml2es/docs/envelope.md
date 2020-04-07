@@ -21,3 +21,5 @@ The toolkit's code generation feature builds code that persists your business da
 The following diagram shows how this works:
 
 ![Envelope](envelope.png)
+
+

@@ -207,6 +207,23 @@ js += 'sem.graphDelete(sem.iri("' + graphName + '"));\n'
   javascript = js;
 }
 
+task _mDeployFullModel(type: com.marklogic.gradle.task.ServerEvalTask) {
+
+  def actualModelName = null;
+  if (project.findProperty("modelFile") != null) {
+    def fileNameProper = new File(project.findProperty("modelFile")).getName()
+    actualModelName = fileNameProper.substring(0, fileNameProper.indexOf(".")) 
+  }
+  enabled = actualModelName != null
+
+def js = "'use strict';\n"
+js += 'declareUpdate();\n'
+js += 'xdmp.documentInsert("/xmi2es/es/deployed/' + actualModelName + '.json",\n' 
+js += '  cts.doc("/xmi2es/es/' + actualModelName + '.json"),\n'
+js += '  {collections: ["http://marklogic.com/entity-services/models"]})'
+  javascript = js;
+}
+
 
 task _mLoadMappingSpec(type: com.marklogic.gradle.task.MlcpTask) {
 
@@ -361,6 +378,7 @@ task uDeployModel() {
   dependsOn '_mCopyES' // need this to place ES in a folder where we can run mlGen
   dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
+  dependsOn '_mDeployFullModel'
   tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
   tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
@@ -369,6 +387,7 @@ task uDeployModel() {
   tasks.findByName('_mCopyES').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
+  tasks.findByName('_mDeployFullModel').mustRunAfter '_mFetchDescriptors'
 }
 
 /*

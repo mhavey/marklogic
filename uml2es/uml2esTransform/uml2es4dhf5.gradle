@@ -328,6 +328,7 @@ task uDeployModel() {
   dependsOn '_mCopyGenCode'
   dependsOn '_mRemoveOldExtendedModel'
   dependsOn '_mLoadExtendedModel'
+  dependsOn '_mDeployFullModel' // I need it for cookie cutter
   tasks.findByName('_mLoadXMI').mustRunAfter '_mDeleteES'
   tasks.findByName('_mLoadExcel').mustRunAfter '_mDeleteES'
   tasks.findByName('_mFetchDescriptors').mustRunAfter '_mLoadXMI'
@@ -335,6 +336,7 @@ task uDeployModel() {
   tasks.findByName('_mCopyGenCode').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mFetchDescriptors'
   tasks.findByName('_mLoadExtendedModel').mustRunAfter '_mRemoveOldExtendedModel'
+  tasks.findByName('_mDeployFullModel').mustRunAfter '_mFetchDescriptors'
 }
 
 /*
@@ -354,7 +356,6 @@ Effects:
 - DHF-compatible entities entities folder
 */
 task uCreateDHFEntities() {
-  dependsOn '_mDeployFullModel' // I need it for cookie cutter
   dependsOn '_cDeleteCutDump'
   dependsOn '_cCutEntities'
   dependsOn '_cFetchEntities'

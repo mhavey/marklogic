@@ -2,7 +2,7 @@
 
 Among the capabilities of the toolkit is the ability to model semantics. Specificially, the toolkit supports a mixed modelling approach in which documents contain embedded semantic triples. Those triples constitute semantic facts about the document, such as the document's provenance and its relationship to other semantic things. 
 
-The toolkit is NOT meant to design semantic ontologies. Indeed, UML isn't a suitable notation for ontological design. There are several patterns in OWL that cannot easily be expressed in UML's class notation. (For example: an individual can belong to multiple classes; a property can have multiple domains; a property can have no domain; a class can be defined as the intersection of two other classes.) If you need to build an ontology, use an ontology tool, such as Protege or TopBraid Composer. 
+The toolkit is NOT meant to design semantic ontologies. Indeed, UML isn't a suitable notation for ontological design. There are several patterns in OWL that cannot easily be expressed in UML's class notation. (For example: an individual can belong to multiple classes; a property can have multiple domains; a property can have no domain; a class can be defined as the intersection of two other classes.) If you need to build an ontology, use an ontology tool such as Protege or TopBraid Composer. 
 
 The toolkit allows you associate semantic facts with your class definition. You model these facts using stereotypes. Your facts can reference ontologies. In the examples described below, UML classes reference provenance and organizational ontologies. 
 

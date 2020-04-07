@@ -1,39 +1,15 @@
 The examples show various uses of UML2ES. The table summarizes the examples:
 
-
-
-Summary of examples:
-
-- examples/movies: A sample UML model for movies. Includes ml-gradle build file to load this model into MarkLogic. Shows the full UML-to-ES workflow including ingestion of ES envelopes, deploying ES-generated database indexes, and running SQL against TDE views. The movie model demonstrates several types of document relationships. 
-- examples/hr5: A sample UML model for human resources. It models Departments and Employees. The sample shows how to load HR data into a MarkLogic data hub 5.1. It also demonstrates semantic relationships though the use of an organizational ontology. Additionally, it showcases the *Data Hub Framework Cookie Cutter* to generate hub entities and harmonization flows. 
-
-
-- examples/hr: A sample UML model for human resources. It models Departments and Employees. The sample shows how to load HR data into a MarkLogic data hub. It also demonstrates semantic relationships though the use of an organizational ontology. Additionally, it showcases the *Data Hub Framework Cookie Cutter* to generate hub entities and harmonization flows. 
-- examples/runningRace: A sample demonstrating interop. We model a running race in three UML editors: MagicDraw, Eclipse Modeling Framework (EMF), and Papyrus. We show that all UML models transfor to the same ES model descriptor. Our model is based on one of the examples from MarkLogic's Entity Services github: <https://github.com/marklogic/entity-services/tree/master/entity-services-examples/example-races/>. 
-- examples/blockFactory: A sample UML model that shows a technique for denormalization.
-- examples/movietalk: A UML logcal data model for user posts about movies and actors. The model is merely logical. We do not generate an Entity Services model from it. Rather, when the application team built the movietalk application, they referred to the model but arranged the data in MarkLogic somewhat differently. The example demonstrates a strategy to compare the physical model to the logical model.  
-- examples/hrexcel: Demonstrates loading an entity services model from an Excel data model template. No UML! We use the HR example from above (examples/hr). We pass our Excel spreadsheet (containing the HR model in tablular form) into the transformation. The transformation produces the same entity services model (including extensions and generated code) as produces from the UML model in examples/hr. 
-- examples/declarativeCity: A simple city data model that uses the Declarative Mapper tool to map source data. The example shows the integration of UML, Entity Services, and Declarative Mapper. 
-- examples/jokeBook: A mixed model demonstrating advanced semantic relationships like qualified predicates and arbitrary semantic facts.
-- examples/gentest: Code generation tests.
-- examples/umlModels: The full set of models
-
-The following table summarizes the features demonstrated in the examples:
-
-TODO ... DHF 4 vs. 5....
-
-|Feature|Example|
-|---|---|
-|DHF|hr, gentest|
-|UML class relationships|movies, blockFactory|
-|Mapping spec|hr|
-|Cookie cutter|hr, gentest|
-|Model comparison|runningRace, hrexcel|
-|Logical vs. physical|movietalk|
-|Interop|runningRace|
-|Discovery|movieTalk, hr|
-|ES conversion module|movies|
-|Declarative Mapper|declarativeCity, hr (COMING SOON)|
-|TDE|movies|
-|Semantics|hr, jokeBook|
-|Excel2ES|hrexcel|
+|Example|Features|Architecture|Modeling Tools|Status|
+|---|---|---|---|---|
+|[patient-hub](patient-hub)|Mapping UML to DHF5 entities.|DHF 5|Papyrus|complete|
+|hr5Magic|HR UML model with semantic relationships in DHF5. Shows how to split UML model into main and common submodels and link them together.|DHF 5|MagicDraw|Coming soon|
+|hr5Papyrus|HR UML model with semantic relationships in DHF5. Shows how to split UML model into main and common submodels and link them together.|DHF 5|Papyrus|Coming soon|
+|hr5PapyrusTDE|HR UML model with semantic relationships in DHF5. Shows how to split UML model into main and common submodels and link them together. Shows use of TDE template to generate semantic triples for class relationships.|DHF 5|Papyrus|Coming soon|
+|ontology2ES|How to generate an ES model from a semantic ontology.|Vanilla|Papyrus|Coming soon|
+|[movies](movies)|UML class relationships and how to map them to ES. Vanilla build process. Using OOTB ES artifact generator for conversion, indexes, and TDE.|Vanilla|MagicDraw|complete|
+|[hr](hr)|UML model with semantic relationships and how to map them to ES. Generating harmonization code for DHF 4 based on model. Building the full envelope based on model. Incorporating mapping spec from mapping domain expert. DHF 4.1 build process.|DHF4.1|MagicDraw|complete|
+|[hrexcel](hrexcel)|Using Excel spreadsheet to design a model equivalent to HR data model. Model comparison|Vanilla|Excel|complete|
+|[runningRace](runningRace)|Compare equivalent model from three tools: MagicDraw, Papyrus, Eclipse EMF. Interop. Model comparison.|Vanilla|MagicDraw, Papyrus, Eclipse EMF|complete|
+|[movieTalk](movieTalk)|Logical model. Lax model transformation. Compare logical and physical.|Vanilla|Papyrus|complete|
+|[jokeBook](jokeBook)|Advanced mixed document/semantic modeling.|Vanilla|Papyrus|complete|
