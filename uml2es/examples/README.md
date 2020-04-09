@@ -3,7 +3,7 @@ The examples show various uses of UML2ES. The table summarizes the examples:
 |Example|Features|Architecture|Modeling Tools|Status|
 |---|---|---|---|---|
 |[patient-hub](patient-hub)|Mapping UML to DHF5 entities.|DHF 5|Papyrus|complete|
-|hr5WithTDE|HR UML model with semantic relationships in DHF5. Shows how to split UML model into main and common submodels and link them together. Shows use of TDE template to generate semantic triples for class relationships.|DHF 5|Papyrus|Coming soon - Summer/fall 2020|
+|hr5WithTDE|HR UML model with semantic relationships in DHF5. Shows how to split UML model into main and common submodels and link them together. Shows use of TDE template to generate semantic triples for class relationships.|DHF 5|Papyrus s|Coming soon - Summer/fall 2020|
 |[decomposedModels](decomposedModels)|Decompose large UML model over multiple smaller models. Demonstrate how to map to ES.|Vanilla|Papyrus and MagicDraw|TODO|
 |ontology2ES|How to generate an ES model from a semantic ontology.|Vanilla|Papyrus|CComing soon - Summer/fall 2020|
 |[movies](movies)|UML class relationships and how to map them to ES. Vanilla build process. Using OOTB ES artifact generator for conversion, indexes, and TDE.|Vanilla|MagicDraw|complete|
